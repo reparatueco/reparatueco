@@ -1090,8 +1090,7 @@ async function adminEnviarAutzCliente(ordenId, idx) {
 
 Revisamos tu bicicleta eléctrica (Orden: *${ordenId}*) y encontramos que necesita el siguiente repuesto:
 
-🔧 *${a.repuesto}*${precio ? '
-💰 Costo: *$' + Number(precio).toLocaleString('es-CO') + '*' : ''}
+🔧 *${a.repuesto}*${precio ? '\n💰 Costo: *$' + Number(precio).toLocaleString('es-CO') + '*' : ''}
 
 ¿Autorizas el cambio?
 ✅ Responde *SÍ* para autorizar
@@ -1549,18 +1548,17 @@ async function adminAprobarAutz(ordenId, idx, clienteNombre, clienteTel) {
   const taller = cfg.nombre||'ReparaTuEco';
   let tel = clienteTel.replace(/\D/g,'');
   if(!tel.startsWith('57')) tel='57'+tel;
-  const msg = 'Hola '+clienteNombre+' 👋
+  const msg = `Hola ${clienteNombre} 👋
 
 Durante la revision de tu bicicleta encontramos que necesita:
 
-🔧 *'+a.repuesto+'*'+(a.precio?'
-💰 Costo: *$'+Number(a.precio).toLocaleString('es-CO')+'*':'')+'
+🔧 *${a.repuesto}*${a.precio ? '\n💰 Costo: *$' + Number(a.precio).toLocaleString('es-CO') + '*' : ''}
 
 ¿Autorizas que realicemos este trabajo?
 
 Responde *SI* para autorizar o *NO* para rechazar.
 
-*'+taller+'* 🚲⚡';
+*${taller}* 🚲⚡`;
   window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(msg),'_blank');
   showToast('Aprobado y mensaje enviado');
   actualizarBadgePanel();
@@ -1897,9 +1895,7 @@ async function adminAvisarListoCliente(ordenId, nombreCliente, telCliente) {
 ¡Tu bicicleta eléctrica ya está lista para recoger!
 
 *Orden:* ${ordenId}
-*Taller:* ${taller}${dir?'
-📍 '+dir:''}${telTaller?'
-📞 '+telTaller:''}
+*Taller:* ${taller}${dir?'\n📍 '+dir:''}${telTaller?'\n📞 '+telTaller:''}
 
 Puedes pasar a recogerla cuando quieras. 🚲⚡`;
   let tel = telCliente.replace(/\D/g,'');
