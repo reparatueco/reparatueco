@@ -185,7 +185,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
     <div class="top-tabs">
       <button class="top-tab active" id="ttab-recepcion" onclick="goScreen('recepcion',this)">Nueva</button>
       <button class="top-tab" id="ttab-tecnico" onclick="goScreen('tecnico',this)">Técnico</button>
-      <button class="top-tab" id="ttab-panel" onclick="goScreen('panel',this)">Panel</button>
+      <button class="top-tab" id="ttab-panel" onclick="goScreen('panel',this)">Panel <span id="panel-badge" style="display:none;background:var(--red);color:#fff;border-radius:999px;font-size:10px;padding:1px 6px;margin-left:3px;font-family:var(--mono);"></span></button>
       <button class="top-tab" id="ttab-historial" onclick="goScreen('historial',this)">Historial</button>
       <button class="top-tab" id="ttab-config" onclick="goScreen('config',this)">Config</button>
     </div>
@@ -309,15 +309,22 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 
     <!-- PANEL ADMIN -->
     <div id="screen-panel" class="screen">
-      <div style="padding-top:4px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="padding-top:4px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">
         <div class="section-title" style="margin:0;">Panel de control</div>
         <button class="btn btn-ghost btn-sm" onclick="renderPanel()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
           Actualizar
         </button>
       </div>
-      <div id="panel-stats" class="stats-grid" style="grid-template-columns:repeat(3,1fr);"></div>
-      <div id="panel-tecnicos"></div>
+      <div class="filter-tabs" id="panel-tabs" style="margin-bottom:14px;">
+        <div class="filter-tab active" onclick="cambiarTabPanel('pendiente',this)" id="ptab-pendiente">Pendientes</div>
+        <div class="filter-tab" onclick="cambiarTabPanel('en_proceso',this)" id="ptab-en_proceso">En proceso</div>
+        <div class="filter-tab" onclick="cambiarTabPanel('listo',this)" id="ptab-listo">Terminadas</div>
+        <div class="filter-tab" onclick="cambiarTabPanel('entregada',this)" id="ptab-entregada">Entregadas</div>
+        <div class="filter-tab" onclick="cambiarTabPanel('nomina',this)" id="ptab-nomina">Nomina</div>
+      </div>
+      <div id="panel-alertas"></div>
+      <div id="panel-lista"></div>
     </div>
 
     <!-- HISTORIAL -->
@@ -448,6 +455,7 @@ function guardarConfig() {
   cfg = { nombre: document.getElementById('cfg-nombre').value, dir: document.getElementById('cfg-dir').value, tel: document.getElementById('cfg-tel').value };
   localStorage.setItem('vt_config', JSON.stringify(cfg));
   aplicarConfig();
+  if(typeof actualizarBadgePanel === "function") setTimeout(actualizarBadgePanel, 1500);
 }
 function aplicarConfig() {
   const n = cfg.nombre || 'Tu taller de bicicletas';
@@ -765,10 +773,11 @@ async function abrirModalTecnico(id) {
   document.getElementById('modal-overlay').classList.add('open');
   const { data: o } = await db.from('ordenes').select('*').eq('id',id).single();
   if(!o){ document.getElementById('modal-body').innerHTML='<p>Error al cargar</p>'; return; }
+  const esAdmin = usuarioActual && usuarioActual.rol === 'admin';
   const repHTML=(o.repuestos||[]).map((r,i)=>`
     <div class="repuesto-row" id="rep-${id}-${i}">
       <input type="text" value="${r.nombre||''}" placeholder="Repuesto" id="repn-${id}-${i}">
-      <input type="number" value="${r.precio||''}" placeholder="Precio" id="repp-${id}-${i}">
+      ${esAdmin ? `<div style="position:relative;"><span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;">$</span><input type="number" value="${r.precio||''}" placeholder="Precio" id="repp-${id}-${i}" style="padding-left:22px!important;"></div>` : `<span style="font-size:13px;color:var(--green);font-family:var(--mono);min-width:80px;text-align:right;">${r.precio?'$'+Number(r.precio).toLocaleString('es-CO'):'Sin precio'}</span>`}
       <button class="btn-icon" onclick="elimRep('${id}',${i})">×</button>
     </div>`).join('');
   const fotosHTML=(o.fotos_ingreso||[]).concat(o.fotos_proceso||[]).map(u=>`<img class="photo-thumb" src="${u}" onclick="window.open('${u}','_blank')">`).join('');
@@ -776,7 +785,7 @@ async function abrirModalTecnico(id) {
     ? `<button class="btn btn-primary" style="margin-bottom:8px;" onclick="cambiarEstado('${id}','en_proceso')">Iniciar trabajo</button>`
     : o.estado==='en_proceso'
     ? `<button class="btn btn-primary" style="margin-bottom:8px;" onclick="marcarListo('${id}')">Marcar como lista ✓</button>`
-    : `<button class="btn btn-wa" style="width:100%;margin-bottom:8px;" onclick="enviarWA('lista',${JSON.stringify(o).replace(/"/g,'&quot;')});closeModal()">WhatsApp — avisar al cliente</button>`;
+    : `<div style="background:var(--green-dim);border:1px solid rgba(0,230,118,0.3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;font-size:13px;color:var(--green);text-align:center;">✓ Lista — la admin avisará al cliente</div>`;
   document.getElementById('modal-body').innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
       <div><div class="order-num" style="font-size:15px;">${o.id}</div><div style="font-size:17px;font-weight:600;margin-top:2px;">${o.nombre}</div></div>
@@ -802,51 +811,64 @@ async function abrirModalTecnico(id) {
     ${o.estado !== 'pendiente' ? `
     ${renderChecklist(o)}
     <div style="margin-bottom:12px;">
-      <div class="card-title">Diagnóstico</div>
-      <textarea id="diag-${id}" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:10px;min-height:70px;outline:none;margin-top:4px;" placeholder="Diagnóstico y trabajo realizado...">${o.diagnostico||''}</textarea>
-    </div>
-    <div style="margin-bottom:12px;">
       <div class="card-title">Repuestos</div>
       <div id="reps-${id}">${repHTML}</div>
       <button class="btn btn-ghost btn-sm" style="margin-top:6px;" onclick="addRep('${id}')">+ Agregar repuesto</button>
-    </div>
-    <div style="margin-bottom:14px;">
-      <div class="card-title" style="margin-bottom:8px;">Solicitar autorización de repuesto</div>
-      <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;">
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <input type="text" id="auth-repuesto-${id}" placeholder="Ej: Batería 48V, Llanta trasera..." style="width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:9px 12px;outline:none;">
-          <div style="display:flex;gap:8px;">
-            <div style="position:relative;flex:1;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;">$</span><input type="number" id="auth-precio-${id}" placeholder="Costo" style="width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:9px 12px 9px 24px;outline:none;"></div>
-            <button class="btn btn-wa btn-sm" onclick="enviarAutorizacion('${id}','${o.nombre}','${o.tel}')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-              Enviar al cliente
-            </button>
-          </div>
-        </div>
+      ${(o.repuestos&&o.repuestos.length)?`
+      <div style="margin-top:10px;padding:10px 12px;background:var(--green-dim);border:1px solid rgba(0,230,118,0.2);border-radius:var(--radius-sm);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:500;color:var(--green);">Total repuestos</span>
+        <span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green);">$${o.repuestos.reduce((s,r)=>s+Number(r.precio||0),0).toLocaleString('es-CO')}</span>
+      </div>`:''}
+      ${o.presupuesto?`
+      <div style="margin-top:6px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--text2);">Servicio (presupuesto)</span>
+        <span style="font-family:var(--mono);font-size:13px;color:var(--text);">$${Number(o.presupuesto).toLocaleString('es-CO')}</span>
       </div>
-      ${(o.autorizaciones&&o.autorizaciones.length)?`
-      <div style="margin-bottom:8px;">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Historial de autorizaciones</div>
-        ${o.autorizaciones.map((a,i)=>`
-          <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:6px;border-left:3px solid ${a.autorizado===true?'var(--green)':a.autorizado===false?'var(--red)':'var(--amber)'};">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-              <span style="font-size:13px;font-weight:500;">${a.repuesto}</span>
-              <span style="font-family:var(--mono);font-size:12px;color:var(--green);">$${Number(a.precio||0).toLocaleString('es-CO')}</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:11px;color:var(--text3);">${a.fecha||''}</span>
-              <div style="display:flex;gap:6px;">
-                <button onclick="registrarRespuesta('${id}',${i},true)" style="background:${a.autorizado===true?'var(--green)':'var(--bg4)'};color:${a.autorizado===true?'#000':'var(--text2)'};border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;font-weight:500;">✓ Autoriza</button>
-                <button onclick="registrarRespuesta('${id}',${i},false)" style="background:${a.autorizado===false?'var(--red)':'var(--bg4)'};color:${a.autorizado===false?'white':'var(--text2)'};border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;font-weight:500;">✗ No autoriza</button>
-              </div>
-            </div>
-          </div>`).join('')}
+      <div style="margin-top:4px;padding:10px 12px;background:var(--bg3);border:1px solid rgba(0,230,118,0.3);border-radius:var(--radius-sm);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:600;">Total estimado</span>
+        <span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green);">$${(Number(o.presupuesto)+(o.repuestos||[]).reduce((s,r)=>s+Number(r.precio||0),0)).toLocaleString('es-CO')}</span>
       </div>`:''}
     </div>
     <div style="margin-bottom:14px;">
-      <div class="card-title">Autorizaciones adicionales</div>
-      <div id="autz-lista-${o.id}" style="margin-bottom:8px;">${renderAutorizaciones(o.autorizaciones||[],o.id)}</div>
-      <button class="btn btn-ghost btn-sm" style="width:100%;" onclick="abrirNuevaAutorizacion('${o.id}','${o.nombre}','${o.tel}')">+ Solicitar autorización al cliente</button>
+      <div class="card-title" style="margin-bottom:8px;">Solicitar autorización al admin</div>
+      ${usuarioActual&&usuarioActual.rol==='tecnico'?`
+      <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;">
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <input type="text" id="auth-repuesto-${id}" placeholder="Ej: Bateria 48V, Llanta trasera..." style="width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:9px 12px;outline:none;">
+          <div style="display:flex;gap:8px;">
+            <div style="position:relative;flex:1;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;">$</span>
+            <input type="number" id="auth-precio-${id}" placeholder="Costo estimado" style="width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:9px 12px 9px 28px;outline:none;"></div>
+            <button class="btn btn-primary btn-sm" onclick="solicitarAutorizacionAdmin('${id}','${o.nombre}','${o.tel}')">Solicitar</button>
+          </div>
+        </div>
+      </div>`:''}
+      ${(o.autorizaciones&&o.autorizaciones.length)?`
+      <div style="margin-bottom:8px;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Solicitudes de autorizacion</div>
+        ${o.autorizaciones.map((a,i)=>`
+          <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:6px;border-left:3px solid ${a.estado_admin==='aprobado'?'var(--green)':a.estado_admin==='rechazado'?'var(--red)':'var(--amber)'};">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:13px;font-weight:500;">${a.repuesto||a.descripcion||''}</span>
+              <span style="font-family:var(--mono);font-size:12px;color:var(--green);">$${Number(a.precio||0).toLocaleString('es-CO')}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">
+              <span style="font-size:11px;color:var(--text3);">${a.tecnico?'Solicitado por '+a.tecnico:''} ${a.fecha||''}</span>
+              ${!a.estado_admin&&usuarioActual&&usuarioActual.rol==='admin'?`
+              <div style="display:flex;gap:4px;">
+                <button onclick="adminAprobarAutz('${id}',${i},'${o.nombre}','${o.tel}')" style="background:var(--green);color:#000;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600;">Aprobar y enviar WA</button>
+                <button onclick="adminRechazarAutz('${id}',${i})" style="background:var(--red-dim);color:var(--red);border:1px solid rgba(255,23,68,.2);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">Rechazar</button>
+              </div>`:`
+              <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600;background:${a.estado_admin==='aprobado'?'var(--green-dim)':a.estado_admin==='rechazado'?'var(--red-dim)':'var(--amber-dim)'};color:${a.estado_admin==='aprobado'?'var(--green)':a.estado_admin==='rechazado'?'var(--red)':'var(--amber)'};">
+                ${a.estado_admin==='aprobado'?'Aprobado y enviado':a.estado_admin==='rechazado'?'Rechazado':'Pendiente admin'}
+              </span>`}
+            </div>
+            ${a.estado_cliente?`<div style="font-size:11px;margin-top:4px;color:${a.estado_cliente==='autorizado'?'var(--green)':'var(--red)'};">Cliente: ${a.estado_cliente==='autorizado'?'Autorizo':'No autorizo'}</div>`:''}
+          </div>`).join('')}
+      </div>`:''}
+    </div>
+    <div style="margin-bottom:12px;">
+      <div class="card-title">Diagnóstico</div>
+      <textarea id="diag-${id}" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:10px;min-height:70px;outline:none;margin-top:4px;" placeholder="Diagnóstico y trabajo realizado...">${o.diagnostico||''}</textarea>
     </div>
     ` : ''}
     <div style="margin-bottom:14px;">
@@ -871,11 +893,15 @@ async function cambiarEstado(id, estado) {
 }
 async function marcarListo(id) {
   await guardarDiagRepuestos(id);
-  const {error}=await db.from('ordenes').update({estado:'listo'}).eq('id',id);
-  if(error){showToast('❌ Error');return;}
-  ['vt_tec_pendiente','vt_tec_en_proceso','vt_tec_listo','vt_all_ordenes'].forEach(k=>localStorage.removeItem(k));
+  // Marcar lista + guardar flag para que admin envie WA al cliente
+  await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+id, {
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body: JSON.stringify({estado:'listo', aviso_admin_listo: true})
+  });
   allOrdenes=[];
-  closeModal(); renderTecnico(filtroTec); actualizarBadge(); showToast('✓ Bicicleta marcada como lista');
+  closeModal(); renderTecnico(filtroTec); actualizarBadge();
+  showToast('✓ Lista — la admin avisará al cliente');
 }
 async function cambiarTecnico(id, tecnico) {
   await db.from('ordenes').update({tecnico: tecnico||null}).eq('id',id);
@@ -1004,37 +1030,78 @@ async function cargarConfig() {
 // ===== AUTORIZACIONES =====
 async function enviarAutorizacion(ordenId, nombreCliente, telCliente) {
   const repuesto = document.getElementById('auth-repuesto-' + ordenId)?.value.trim();
-  const precio = document.getElementById('auth-precio-' + ordenId)?.value;
-  if(!repuesto) { showToast('⚠ Escribe el repuesto a autorizar'); return; }
+  if(!repuesto) { showToast('Escribe el repuesto a solicitar'); return; }
+  // Tecnico solo describe — admin pone precio, aprueba y envia WA
+  const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId+'&select=autorizaciones', {
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  });
+  const rows = await resp.json();
+  const auths = rows[0]?.autorizaciones || [];
+  auths.push({
+    repuesto,
+    precio: null, // Admin asigna el precio
+    fecha: new Date().toLocaleDateString('es-CO', {day:'2-digit', month:'short', year:'numeric'}),
+    autorizado: null,
+    estado_admin: 'pendiente_admin',
+    nombre_cliente: nombreCliente,
+    tel_cliente: telCliente,
+    orden_id: ordenId
+  });
+  await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId, {
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body: JSON.stringify({autorizaciones: auths})
+  });
+  const inp = document.getElementById('auth-repuesto-' + ordenId);
+  if(inp) inp.value = '';
+  showToast('Solicitud enviada a la admin');
+  abrirModalTecnico(ordenId);
+}
+
+// Admin aprueba y envia WA al cliente
+async function adminEnviarAutzCliente(ordenId, idx) {
+  // Leer precio que la admin asignó
+  const precioInput = document.getElementById('precio-autz-'+ordenId+'-'+idx);
+  const precioAdmin = precioInput ? precioInput.value : '';
+  if(!precioAdmin) { showToast('Escribe el precio del repuesto'); return; }
+  const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId+'&select=autorizaciones,nombre,tel', {
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  });
+  const rows = await resp.json();
+  const o = rows[0];
+  if(!o) return;
+  const auths = o.autorizaciones || [];
+  const a = auths[idx];
+  if(!a) return;
+  // Admin asigna precio y aprueba
+  auths[idx].precio = precioAdmin;
+  auths[idx].estado_admin = 'aprobada_admin';
+  await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId, {
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body: JSON.stringify({autorizaciones: auths})
+  });
+  // Enviar WA al cliente
   const cfg2 = JSON.parse(localStorage.getItem('vt_config') || '{}');
   const taller = cfg2.nombre || 'ReparaTuEco';
-  const msg = `Hola ${nombreCliente} 👋
+  const nombre = a.nombre_cliente || o.nombre;
+  const precio = a.precio;
+  const msg = `Hola ${nombre} 👋
 
-El técnico de *${taller}* revisó tu bicicleta eléctrica (Orden: *${ordenId}*) y encontró que necesita el siguiente repuesto:
+Revisamos tu bicicleta eléctrica (Orden: *${ordenId}*) y encontramos que necesita el siguiente repuesto:
 
-🔧 *${repuesto}*${precio ? '\n💰 Costo: *$' + Number(precio).toLocaleString('es-CO') + '*' : ''}
+🔧 *${a.repuesto}*${precio ? '
+💰 Costo: *$' + Number(precio).toLocaleString('es-CO') + '*' : ''}
 
 ¿Autorizas el cambio?
 ✅ Responde *SÍ* para autorizar
 ❌ Responde *NO* para no autorizar
 
 Esperamos tu respuesta. 🚲⚡`;
-  let tel = telCliente.replace(/\D/g, '');
+  let tel = (a.tel_cliente || o.tel).replace(/\D/g, '');
   if(!tel.startsWith('57')) tel = '57' + tel;
-  window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
-  const { data: ord } = await db.from('ordenes').select('autorizaciones').eq('id', ordenId).single();
-  const auths = ord?.autorizaciones || [];
-  auths.push({
-    repuesto,
-    precio: precio || null,
-    fecha: new Date().toLocaleDateString('es-CO', {day:'2-digit', month:'short', year:'numeric'}),
-    autorizado: null
-  });
-  await db.from('ordenes').update({ autorizaciones: auths }).eq('id', ordenId);
-  ['vt_tec_pendiente','vt_tec_en_proceso','vt_tec_listo'].forEach(k => localStorage.removeItem(k));
-  document.getElementById('auth-repuesto-' + ordenId).value = '';
-  document.getElementById('auth-precio-' + ordenId).value = '';
-  showToast('✓ Mensaje de autorización enviado');
+  window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(msg), '_blank');
+  showToast('WA enviado al cliente');
   abrirModalTecnico(ordenId);
 }
 
@@ -1439,137 +1506,549 @@ async function subirFotoChecklistCustom(input, ordenId, idx) {
 }
 
 
+
+// ===== AUTORIZACIONES ADMIN =====
+async function solicitarAutorizacionAdmin(ordenId, clienteNombre, clienteTel) {
+  const repuesto = document.getElementById('auth-repuesto-'+ordenId)?.value.trim();
+  const precio = document.getElementById('auth-precio-'+ordenId)?.value;
+  if(!repuesto) { showToast('Escribe el repuesto'); return; }
+  const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId+'&select=autorizaciones', {
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  });
+  const rows = await resp.json();
+  const autzs = [...(rows[0]?.autorizaciones||[]), {
+    repuesto, precio: precio||null,
+    tecnico: usuarioActual?.nombre||'',
+    fecha: new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}),
+    estado_admin: null, estado_cliente: null
+  }];
+  await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId, {
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify({autorizaciones:autzs})
+  });
+  showToast('Solicitud enviada al admin');
+  actualizarBadgePanel();
+  abrirModalTecnico(ordenId);
+}
+
+async function adminAprobarAutz(ordenId, idx, clienteNombre, clienteTel) {
+  const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId+'&select=autorizaciones', {
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  });
+  const rows = await resp.json();
+  const autzs = [...(rows[0]?.autorizaciones||[])];
+  autzs[idx] = {...autzs[idx], estado_admin:'aprobado', fecha_admin:new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'short'})};
+  await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId, {
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify({autorizaciones:autzs})
+  });
+  // Abrir WhatsApp al cliente
+  const a = autzs[idx];
+  const taller = cfg.nombre||'ReparaTuEco';
+  let tel = clienteTel.replace(/\D/g,'');
+  if(!tel.startsWith('57')) tel='57'+tel;
+  const msg = 'Hola '+clienteNombre+' 👋
+
+Durante la revision de tu bicicleta encontramos que necesita:
+
+🔧 *'+a.repuesto+'*'+(a.precio?'
+💰 Costo: *$'+Number(a.precio).toLocaleString('es-CO')+'*':'')+'
+
+¿Autorizas que realicemos este trabajo?
+
+Responde *SI* para autorizar o *NO* para rechazar.
+
+*'+taller+'* 🚲⚡';
+  window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(msg),'_blank');
+  showToast('Aprobado y mensaje enviado');
+  actualizarBadgePanel();
+  abrirModalTecnico(ordenId);
+}
+
+async function adminRechazarAutz(ordenId, idx) {
+  const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId+'&select=autorizaciones', {
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  });
+  const rows = await resp.json();
+  const autzs = [...(rows[0]?.autorizaciones||[])];
+  autzs[idx] = {...autzs[idx], estado_admin:'rechazado'};
+  await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId, {
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify({autorizaciones:autzs})
+  });
+  showToast('Solicitud rechazada');
+  actualizarBadgePanel();
+  abrirModalTecnico(ordenId);
+}
+
+async function actualizarBadgePanel() {
+  try {
+    const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?select=autorizaciones&estado=neq.listo', {
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    });
+    const rows = await resp.json();
+    let pendientes = 0;
+    rows.forEach(o => {
+      (o.autorizaciones||[]).forEach(a => { if(!a.estado_admin) pendientes++; });
+    });
+    const badge = document.getElementById('panel-badge');
+    if(badge) {
+      badge.textContent = pendientes || '';
+      badge.style.display = pendientes ? '' : 'none';
+    }
+    // Also update topbar badge
+    const tb = document.getElementById('topbar-badge');
+    if(tb && usuarioActual?.rol==='admin') {
+      if(pendientes) { tb.textContent = pendientes+' por aprobar'; tb.style.display=''; }
+    }
+  } catch(e) {}
+}
+
 // ===== PANEL ADMIN =====
 async function renderPanel() {
-  const statsEl = document.getElementById('panel-stats');
-  const tecEl = document.getElementById('panel-tecnicos');
-  if(!statsEl) return;
-  statsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text3);">Cargando...</div>';
-  tecEl.innerHTML = '';
+  const alertasEl = document.getElementById('panel-alertas');
+  const listaEl = document.getElementById('panel-lista');
+  if(!alertasEl) return;
+  alertasEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">Cargando...</div>';
+  listaEl.innerHTML = '';
 
   try {
-    const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?select=id,nombre,servicio,estado,fecha,tecnico,checklist,marca&order=fecha.desc', {
+    const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?select=id,nombre,servicio,estado,fecha,tecnico,checklist,marca,autorizaciones,aviso_admin_listo,tel,color_vehiculo,referencia,presupuesto,repuestos&order=fecha.desc', {
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
     });
     const ordenes = await resp.json();
 
-    const total = ordenes.length;
-    const pendientes = ordenes.filter(o=>o.estado==='pendiente').length;
-    const en_proceso = ordenes.filter(o=>o.estado==='en_proceso').length;
-    const listas = ordenes.filter(o=>o.estado==='listo').length;
-
-    // Stats generales
-    statsEl.innerHTML = `
-      <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-lbl">TOTAL</div></div>
-      <div class="stat-card"><div class="stat-val" style="color:var(--amber)">${pendientes}</div><div class="stat-lbl">PENDIENTES</div></div>
-      <div class="stat-card"><div class="stat-val" style="color:var(--blue)">${en_proceso}</div><div class="stat-lbl">EN PROCESO</div></div>`;
-
-    // Panel por tecnico
-    const tecnicos = ['Alonso','Andres','Dario'];
-    const sinAsignar = ordenes.filter(o=>!o.tecnico && o.estado !== 'listo');
-
-    let html = '';
-
-    tecnicos.forEach(tec => {
-      const misOrdenes = ordenes.filter(o => o.tecnico === tec && o.estado !== 'listo');
-      const misPend = misOrdenes.filter(o=>o.estado==='pendiente').length;
-      const misProc = misOrdenes.filter(o=>o.estado==='en_proceso').length;
-
-      html += `
-      <div class="card" style="margin-bottom:14px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:36px;height:36px;border-radius:50%;background:var(--green-dim);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;color:var(--green);font-weight:700;">${tec[0]}</div>
-            <div>
-              <div style="font-size:15px;font-weight:600;">${tec}</div>
-              <div style="font-size:11px;color:var(--text3);">${misOrdenes.length} orden${misOrdenes.length!==1?'es':''} activa${misOrdenes.length!==1?'s':''}</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:6px;">
-            ${misPend?`<span class="badge badge-amber"><span class="badge-dot"></span>${misPend} pend.</span>`:''}
-            ${misProc?`<span class="badge badge-blue"><span class="badge-dot"></span>${misProc} proceso</span>`:''}
-            ${!misOrdenes.length?`<span style="font-size:12px;color:var(--green);">Libre ✓</span>`:''}
-          </div>
-        </div>`;
-
-      if(misOrdenes.length) {
-        html += `<div style="display:flex;flex-direction:column;gap:6px;">`;
-        misOrdenes.forEach(o => {
-          // Calcular progreso checklist
-          const CHECKLISTS_DATA = {
-            'Mantenimiento Full': 5,'Despinche': 2,'Lavada': 3,'Reparacion de Tapas': 3
-          };
-          const chk = o.checklist || {};
-          const total_items = CHECKLISTS_DATA[o.servicio] || 0;
-          const custom = (chk.custom||[]).length;
-          const totalChk = total_items + custom;
-          let doneChk = 0;
-          for(let i=0;i<total_items;i++) { if(chk[i]&&chk[i].done) doneChk++; }
-          (chk.custom||[]).forEach(c => { if(c.done) doneChk++; });
-          const pct = totalChk ? Math.round(doneChk/totalChk*100) : 0;
-          const mins = Math.round((Date.now()-new Date(o.fecha))/60000);
-          const tiempo = mins < 60 ? mins+'m' : Math.round(mins/60)+'h';
-
-          html += `
-          <div onclick="abrirModalTecnico('${o.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-              <span style="font-family:var(--mono);font-size:11px;color:var(--green);">${o.id}</span>
-              <div style="display:flex;align-items:center;gap:6px;">
-                <span style="font-size:10px;color:var(--text3);">⏱ ${tiempo}</span>
-                ${o.estado==='en_proceso'?'<span class="badge badge-blue" style="font-size:10px;padding:2px 7px;">En proceso</span>':'<span class="badge badge-amber" style="font-size:10px;padding:2px 7px;">Pendiente</span>'}
-              </div>
-            </div>
-            <div style="font-size:13px;font-weight:500;margin-bottom:2px;">${o.nombre}</div>
-            <div style="font-size:11px;color:var(--text2);">${o.servicio}${o.marca?' · '+o.marca:''}</div>
-            ${totalChk ? `
-            <div style="margin-top:8px;">
-              <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden;">
-                <div style="height:100%;width:${pct}%;background:${pct===100?'var(--green)':'var(--blue)'};border-radius:2px;transition:width .3s;"></div>
-              </div>
-              <div style="font-size:10px;color:var(--text3);margin-top:3px;">${doneChk}/${totalChk} pasos · ${pct}%</div>
-            </div>` : ''}
-          </div>`;
-        });
-        html += `</div>`;
+    // Actualizar badges en pestanas
+    const counts = {
+      pendiente: ordenes.filter(o=>o.estado==='pendiente').length,
+      en_proceso: ordenes.filter(o=>o.estado==='en_proceso').length,
+      listo: ordenes.filter(o=>o.estado==='listo').length,
+      entregada: ordenes.filter(o=>o.estado==='entregada').length,
+    };
+    ['pendiente','en_proceso','listo','entregada'].forEach(est => {
+      const tab = document.getElementById('ptab-'+est);
+      if(tab) {
+        const labels = {pendiente:'Pendientes',en_proceso:'En proceso',listo:'Terminadas',entregada:'Entregadas'};
+        tab.textContent = labels[est] + (counts[est]?' ('+counts[est]+')':'');
       }
-      html += `</div>`;
     });
 
-    // Sin asignar
-    if(sinAsignar.length) {
-      html += `
-      <div class="card" style="border-color:rgba(255,179,0,0.2);">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-          <div style="width:36px;height:36px;border-radius:50%;background:var(--amber-dim);display:flex;align-items:center;justify-content:center;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-          </div>
-          <div>
-            <div style="font-size:15px;font-weight:600;">Sin asignar</div>
-            <div style="font-size:11px;color:var(--amber);">${sinAsignar.length} orden${sinAsignar.length!==1?'es':''} sin técnico</div>
-          </div>
+    // Alertas globales (autorizaciones pendientes + listas para aviso)
+    let alertasHTML = '';
+
+    // Bicicletas listas esperando aviso al cliente
+    const listasParaAviso = ordenes.filter(o=>o.estado==='listo'&&o.aviso_admin_listo);
+    if(listasParaAviso.length) {
+      alertasHTML += `<div class="card" style="border-color:rgba(0,230,118,0.4);background:rgba(0,230,118,0.04);margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--green-dim);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🎉</div>
+          <div><div style="font-size:14px;font-weight:600;color:var(--green);">${listasParaAviso.length} bicicleta${listasParaAviso.length!==1?'s':''} lista${listasParaAviso.length!==1?'s':''} para entrega</div>
+          <div style="font-size:11px;color:var(--text3);">Avisa al cliente que puede pasar</div></div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-        ${sinAsignar.map(o=>`
-          <div onclick="abrirModalTecnico('${o.id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;">
-            <div style="display:flex;justify-content:space-between;">
-              <span style="font-family:var(--mono);font-size:11px;color:var(--green);">${o.id}</span>
-              <span class="badge badge-amber" style="font-size:10px;padding:2px 7px;">Sin asignar</span>
-            </div>
-            <div style="font-size:13px;font-weight:500;margin-top:2px;">${o.nombre}</div>
-            <div style="font-size:11px;color:var(--text2);">${o.servicio}</div>
-          </div>`).join('')}
-        </div>
+        ${listasParaAviso.map(o=>`
+        <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+            <span style="font-family:var(--mono);font-size:11px;color:var(--green);">${o.id}</span>
+            <span class="badge badge-green" style="font-size:10px;">Lista ✓</span>
+          </div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:2px;">${o.nombre}</div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:8px;">${o.servicio}${o.marca?' · '+o.marca:''} · ${o.tecnico||'Sin asignar'}</div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="adminAvisarListoCliente('${o.id}','${o.nombre}','${o.tel}')" style="flex:1;background:#25D366;color:white;border:none;border-radius:7px;padding:8px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;">Enviar WhatsApp</button>
+            <button onclick="marcarEntregada('${o.id}')" style="background:var(--bg4);color:var(--text2);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-family:var(--sans);font-size:12px;cursor:pointer;">Marcar entregada</button>
+          </div>
+        </div>`).join('')}
       </div>`;
     }
 
-    tecEl.innerHTML = html;
+    // Autorizaciones pendientes de admin
+    let autzPend = [];
+    ordenes.forEach(o => {
+      (o.autorizaciones||[]).forEach((a,i) => {
+        if(a.estado_admin==='pendiente_admin') autzPend.push({...a, ordenId:o.id, nombre:o.nombre, tel:o.tel, idx:i});
+      });
+    });
+    if(autzPend.length) {
+      alertasHTML += `<div class="card" style="border-color:rgba(255,179,0,0.3);background:rgba(255,179,0,0.04);margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--amber-dim);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">⚠️</div>
+          <div><div style="font-size:14px;font-weight:600;color:var(--amber);">${autzPend.length} autorización${autzPend.length!==1?'es':''} pendiente${autzPend.length!==1?'s':''}</div>
+          <div style="font-size:11px;color:var(--text3);">Técnicos esperan tu aprobación</div></div>
+        </div>
+        ${autzPend.map(a=>`
+        <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">${a.ordenId} · ${a.nombre}</div>
+          <div style="font-size:13px;font-weight:500;margin-bottom:8px;">🔧 ${a.repuesto}</div>
+          <div style="display:flex;gap:6px;margin-bottom:6px;">
+            <div style="position:relative;flex:1;"><span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;">$</span>
+            <input type="number" id="admin-precio-panel-${a.ordenId}-${a.idx}" placeholder="Precio del repuesto" style="width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--sans);font-size:12px;padding:8px 8px 8px 22px;outline:none;"></div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="adminEnviarAutzPanel('${a.ordenId}',${a.idx},'${a.nombre}','${a.tel}')" style="flex:1;background:var(--green);color:#000;border:none;border-radius:7px;padding:8px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;">Aprobar y enviar WA</button>
+            <button onclick="adminRechazarAutz('${a.ordenId}',${a.idx})" style="background:var(--red-dim);color:var(--red);border:1px solid rgba(255,23,68,.2);border-radius:7px;padding:8px 10px;font-size:12px;cursor:pointer;">Rechazar</button>
+          </div>
+        </div>`).join('')}
+      </div>`;
+    }
+
+    alertasEl.innerHTML = alertasHTML || '';
+    _panelOrdenes = ordenes;
+
+    // Renderizar lista segun tab activo
+    const tabActivo = document.querySelector('#panel-tabs .filter-tab.active');
+    const estadoActivo = tabActivo ? tabActivo.id.replace('ptab-','') : 'pendiente';
+    renderPanelLista(ordenes, estadoActivo);
+
   } catch(e) {
-    statsEl.innerHTML = '<div style="grid-column:1/-1;color:var(--text2);font-size:13px;">Error cargando datos</div>';
+    alertasEl.innerHTML = '<div style="color:var(--text2);font-size:13px;">Error cargando datos: '+e.message+'</div>';
   }
+}
+
+let _panelOrdenes = [];
+function cambiarTabPanel(estado, el) {
+  document.querySelectorAll('#panel-tabs .filter-tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  if(_panelOrdenes.length) {
+    renderPanelLista(_panelOrdenes, estado);
+  } else {
+    renderPanel();
+  }
+}
+
+function renderPanelLista(ordenes, estado) {
+  const listaEl = document.getElementById('panel-lista');
+  if(!listaEl) return;
+
+  if(estado === 'nomina') {
+    renderNomina(ordenes);
+    return;
+  }
+
+  const filtradas = ordenes.filter(o=>o.estado===estado);
+
+  if(!filtradas.length) {
+    const labels = {pendiente:'pendientes',en_proceso:'en proceso',listo:'terminadas',entregada:'entregadas'};
+    listaEl.innerHTML = `<div class="empty"><div class="empty-icon">🔧</div><div class="empty-text">No hay órdenes ${labels[estado]||estado}</div></div>`;
+    return;
+  }
+
+  const CHECKLISTS_SIZE = {'Mantenimiento Full':5,'Despinche':2,'Lavada':3,'Reparacion de Tapas':3};
+
+  let html = `<div style="font-size:12px;color:var(--text3);margin-bottom:10px;font-weight:500;">${filtradas.length} orden${filtradas.length!==1?'es':''}</div>`;
+
+  filtradas.forEach(o => {
+    const chk = o.checklist || {};
+    const total_items = CHECKLISTS_SIZE[o.servicio] || 0;
+    const custom = (chk.custom||[]).length;
+    const totalChk = total_items + custom;
+    let doneChk = 0;
+    for(let i=0;i<total_items;i++) { if(chk[i]&&chk[i].done) doneChk++; }
+    (chk.custom||[]).forEach(c => { if(c.done) doneChk++; });
+    const pct = totalChk ? Math.round(doneChk/totalChk*100) : 0;
+    const mins = Math.round((Date.now()-new Date(o.fecha))/60000);
+    const tiempo = mins < 60 ? mins+'m' : mins < 1440 ? Math.floor(mins/60)+'h '+( mins%60)+'m' : Math.floor(mins/1440)+'d';
+    const estadoBadgeStr = estado==='pendiente'?'<span class="badge badge-amber" style="font-size:10px;padding:2px 8px;">Pendiente</span>':
+      estado==='en_proceso'?'<span class="badge badge-blue" style="font-size:10px;padding:2px 8px;">En proceso</span>':
+      estado==='listo'?'<span class="badge badge-green" style="font-size:10px;padding:2px 8px;">Lista ✓</span>':
+      '<span class="badge" style="font-size:10px;padding:2px 8px;background:var(--bg4);color:var(--text2);">Entregada</span>';
+
+    html += `
+    <div onclick="abrirModalTecnico('${o.id}')" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--green);margin-bottom:3px;">${o.id}</div>
+          <div style="font-size:15px;font-weight:600;">${o.nombre}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px;">${o.servicio}${o.marca?' · '+o.marca:''}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+          ${estadoBadgeStr}
+          <span style="font-size:10px;color:var(--text3);">⏱ ${tiempo}</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:var(--green-dim);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--green);">${(o.tecnico||'?')[0]}</div>
+          <span style="font-size:12px;color:var(--text2);">${o.tecnico||'Sin asignar'}</span>
+        </div>
+        ${totalChk && estado==='en_proceso' ? `
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:80px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:${pct===100?'var(--green)':'var(--blue)'};border-radius:2px;"></div>
+          </div>
+          <span style="font-size:10px;color:var(--text3);">${pct}%</span>
+        </div>` : ''}
+        ${estado==='listo' ? `
+          <div style="display:flex;gap:5px;">
+            <button onclick="event.stopPropagation();adminAvisarListoCliente('${o.id}','${o.nombre}','${o.tel}')" style="background:#25D366;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;">Enviar WA</button>
+            <button onclick="event.stopPropagation();marcarEntregada('${o.id}')" style="background:var(--bg4);color:var(--text2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;">Entregada ✓</button>
+          </div>` : ''}
+        ${estado==='entregada' ? `<span style="font-size:10px;color:var(--text3);">Entregada ✓</span>` : ''}
+      </div>
+    </div>`;
+  });
+
+  listaEl.innerHTML = html;
+}
+
+async function marcarEntregada(ordenId) {
+  await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId, {
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body: JSON.stringify({estado:'entregada', aviso_admin_listo:false})
+  });
+  showToast('Orden marcada como entregada');
+  actualizarBadge();
+  renderPanel();
+}
+
+async function adminEnviarAutzPanel(ordenId, idx, nombreCliente, telCliente) {
+  const precioInput = document.getElementById('admin-precio-panel-'+ordenId+'-'+idx);
+  const precio = precioInput ? precioInput.value : '';
+  if(!precio) { showToast('Escribe el precio del repuesto'); return; }
+  const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId+'&select=autorizaciones', {
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  });
+  const rows = await resp.json();
+  const auths = rows[0]?.autorizaciones || [];
+  if(!auths[idx]) return;
+  auths[idx].precio = precio;
+  auths[idx].estado_admin = 'aprobada_admin';
+  await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId, {
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body: JSON.stringify({autorizaciones: auths})
+  });
+  const cfg2 = JSON.parse(localStorage.getItem('vt_config')||'{}');
+  const taller = cfg2.nombre||'ReparaTuEco';
+  const msg = `Hola ${nombreCliente} 👋
+
+Revisamos tu bicicleta (Orden: *${ordenId}*) y necesita:
+
+🔧 *${auths[idx].repuesto}*
+💰 Costo: *$${Number(precio).toLocaleString('es-CO')}*
+
+¿Autorizas el cambio?
+✅ Responde *SÍ* para autorizar
+❌ Responde *NO* para no autorizar
+
+*${taller}* 🚲⚡`;
+  let tel = telCliente.replace(/\D/g,'');
+  if(!tel.startsWith('57')) tel='57'+tel;
+  window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(msg),'_blank');
+  showToast('Aprobado y WA enviado');
+  renderPanel();
+}
+
+
+
+
+async function adminEnviarAutzModal(ordenId, idx) {
+  const precioInput = document.getElementById('precio-autz-modal-'+ordenId+'-'+idx);
+  const precioAdmin = precioInput ? precioInput.value : '';
+  if(!precioAdmin) { showToast('Escribe el precio del repuesto'); return; }
+  const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId+'&select=autorizaciones,nombre,tel', {
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  });
+  const rows = await resp.json();
+  const o = rows[0];
+  if(!o) return;
+  const auths = o.autorizaciones || [];
+  const a = auths[idx];
+  if(!a) return;
+  auths[idx].precio = precioAdmin;
+  auths[idx].estado_admin = 'aprobada_admin';
+  await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId, {
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body: JSON.stringify({autorizaciones: auths})
+  });
+  const cfg2 = JSON.parse(localStorage.getItem('vt_config') || '{}');
+  const taller = cfg2.nombre || 'ReparaTuEco';
+  const nombre = a.nombre_cliente || o.nombre;
+  const msg = `Hola ${nombre} 👋
+
+Revisamos tu bicicleta eléctrica (Orden: *${ordenId}*) y encontramos que necesita el siguiente repuesto:
+
+🔧 *${a.repuesto}*
+💰 Costo: *$${Number(precioAdmin).toLocaleString('es-CO')}*
+
+¿Autorizas el cambio?
+✅ Responde *SÍ* para autorizar
+❌ Responde *NO* para no autorizar
+
+Esperamos tu respuesta. 🚲⚡`;
+  let tel = (a.tel_cliente || o.tel).replace(/\D/g, '');
+  if(!tel.startsWith('57')) tel = '57' + tel;
+  window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(msg), '_blank');
+  showToast('WA enviado al cliente');
+  abrirModalTecnico(ordenId);
+}
+
+async function adminAvisarListoCliente(ordenId, nombreCliente, telCliente) {
+  const cfg2 = JSON.parse(localStorage.getItem('vt_config') || '{}');
+  const taller = cfg2.nombre || 'ReparaTuEco';
+  const dir = cfg2.dir || '';
+  const telTaller = cfg2.tel || '';
+  const msg = `Hola ${nombreCliente} 🎉
+
+¡Tu bicicleta eléctrica ya está lista para recoger!
+
+*Orden:* ${ordenId}
+*Taller:* ${taller}${dir?'
+📍 '+dir:''}${telTaller?'
+📞 '+telTaller:''}
+
+Puedes pasar a recogerla cuando quieras. 🚲⚡`;
+  let tel = telCliente.replace(/\D/g,'');
+  if(!tel.startsWith('57')) tel='57'+tel;
+  window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(msg),'_blank');
+  // Quitar flag de aviso pendiente
+  await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId, {
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body: JSON.stringify({aviso_admin_listo: false})
+  });
+  actualizarBadge();
+  renderPanel();
+  showToast('WhatsApp enviado al cliente');
+}
+
+
+// ===== NOMINA =====
+let nominaDesde = '';
+let nominaHasta = '';
+
+function renderNomina(ordenes) {
+  const listaEl = document.getElementById('panel-lista');
+  if(!listaEl) return;
+
+  // Default: current month
+  const hoy = new Date();
+  const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0];
+  const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0).toISOString().split('T')[0];
+  if(!nominaDesde) nominaDesde = primerDia;
+  if(!nominaHasta) nominaHasta = ultimoDia;
+
+  // Filter by date range and only entregadas/listas
+  const filtradas = ordenes.filter(o => {
+    if(!['listo','entregada'].includes(o.estado)) return false;
+    const fecha = o.fecha ? o.fecha.split('T')[0] : '';
+    return fecha >= nominaDesde && fecha <= nominaHasta;
+  });
+
+  const tecnicos = ['Alonso','Andres','Dario'];
+
+  let html = `
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:16px;">
+    <div class="card-title" style="margin-bottom:12px;">Periodo del reporte</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div>
+        <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">Desde</label>
+        <input type="date" id="nomina-desde" value="${nominaDesde}" onchange="nominaDesde=this.value;renderNomina(_panelOrdenes)" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:8px 10px;outline:none;">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">Hasta</label>
+        <input type="date" id="nomina-hasta" value="${nominaHasta}" onchange="nominaHasta=this.value;renderNomina(_panelOrdenes)" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:8px 10px;outline:none;">
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text3);">${filtradas.length} servicio${filtradas.length!==1?'s':''} completado${filtradas.length!==1?'s':''} en el periodo</div>
+  </div>`;
+
+  if(!filtradas.length) {
+    html += '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No hay servicios completados en este periodo</div></div>';
+    listaEl.innerHTML = html;
+    return;
+  }
+
+  tecnicos.forEach(tec => {
+    const misOrdenes = filtradas.filter(o => o.tecnico === tec);
+    if(!misOrdenes.length) return;
+
+    const totalServicios = misOrdenes.length;
+    const totalPresupuesto = misOrdenes.reduce((s,o) => s + Number(o.presupuesto||0), 0);
+    const totalRepuestos = misOrdenes.reduce((s,o) => s + (o.repuestos||[]).reduce((sr,r)=>sr+Number(r.precio||0),0), 0);
+    const totalGeneral = totalPresupuesto + totalRepuestos;
+
+    // Count by service type
+    const porServicio = {};
+    misOrdenes.forEach(o => {
+      porServicio[o.servicio] = (porServicio[o.servicio]||0) + 1;
+    });
+
+    html += `
+    <div class="card" style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--green-dim);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:15px;color:var(--green);font-weight:700;flex-shrink:0;">${tec[0]}</div>
+        <div style="flex:1;">
+          <div style="font-size:16px;font-weight:600;">${tec}</div>
+          <div style="font-size:12px;color:var(--text3);">${totalServicios} servicio${totalServicios!==1?'s':''} completado${totalServicios!==1?'s':''}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green);">$${totalGeneral.toLocaleString('es-CO')}</div>
+          <div style="font-size:10px;color:var(--text3);">Total facturado</div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:12px;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Servicios realizados</div>
+        ${Object.entries(porServicio).map(([serv,cant])=>`
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--border);">
+          <span>${serv}</span>
+          <span style="font-weight:600;">${cant}x</span>
+        </div>`).join('')}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px;text-align:center;">
+          <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text);">$${totalPresupuesto.toLocaleString('es-CO')}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">Servicios</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px;text-align:center;">
+          <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text);">$${totalRepuestos.toLocaleString('es-CO')}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">Repuestos</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Detalle de ordenes</div>
+        ${misOrdenes.map(o=>`
+        <div onclick="abrirModalTecnico('${o.id}')" style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">
+          <div>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--green);">${o.id}</span>
+            <span style="font-size:12px;color:var(--text2);margin-left:8px;">${o.nombre}</span>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:12px;font-weight:500;">$${(Number(o.presupuesto||0)+(o.repuestos||[]).reduce((s,r)=>s+Number(r.precio||0),0)).toLocaleString('es-CO')}</div>
+            <div style="font-size:10px;color:var(--text3);">${o.servicio}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  });
+
+  // Sin asignar
+  const sinTec = filtradas.filter(o=>!o.tecnico);
+  if(sinTec.length) {
+    html += `<div class="card" style="border-color:rgba(255,179,0,0.2);margin-bottom:14px;">
+      <div style="font-size:14px;font-weight:600;color:var(--amber);margin-bottom:10px;">Sin técnico asignado (${sinTec.length})</div>
+      ${sinTec.map(o=>`
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <span style="font-family:var(--mono);font-size:11px;color:var(--green);">${o.id}</span>
+        <span>${o.nombre}</span>
+        <span style="color:var(--text2);">${o.servicio}</span>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  listaEl.innerHTML = html;
 }
 
 // ===== INIT =====
 aplicarConfig();
+  if(typeof actualizarBadgePanel === "function") setTimeout(actualizarBadgePanel, 1500);
 // Restaurar sesion o mostrar login
 (async () => {
   const saved = sessionStorage.getItem('rte_user');
