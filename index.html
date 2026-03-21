@@ -658,6 +658,7 @@ function enviarWA(tipo, orden) {
     const vehiculo=marca||ref?`
 
 Vehículo: ${[marca,ref,color].filter(Boolean).join(' · ')}`:'';
+    const trackUrl = 'https://reparatueco.github.io/reparatueco/estado.html?orden='+ordenNum;
     msg=`Hola ${nombre} 👋
 
 Gracias por confiar en *${taller}*!
@@ -665,6 +666,9 @@ Gracias por confiar en *${taller}*!
 Tu bicicleta eléctrica quedó registrada con la orden *${ordenNum}*.${vehiculo}
 
 Servicio: ${serv}
+
+Puedes seguir el estado de tu bicicleta en tiempo real aquí:
+${trackUrl}
 
 Te avisaremos cuando esté lista. 🚲⚡`;
     tel=tel.replace(/\D/g,''); if(!tel.startsWith('57')) tel='57'+tel;
