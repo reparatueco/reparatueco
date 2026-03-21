@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0a0a">
+<title>Estado de tu bicicleta — ReparaTuEco</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:#00e676;--green-dark:#00b248;--green-dim:rgba(0,230,118,0.12);
+  --bg:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;--bg4:#222;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --text:#f0f0f0;--text2:#888;--text3:#555;
+  --amber:#ffb300;--amber-dim:rgba(255,179,0,0.12);
+  --blue:#2979ff;--blue-dim:rgba(41,121,255,0.12);
+  --red:#ff1744;
+  --radius:12px;--radius-sm:8px;
+  --mono:'Space Mono',monospace;--sans:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.5;}
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;gap:14px;}
+.header-logo{font-family:var(--mono);font-size:14px;color:var(--green);letter-spacing:2px;}
+.header-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.container{max-width:480px;margin:0 auto;padding:20px 16px 40px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+.orden-num{font-family:var(--mono);font-size:22px;color:var(--green);letter-spacing:2px;margin-bottom:4px;}
+.orden-cliente{font-size:17px;font-weight:600;margin-bottom:2px;}
+.orden-servicio{font-size:13px;color:var(--text2);}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:currentColor;}
+.badge-amber{background:var(--amber-dim);color:var(--amber);}
+.badge-blue{background:var(--blue-dim);color:#82b1ff;}
+.badge-green{background:var(--green-dim);color:var(--green);}
+.section-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;}
+.chk-item{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;transition:border-color .2s;}
+.chk-item.done{border-color:rgba(0,230,118,0.3);background:rgba(0,230,118,0.04);}
+.chk-item-row{display:flex;align-items:center;gap:10px;}
+.chk-circle{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.chk-circle.done{background:var(--green);border-color:var(--green);}
+.chk-label{font-size:14px;font-weight:500;}
+.chk-label.done{color:var(--text2);text-decoration:line-through;}
+.chk-foto{width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-top:10px;cursor:pointer;}
+.info-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);}
+.info-row:last-child{border-bottom:none;}
+.info-label{color:var(--text2);}
+.info-val{font-weight:500;text-align:right;max-width:60%;}
+.rep-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border);}
+.rep-row:last-child{border-bottom:none;}
+.rep-precio{font-family:var(--mono);font-size:12px;color:var(--green);}
+.progress-bar{height:4px;background:var(--bg3);border-radius:2px;margin:12px 0 4px;}
+.progress-fill{height:100%;background:var(--green);border-radius:2px;transition:width .5s;}
+.progress-label{font-size:11px;color:var(--text3);text-align:right;}
+.empty{text-align:center;padding:60px 20px;color:var(--text3);}
+.empty-icon{font-size:48px;margin-bottom:16px;opacity:.3;}
+.empty-text{font-size:15px;}
+.search-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;display:flex;gap:10px;margin-bottom:20px;}
+.search-box input{background:none;border:none;outline:none;color:var(--text);font-family:var(--sans);font-size:15px;flex:1;}
+.search-box button{background:var(--green);color:#000;border:none;border-radius:6px;padding:8px 16px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;}
+.loading{text-align:center;padding:40px;color:var(--text3);}
+.spinner{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.refresh-btn{display:flex;align-items:center;gap:6px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:12px;padding:5px 12px;cursor:pointer;font-family:var(--sans);margin-left:auto;}
+.timeline{position:relative;padding-left:24px;}
+.timeline::before{content:'';position:absolute;left:8px;top:4px;bottom:4px;width:2px;background:var(--border);}
+.timeline-item{position:relative;margin-bottom:16px;}
+.timeline-dot{position:absolute;left:-20px;top:3px;width:12px;height:12px;border-radius:50%;border:2px solid var(--border2);background:var(--bg);}
+.timeline-dot.done{background:var(--green);border-color:var(--green);}
+.timeline-dot.active{background:var(--amber);border-color:var(--amber);}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="header-logo">ReparaTuEco</div>
+    <div class="header-sub">Seguimiento de tu bicicleta</div>
+  </div>
+  <button class="refresh-btn" onclick="cargarOrden()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    Actualizar
+  </button>
+</div>
+
+<div class="container">
+  <div id="search-section">
+    <div style="text-align:center;margin:24px 0 20px;">
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px;">Consulta el estado de tu bicicleta</div>
+      <div style="font-size:13px;color:var(--text2);">Ingresa el número de orden que recibiste por WhatsApp</div>
+    </div>
+    <div class="search-box">
+      <input type="text" id="buscar-orden" placeholder="Ej: ORD-001" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')buscarOrden()">
+      <button onclick="buscarOrden()">Buscar</button>
+    </div>
+  </div>
+
+  <div id="contenido"></div>
+</div>
+
+<script>
+const SUPA_URL = 'https://hetnortmjclryromohpq.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhldG5vcnRtamNscnlyb21vaHBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNDgzMzUsImV4cCI6MjA4OTYyNDMzNX0.wqI9apG-MNM2l_7biuRqrTMzVh5LzdDALy7mF-H7lj0';
+
+const CHECKLISTS = {
+  'Mantenimiento Full': ['Revision de Baterias','Revision de Frenos','Lavada','Revision Electrica','Lista para entregar'],
+  'Despinche': ['Despinchando','Terminada lista para entrega'],
+  'Lavada': ['Lavando','Secado','Lista para la entrega'],
+  'Reparacion de Tapas': ['Reparando','Pintando','Lista para entrega'],
+};
+
+let ordenActual = null;
+
+function estadoBadge(e) {
+  if(e==='pendiente') return '<span class="badge badge-amber"><span class="badge-dot"></span>Pendiente</span>';
+  if(e==='en_proceso') return '<span class="badge badge-blue"><span class="badge-dot"></span>En proceso</span>';
+  if(e==='listo') return '<span class="badge badge-green"><span class="badge-dot"></span>Lista ✓</span>';
+  return '';
+}
+
+function formatFecha(iso) {
+  if(!iso) return '';
+  return new Date(iso).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+async function cargarOrden() {
+  if(!ordenActual) return;
+  mostrarOrden(ordenActual);
+  const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenActual+'&select=*', {
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  });
+  const rows = await resp.json();
+  if(rows && rows[0]) renderOrden(rows[0]);
+}
+
+async function buscarOrden() {
+  const id = document.getElementById('buscar-orden').value.trim();
+  if(!id) return;
+  ordenActual = id;
+  mostrarOrden(id);
+}
+
+function mostrarOrden(id) {
+  document.getElementById('contenido').innerHTML = '<div class="loading"><div class="spinner"></div>Buscando orden...</div>';
+  fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+id+'&select=*', {
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  })
+  .then(r=>r.json())
+  .then(rows => {
+    if(!rows || !rows.length) {
+      document.getElementById('contenido').innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-text">No encontramos la orden <strong>${id}</strong><br><span style="font-size:13px;color:var(--text3);">Verifica el número e intenta de nuevo</span></div>
+        </div>`;
+      return;
+    }
+    renderOrden(rows[0]);
+  })
+  .catch(e => {
+    document.getElementById('contenido').innerHTML = '<div class="empty"><div class="empty-text" style="color:var(--text2);">Error de conexión. Verifica tu internet.</div></div>';
+  });
+}
+
+function renderOrden(o) {
+  const checklist = o.checklist || {};
+  const items = CHECKLISTS[o.servicio] || [];
+  const customItems = checklist.custom || [];
+  const allItems = [...items.map((nombre,i)=>({nombre, done: checklist[i]?.done||false, foto: checklist[i]?.foto||null})),
+                    ...customItems.map(c=>({nombre:c.nombre, done:c.done||false, foto:c.foto||null}))];
+  const totalItems = allItems.length;
+  const doneItems = allItems.filter(x=>x.done).length;
+  const progPct = totalItems ? Math.round(doneItems/totalItems*100) : 0;
+
+  // Checklist HTML
+  let checklistHTML = '';
+  if(o.estado !== 'pendiente' && allItems.length) {
+    checklistHTML = `
+    <div class="card">
+      <div class="section-title">Estado del servicio</div>
+      ${totalItems ? `
+      <div class="progress-bar"><div class="progress-fill" style="width:${progPct}%"></div></div>
+      <div class="progress-label">${doneItems} de ${totalItems} pasos completados</div>
+      <div style="margin-top:14px;">` : ''}
+      ${allItems.map(item => `
+        <div class="chk-item ${item.done?'done':''}">
+          <div class="chk-item-row">
+            <div class="chk-circle ${item.done?'done':''}">
+              ${item.done?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':''}
+            </div>
+            <span class="chk-label ${item.done?'done':''}">${item.nombre}</span>
+            ${item.done?'<span style="font-size:11px;color:var(--green);margin-left:auto;">✓</span>':''}
+          </div>
+          ${item.foto?`<img class="chk-foto" src="${item.foto}" onclick="window.open('${item.foto}','_blank')" alt="${item.nombre}">`:''}
+        </div>`).join('')}
+      ${totalItems?'</div>':''}
+    </div>`;
+  } else if(o.estado === 'pendiente') {
+    checklistHTML = `
+    <div class="card" style="text-align:center;padding:20px;">
+      <div style="font-size:28px;margin-bottom:8px;">⏳</div>
+      <div style="font-size:14px;font-weight:500;margin-bottom:4px;">Tu bicicleta está en espera</div>
+      <div style="font-size:12px;color:var(--text2);">Pronto un técnico iniciará el trabajo</div>
+    </div>`;
+  }
+
+  // Diagnostico
+  const diagHTML = o.diagnostico ? `
+    <div class="card">
+      <div class="section-title">Diagnóstico del técnico</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7;">${o.diagnostico}</p>
+    </div>` : '';
+
+  // Repuestos
+  const reps = o.repuestos || [];
+  const repsHTML = reps.length ? `
+    <div class="card">
+      <div class="section-title">Repuestos utilizados</div>
+      ${reps.map(r=>`
+        <div class="rep-row">
+          <span>${r.nombre||'-'}</span>
+          <span class="rep-precio">${r.precio?'$'+Number(r.precio).toLocaleString('es-CO'):''}</span>
+        </div>`).join('')}
+    </div>` : '';
+
+  // Estado listo — mensaje especial
+  const listoHTML = o.estado === 'listo' ? `
+    <div class="card" style="border-color:rgba(0,230,118,0.3);background:rgba(0,230,118,0.04);text-align:center;padding:20px;">
+      <div style="font-size:36px;margin-bottom:8px;">🎉</div>
+      <div style="font-size:16px;font-weight:600;color:var(--green);margin-bottom:6px;">¡Tu bicicleta está lista!</div>
+      <div style="font-size:13px;color:var(--text2);">Puedes pasar a recogerla cuando quieras</div>
+    </div>` : '';
+
+  document.getElementById('search-section').style.display = 'none';
+  document.getElementById('contenido').innerHTML = `
+    ${listoHTML}
+    <div class="card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <div class="orden-num">${o.id}</div>
+          <div class="orden-cliente">${o.nombre}</div>
+          <div class="orden-servicio">${o.servicio}${o.marca?' · '+o.marca:''}</div>
+        </div>
+        ${estadoBadge(o.estado)}
+      </div>
+      <div class="info-row"><span class="info-label">Ingreso</span><span class="info-val">${formatFecha(o.fecha)}</span></div>
+      ${o.tecnico?`<div class="info-row"><span class="info-label">Técnico</span><span class="info-val">${o.tecnico}</span></div>`:''}
+      ${o.color_vehiculo?`<div class="info-row"><span class="info-label">Color</span><span class="info-val">${o.color_vehiculo}</span></div>`:''}
+    </div>
+    ${checklistHTML}
+    ${diagHTML}
+    ${repsHTML}
+    <div style="text-align:center;margin-top:20px;">
+      <button onclick="location.reload()" style="background:none;border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:13px;padding:10px 20px;cursor:pointer;font-family:var(--sans);">
+        🔄 Actualizar estado
+      </button>
+      <div style="margin-top:10px;">
+        <button onclick="document.getElementById('search-section').style.display='';document.getElementById('contenido').innerHTML='';ordenActual=null;" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:var(--sans);">Consultar otra orden</button>
+      </div>
+    </div>`;
+
+  // Auto-refresh cada 30 segundos
+  setTimeout(()=>{ if(ordenActual) cargarOrden(); }, 30000);
+}
+
+// Cargar desde URL automáticamente
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const orden = params.get('orden');
+  if(orden) {
+    ordenActual = orden;
+    document.getElementById('buscar-orden').value = orden;
+    mostrarOrden(orden);
+  }
+});
+</script>
+</body>
+</html>
