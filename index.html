@@ -580,7 +580,20 @@ function showToast(msg) {
   const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
 }
-function closeModal(e) { if(!e||e.target===document.getElementById('modal-overlay')) document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModal(e) {
+  if(!e || e.target===document.getElementById('modal-overlay')) {
+    // Auto-save if there's an open modal with data
+    const modalBody = document.getElementById('modal-body');
+    if(modalBody) {
+      const diagInputs = modalBody.querySelectorAll('textarea[id^="diag-"]');
+      diagInputs.forEach(inp => {
+        const id = inp.id.replace('diag-','');
+        if(id) guardarDiagRepuestos(id).catch(()=>{});
+      });
+    }
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+}
 function estadoBadge(e) {
   if(e==='pendiente') return '<span class="badge badge-amber"><span class="badge-dot"></span>Pendiente</span>';
   if(e==='en_proceso') return '<span class="badge badge-blue"><span class="badge-dot"></span>En proceso</span>';
@@ -808,34 +821,52 @@ Te avisaremos cuando esté lista. 🚲⚡`;
 // ===== TÉCNICO =====
 let filtroTec='pendiente';
 let filtroTecnico='todos';
-async function renderTecnico(estado) {
+async function renderTecnico(estado, intento) {
   filtroTec = estado;
+  intento = intento || 1;
   const el = document.getElementById('lista-tecnico');
+  if(!el) return;
   el.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
   try {
-    // Usar fetch directo para evitar problemas con Web Workers de Supabase
-    let url = SUPA_URL + '/rest/v1/ordenes?select=id,nombre,servicio,estado,fecha,tel,descripcion,marca,referencia,color_vehiculo,presupuesto,diagnostico,repuestos,fotos_ingreso,fotos_proceso,tecnico&estado=eq.' + estado + '&order=fecha.desc';
+    // Para "listos" incluir también pendiente_admin (esperando aprobación admin)
+    let url;
+    if(estado === 'listo') {
+      url = SUPA_URL + '/rest/v1/ordenes?select=id,nombre,servicio,estado,fecha,tel,descripcion,marca,referencia,color_vehiculo,presupuesto,diagnostico,repuestos,fotos_ingreso,fotos_proceso,tecnico&estado=in.(listo,pendiente_admin)&order=fecha.desc';
+    } else {
+      url = SUPA_URL + '/rest/v1/ordenes?select=id,nombre,servicio,estado,fecha,tel,descripcion,marca,referencia,color_vehiculo,presupuesto,diagnostico,repuestos,fotos_ingreso,fotos_proceso,tecnico&estado=eq.' + estado + '&order=fecha.desc';
+    }
     if(filtroTecnico === 'sin_asignar') url += '&tecnico=is.null';
     else if(filtroTecnico !== 'todos') url += '&tecnico=eq.' + encodeURIComponent(filtroTecnico);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
     const resp = await fetch(url, {
-      headers: {
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
-        'Content-Type': 'application/json'
-      }
+      headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'},
+      signal: controller.signal
     });
-    if(!resp.ok) throw new Error('HTTP ' + resp.status + ': ' + await resp.text());
+    clearTimeout(timeout);
+
+    if(!resp.ok) throw new Error('HTTP ' + resp.status);
     const rows = await resp.json();
-    console.log('DEBUG filtroTecnico:', filtroTecnico, '| filas:', rows.length, '| tecnicos:', rows.map(r=>r.tecnico));
     if(!rows.length){
       el.innerHTML='<div class="empty"><div class="empty-icon">🔧</div><div class="empty-text">No hay ordenes '+(estado==='pendiente'?'pendientes':estado==='en_proceso'?'en proceso':'listas')+'</div></div>';
       return;
     }
     el.innerHTML = renderOrdenCards(rows, 'abrirModalTecnico');
   } catch(e) {
-    const msg = (e && e.message) ? e.message : String(e);
-    el.innerHTML = '<div class="empty"><div class="empty-icon">!</div><div class="empty-text" style="font-size:12px;color:var(--text2);">'+msg+'<br><br><button class="btn btn-ghost btn-sm" onclick="renderTecnico(filtroTec)">Reintentar</button></div></div>';
-    console.error('renderTecnico error:', msg);
+    const sinInternet = !navigator.onLine;
+    if(intento < 3 && !sinInternet) {
+      // Reintentar automáticamente hasta 3 veces
+      setTimeout(() => renderTecnico(estado, intento + 1), 2000 * intento);
+      el.innerHTML = '<div class="loading"><div class="spinner"></div>Reconectando... (intento '+intento+'/3)</div>';
+      return;
+    }
+    el.innerHTML = `<div class="empty">
+      <div style="font-size:36px;margin-bottom:8px;">📡</div>
+      <div class="empty-text">${sinInternet ? 'Sin conexión a internet' : 'Error de conexión'}</div>
+      <div style="font-size:11px;color:var(--text3);margin:6px 0 14px;">Verifica tu conexión e intenta de nuevo</div>
+      <button class="btn btn-ghost btn-sm" onclick="renderTecnico('${estado}',1)">↻ Reintentar</button>
+    </div>`;
   }
 }
 
@@ -876,7 +907,7 @@ async function abrirModalTecnico(id) {
   const repHTML=(o.repuestos||[]).map((r,i)=>`
     <div class="repuesto-row" id="rep-${id}-${i}">
       <input type="text" value="${r.nombre||''}" placeholder="Repuesto" id="repn-${id}-${i}">
-      ${esAdmin ? `<div style="position:relative;"><span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;">$</span><input type="number" value="${r.precio||''}" placeholder="Precio" id="repp-${id}-${i}" oninput="recalcularTotal('${id}',${o.presupuesto||0})" style="padding-left:22px!important;"></div>` : `<span style="font-size:13px;color:var(--green);font-family:var(--mono);min-width:80px;text-align:right;">${r.precio?'$'+Number(r.precio).toLocaleString('es-CO'):'Sin precio'}</span>`}
+      <div style="position:relative;"><span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;">$</span><input type="number" value="${r.precio||''}" placeholder="Precio" id="repp-${id}-${i}" oninput="recalcularTotal('${id}',${o.presupuesto||0})" style="padding-left:22px!important;"></div>
       <button class="btn-icon" onclick="elimRep('${id}',${i})">×</button>
     </div>`).join('');
   const fotosHTML=(o.fotos_ingreso||[]).concat(o.fotos_proceso||[]).map(u=>`<img class="photo-thumb" src="${u}" onclick="window.open('${u}','_blank')">`).join('');
@@ -910,7 +941,6 @@ async function abrirModalTecnico(id) {
     </div>
     <div class="divider"></div>
     ${o.estado !== 'pendiente' ? `
-    ${renderChecklist(o)}
     <div style="margin-bottom:12px;">
       <div class="card-title">Repuestos</div>
       <div id="reps-${id}">${repHTML}</div>
@@ -990,7 +1020,14 @@ async function abrirModalTecnico(id) {
       <input type="file" id="fp-${o.id}" accept="image/*" capture="environment" multiple style="display:none" onchange="uploadProceso(this,'${o.id}')">
       <div class="upload-progress" id="prog-proceso" style="display:none"><div class="upload-progress-bar" id="prog-bar-proceso" style="width:0%"></div></div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:0;">${botones}<button class="btn btn-ghost" onclick="closeModal()">Cerrar</button></div>`;
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+      ${botones}
+      <button class="btn btn-primary" onclick="guardarYCerrar('${id}')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Guardar cambios
+      </button>
+      <button class="btn btn-ghost" onclick="guardarYCerrar('${id}',true)">Cerrar sin guardar</button>
+    </div>\`;
   setTimeout(()=>recalcularTotal(id, o.presupuesto||0), 50);
 }
 async function cambiarEstado(id, estado) {
@@ -1025,13 +1062,33 @@ async function cambiarTecnico(id, tecnico) {
   showToast('✓ Técnico actualizado');
 }
 async function guardarDiagRepuestos(id) {
-  const diag=document.getElementById('diag-'+id);
-  const {data:o}=await db.from('ordenes').select('repuestos').eq('id',id).single();
-  const reps=(o?.repuestos||[]).map((_,i)=>({
-    nombre:(document.getElementById(`repn-${id}-${i}`)?.value||''),
-    precio:(document.getElementById(`repp-${id}-${i}`)?.value||'')
-  }));
-  await db.from('ordenes').update({diagnostico:diag?.value||'',repuestos:reps}).eq('id',id);
+  const diag = document.getElementById('diag-'+id);
+  // Count repuesto rows dynamically
+  const repsDiv = document.getElementById('reps-'+id);
+  const reps = [];
+  if(repsDiv) {
+    const rows = repsDiv.querySelectorAll('.repuesto-row');
+    rows.forEach((row, i) => {
+      const nombre = (document.getElementById('repn-'+id+'-'+i) || row.querySelector('input[type="text"]'))?.value || '';
+      const precio = (document.getElementById('repp-'+id+'-'+i) || row.querySelector('input[type="number"]'))?.value || '';
+      if(nombre) reps.push({nombre, precio});
+    });
+  }
+  await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+id, {
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body: JSON.stringify({diagnostico: diag?.value||'', repuestos: reps})
+  });
+}
+
+async function guardarYCerrar(id, sinGuardar) {
+  if(!sinGuardar) {
+    await guardarDiagRepuestos(id);
+    showToast('✓ Cambios guardados');
+    ['vt_tec_pendiente','vt_tec_en_proceso','vt_tec_listo','vt_all_ordenes'].forEach(k=>localStorage.removeItem(k));
+    allOrdenes = [];
+  }
+  closeModal();
 }
 async function addRep(id) {
   const {data:o}=await db.from('ordenes').select('repuestos').eq('id',id).single();
@@ -1040,7 +1097,7 @@ async function addRep(id) {
   const i=reps.length-1;
   const el=document.getElementById('reps-'+id);
   const div=document.createElement('div'); div.className='repuesto-row'; div.id=`rep-${id}-${i}`;
-  div.innerHTML=`<input type="text" placeholder="Repuesto" id="repn-${id}-${i}"><input type="number" placeholder="Precio" id="repp-${id}-${i}"><button class="btn-icon" onclick="elimRep('${id}',${i})">×</button>`;
+  div.innerHTML=`<input type="text" placeholder="Repuesto" id="repn-${id}-${i}"><input type="number" placeholder="Precio" id="repp-${id}-${i}" oninput="recalcularTotal('${id}',0)"><button class="btn-icon" onclick="elimRep('${id}',${i})">×</button>`;
   el.appendChild(div);
 }
 async function elimRep(id, i) {
@@ -1505,7 +1562,7 @@ function getChecklist(servicio) {
   return CHECKLISTS[servicio] || [];
 }
 
-function renderChecklist(orden) {
+function renderChecklist(orden) { return ''; // Checklist desactivado
   const items = getChecklist(orden.servicio) || [];
   const checklist = orden.checklist || {};
   const itemsHTML = items.map((item, i) => {
@@ -1550,8 +1607,7 @@ function renderChecklist(orden) {
 
   return `
   <div style="margin-bottom:14px;">
-    <div class="card-title" style="margin-bottom:10px;">Estado del servicio</div>
-    ${itemsHTML || '<div style="color:var(--text3);font-size:13px;margin-bottom:8px;">Este servicio no tiene lista predefinida</div>'}
+    ${itemsHTML || ''}
     ${customHTML}
     <div style="display:flex;gap:8px;margin-top:8px;">
       <input type="text" id="nuevo-chk-${orden.id}" placeholder="Agregar paso adicional..." style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:9px 12px;outline:none;">
