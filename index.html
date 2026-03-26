@@ -3331,27 +3331,30 @@ async function renderCajaDelDia(el) {
         headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
       });
       const rj = await rc.json();
-      if(rj && rj.length) desde = rj[0].fecha;
+      if(rj && rj.length && rj[0].fecha) {
+        // Convert to ISO and encode + sign for URL safety
+        desde = new Date(rj[0].fecha).toISOString().replace(/\+/g, '%2B');
+      }
     } catch(e) {}
 
     const desdeLabel = desde === hoy+'T00:00:00' ? 'inicio del día' :
       new Date(desde).toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
 
     // Ventas DESDE el ultimo cierre
-    const rv = await fetch(SUPA_URL+'/rest/v1/ventas?select=total,pago_efectivo,pago_nequi,pago_transferencia,pago_tarjeta&fecha=gte.'+encodeURIComponent(desde), {
+    const rv = await fetch(SUPA_URL+'/rest/v1/ventas?select=total,pago_efectivo,pago_nequi,pago_transferencia,pago_tarjeta&fecha=gte.'+desde, {
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
     });
     const ventas = rv.ok ? await rv.json() : [];
 
     // Movimientos DESDE el ultimo cierre
-    const rm = await fetch(SUPA_URL+'/rest/v1/caja?fecha=gte.'+encodeURIComponent(desde)+'&order=fecha.desc&select=*', {
+    const rm = await fetch(SUPA_URL+'/rest/v1/caja?fecha=gte.'+desde+'&order=fecha.desc&select=*', {
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
     });
     const todosMovs = rm.ok ? await rm.json() : [];
     const movCaja = todosMovs.filter(m => m.tipo === 'ingreso' || m.tipo === 'gasto');
 
     // Ordenes entregadas DESDE el ultimo cierre
-    const ro = await fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&fecha=gte.'+encodeURIComponent(desde)+'&select=presupuesto,repuestos', {
+    const ro = await fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&fecha=gte.'+desde+'&select=presupuesto,repuestos', {
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
     });
     const ordenes = ro.ok ? await ro.json() : [];
@@ -3963,22 +3966,59 @@ async function cierreCajaTurno() {
   try {
   const ultimoCierre = await obtenerUltimoCierre();
   const hoy = new Date().toISOString().split('T')[0];
-  const desde = ultimoCierre || hoy+'T00:00:00';
+  const desde = (ultimoCierre || hoy+'T00:00:00.000Z').replace(/\+/g, '%2B');
   const ahora = new Date().toISOString();
+  // desdeTs y ahoraTs para filtrar en JS
+  const desdeDate = new Date(desde);
+  const ahoraDate = new Date(ahora);
 
   const H = {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY};
+  const hoyStr = new Date().toISOString().split('T')[0];
+  
+  // Traer TODAS las ventas del dia y filtrar en JS por timestamp
   const [vResp, oResp, inResp, gaResp] = await Promise.all([
-    fetch(SUPA_URL+'/rest/v1/ventas?fecha=gte.'+desde+'&select=total,metodo_pago,pago_efectivo,pago_nequi,pago_transferencia,pago_tarjeta,items,cliente_nombre', {headers:H}),
-    fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&fecha=gte.'+desde+'&select=presupuesto,repuestos,nombre,servicio', {headers:H}),
-    fetch(SUPA_URL+'/rest/v1/caja?tipo=eq.ingreso&fecha=gte.'+desde+'&select=*', {headers:H}),
-    fetch(SUPA_URL+'/rest/v1/caja?tipo=eq.gasto&fecha=gte.'+desde+'&select=*', {headers:H})
+    fetch(SUPA_URL+'/rest/v1/ventas?select=total,metodo_pago,pago_efectivo,pago_nequi,pago_transferencia,pago_tarjeta,items,cliente_nombre,fecha,created_at', {headers:H}),
+    fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&select=presupuesto,repuestos,nombre,servicio,fecha', {headers:H}),
+    fetch(SUPA_URL+'/rest/v1/caja?tipo=eq.ingreso&select=*', {headers:H}),
+    fetch(SUPA_URL+'/rest/v1/caja?tipo=eq.gasto&select=*', {headers:H})
   ]);
 
-  const ventas = vResp.ok ? await vResp.json() : [];
-  const ordenes = oResp.ok ? await oResp.json() : [];
-  const ingresos = inResp.ok ? await inResp.json() : [];
-  const gastos = gaResp.ok ? await gaResp.json() : [];
+  const todasVentas = vResp.ok ? await vResp.json() : [];
+  const todasOrdenes = oResp.ok ? await oResp.json() : [];
+  const todosIngresos = inResp.ok ? await inResp.json() : [];
+  const todosGastos = gaResp.ok ? await gaResp.json() : [];
+
+  // Filtrar por timestamp - ambos en UTC via Date.getTime()
+  const desdeTs = new Date(desde).getTime();
+  const ahoraTs = new Date(ahora).getTime();
+  
+  console.log('CIERRE DEBUG desde:', desde, new Date(desde).toISOString());
+  console.log('CIERRE DEBUG ahora:', ahora);
+  console.log('CIERRE DEBUG todas ventas:', todasVentas.length, todasVentas.map(v=>({fecha:v.fecha,total:v.total})));
+  
+  const ventas = todasVentas.filter(v => {
+    if(!v.fecha) return false;
+    const t = new Date(v.fecha).getTime();
+    return t >= desdeTs && t <= ahoraTs;
+  });
+  const ordenes = todasOrdenes.filter(o => {
+    if(!o.fecha) return false;
+    const t = new Date(o.fecha).getTime();
+    return t >= desdeTs && t <= ahoraTs;
+  });
+  const ingresos = todosIngresos.filter(m => {
+    if(!m.fecha) return false;
+    const t = new Date(m.fecha).getTime();
+    return t >= desdeTs && t <= ahoraTs;
+  });
+  const gastos = todosGastos.filter(m => {
+    if(!m.fecha) return false;
+    const t = new Date(m.fecha).getTime();
+    return t >= desdeTs && t <= ahoraTs;
+  });
   const movs = [...ingresos, ...gastos];
+
+  showToast('Ventas del turno: '+ventas.length+' de '+todasVentas.length+' totales');
 
   const totVentas = ventas.reduce((s,v)=>s+Number(v.total||0),0);
   const totServicios = ordenes.reduce((s,o)=>s+Number(o.presupuesto||0)+(o.repuestos||[]).reduce((r,rep)=>r+Number(rep.precio||0),0),0);
