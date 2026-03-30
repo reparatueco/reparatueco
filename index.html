@@ -3083,15 +3083,21 @@ function imprimirReciboCaja(venta) {
 async function cargarVentasHoy() {
   const el = document.getElementById('venta-historial-hoy');
   if(!el) return;
-  // Usar ultimo cierre para mostrar solo ventas del turno actual
+  // Obtener ultimo cierre
   const ultimoCierre = await obtenerUltimoCierre();
   const hoy = new Date().toISOString().split('T')[0];
-  const desdeMs = ultimoCierre ? new Date(ultimoCierre).getTime() : new Date(hoy+'T00:00:00').getTime();
+  // desdeMs: timestamp del ultimo cierre o inicio del dia
+  const desdeMs = ultimoCierre ? new Date(ultimoCierre).getTime() : new Date(hoy+'T00:00:00.000Z').getTime();
+  
   const resp = await fetch(SUPA_URL+'/rest/v1/ventas?select=*&order=fecha.desc', {
     headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
   });
-  const todasVentas = await resp.json();
-  const ventas = todasVentas.filter(v => v.fecha && new Date(v.fecha).getTime() >= desdeMs);
+  const todasVentas = resp.ok ? await resp.json() : [];
+  // Filtrar solo ventas DESPUES del ultimo cierre
+  const ventas = todasVentas.filter(v => {
+    if(!v.fecha) return false;
+    return new Date(v.fecha).getTime() > desdeMs;
+  });
   if(!ventas.length) { el.innerHTML='<div class="empty"><div class="empty-text">Sin ventas en este turno</div></div>'; return; }
 
   const activas = ventas.filter(v => v.tipo !== 'anulada');
