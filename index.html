@@ -87,7 +87,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .photo-zone{border:1px dashed var(--border2);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;transition:all .15s;}
 .photo-zone:hover{border-color:var(--green);background:var(--green-dim2);}
 .photo-zone-text{font-size:13px;color:var(--text3);}
-.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}.photo-grid>div{position:relative;display:block;}
 .photo-thumb{width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border);}
 .stepper{display:flex;align-items:center;margin-bottom:20px;}
 .step-node{display:flex;flex-direction:column;align-items:center;gap:5px;}
@@ -1055,11 +1055,19 @@ async function abrirModalTecnico(id) {
     repHTML += '</div>';
   });
 
-  // Fotos
-  const fotosArr = (o.fotos_ingreso||[]).concat(o.fotos_proceso||[]);
+  // Fotos con boton borrar
   let fotosHTML = '';
-  fotosArr.forEach(u => {
+  (o.fotos_ingreso||[]).forEach(function(u){
+    fotosHTML += '<div style="position:relative;">';
+    fotosHTML += '<img class="photo-thumb" src="'+u+'" onclick="window.open(\''+u+'\',\'_blank\')">'; 
+    fotosHTML += '<button onclick="event.stopPropagation();borrarFotoIngreso(\''+o.id+'\',\''+u+'\',this.parentNode)" style="position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;background:crimson;color:#fff;border:none;font-size:14px;font-weight:900;cursor:pointer;z-index:99;">✕</button>';
+    fotosHTML += '</div>';
+  });
+  (o.fotos_proceso||[]).forEach(function(u){
+    fotosHTML += '<div style="position:relative;">';
     fotosHTML += '<img class="photo-thumb" src="'+u+'" onclick="window.open(\''+u+'\',\'_blank\')">';
+    fotosHTML += '<button onclick="event.stopPropagation();borrarFotoProceso(\''+o.id+'\',\''+u+'\',this.parentNode)" style="position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;background:crimson;color:#fff;border:none;font-size:14px;font-weight:900;cursor:pointer;z-index:99;">✕</button>';
+    fotosHTML += '</div>';
   });
 
   // Botones segun estado
