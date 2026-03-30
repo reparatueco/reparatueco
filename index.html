@@ -2259,7 +2259,8 @@ function mostrarModalEntrega(o, venta, items, total) {
     <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">Método de pago</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
       <button id="epago-efectivo" onclick="selEntregaPago('efectivo')" style="padding:11px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;">💵 Efectivo</button>
-      <button id="epago-nequi" onclick="selEntregaPago('nequi')" style="padding:11px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;">📱 Nequi/Daviplata</button>
+      <button id="epago-nequi" onclick="selEntregaPago('nequi')" style="padding:11px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;">📱 Nequi</button>
+      <button id="epago-daviplata" onclick="selEntregaPago('daviplata')" style="padding:11px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;">💜 Daviplata</button>
       <button id="epago-transferencia" onclick="selEntregaPago('transferencia')" style="padding:11px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;">🏦 Transferencia</button>
       <button id="epago-tarjeta" onclick="selEntregaPago('tarjeta')" style="padding:11px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;">💳 Tarjeta</button>
       <button id="epago-mixto" onclick="selEntregaPago('mixto')" style="grid-column:1/-1;padding:11px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;">🔀 Pago mixto</button>
@@ -2297,7 +2298,7 @@ function mostrarModalEntrega(o, venta, items, total) {
 let metodoPagoEntrega = 'efectivo';
 function selEntregaPago(m) {
   metodoPagoEntrega = m;
-  ['efectivo','nequi','transferencia','tarjeta','mixto'].forEach(t => {
+  ['efectivo','nequi','daviplata','transferencia','tarjeta','mixto'].forEach(t => {
     const b = document.getElementById('epago-'+t);
     if(!b) return;
     b.style.borderColor = t===m ? 'var(--green)' : 'var(--border)';
@@ -2322,7 +2323,7 @@ function calcMixtoEntrega(total) {
 }
 
 async function finalizarEntrega(ordenId, ventaId, total, overlay) {
-  let pagos = {pago_efectivo:0, pago_nequi:0, pago_transferencia:0, pago_tarjeta:0};
+  let pagos = {pago_efectivo:0, pago_nequi:0, pago_daviplata:0, pago_transferencia:0, pago_tarjeta:0};
   if(metodoPagoEntrega === 'mixto') {
     pagos.pago_efectivo = Number(document.getElementById('emix-efectivo')?.value||0);
     pagos.pago_nequi = Number(document.getElementById('emix-nequi')?.value||0);
@@ -2847,9 +2848,10 @@ function renderFormPago(subtotal) {
 
     <!-- Método de pago -->
     <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">Método de pago</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
       <button id="mpago-efectivo" onclick="selMetodo('efectivo')" style="padding:12px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;">💵 Efectivo</button>
-      <button id="mpago-nequi" onclick="selMetodo('nequi')" style="padding:12px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;">📱 Nequi/Daviplata</button>
+      <button id="mpago-nequi" onclick="selMetodo('nequi')" style="padding:12px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;">📱 Nequi</button>
+      <button id="mpago-daviplata" onclick="selMetodo('daviplata')" style="padding:12px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;">💜 Daviplata</button>
       <button id="mpago-transferencia" onclick="selMetodo('transferencia')" style="padding:12px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;">🏦 Transferencia</button>
       <button id="mpago-tarjeta" onclick="selMetodo('tarjeta')" style="padding:12px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;">💳 Tarjeta</button>
       <button id="mpago-mixto" onclick="selMetodo('mixto')" style="grid-column:1/-1;padding:12px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;">🔀 Pago mixto (varios métodos)</button>
@@ -2865,9 +2867,14 @@ function renderFormPago(subtotal) {
           <input type="number" id="mix-efectivo" placeholder="0" min="0" oninput="calcMixto(${subtotal})" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:14px;padding:9px 10px 9px 22px;outline:none;"></div>
         </div>
         <div>
-          <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">📱 Nequi/Daviplata</label>
+          <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">📱 Nequi</label>
           <div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;">$</span>
           <input type="number" id="mix-nequi" placeholder="0" min="0" oninput="calcMixto(${subtotal})" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:14px;padding:9px 10px 9px 22px;outline:none;"></div>
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">💜 Daviplata</label>
+          <div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;">$</span>
+          <input type="number" id="mix-daviplata" placeholder="0" min="0" oninput="calcMixto(${subtotal})" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:14px;padding:9px 10px 9px 22px;outline:none;"></div>
         </div>
         <div>
           <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">🏦 Transferencia</label>
@@ -2900,7 +2907,7 @@ function renderFormPago(subtotal) {
 let metodoPagoSel = 'efectivo';
 function selMetodo(m) {
   metodoPagoSel = m;
-  ['efectivo','nequi','transferencia','tarjeta','mixto'].forEach(t => {
+  ['efectivo','nequi','daviplata','transferencia','tarjeta','mixto'].forEach(t => {
     const b = document.getElementById('mpago-'+t);
     if(!b) return;
     if(t === m) {
@@ -2916,7 +2923,7 @@ function selMetodo(m) {
   const mix = document.getElementById('pago-mixto-detalle');
   if(mix) mix.style.display = m==='mixto' ? '' : 'none';
   if(m==='mixto') {
-    ['mix-efectivo','mix-nequi','mix-transferencia','mix-tarjeta'].forEach(id=>{
+    ['mix-efectivo','mix-nequi','mix-daviplata','mix-transferencia','mix-tarjeta'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.value='';
     });
     const resta=document.getElementById('mixto-resta');
@@ -2928,6 +2935,7 @@ function calcMixto(total) {
   const vals = {
     efectivo: Number(document.getElementById('mix-efectivo')?.value||0),
     nequi: Number(document.getElementById('mix-nequi')?.value||0),
+    daviplata: Number(document.getElementById('mix-daviplata')?.value||0),
     transferencia: Number(document.getElementById('mix-transferencia')?.value||0),
     tarjeta: Number(document.getElementById('mix-tarjeta')?.value||0),
   };
@@ -2955,14 +2963,15 @@ async function procesarVenta(total) {
   const nombre = document.getElementById('pago-cliente-nombre')?.value.trim()||'';
   const tel = document.getElementById('pago-cliente-tel')?.value.trim()||'';
   const ordenId = document.getElementById('pago-orden-id')?.value.trim()||'';
-  let pagos = {pago_efectivo:0,pago_nequi:0,pago_transferencia:0,pago_tarjeta:0};
+  let pagos = {pago_efectivo:0,pago_nequi:0,pago_daviplata:0,pago_transferencia:0,pago_tarjeta:0};
   if(metodoPagoSel==='mixto') {
     pagos.pago_efectivo = Number(document.getElementById('mix-efectivo')?.value||0);
     pagos.pago_nequi = Number(document.getElementById('mix-nequi')?.value||0);
+    pagos.pago_daviplata = Number(document.getElementById('mix-daviplata')?.value||0);
     pagos.pago_transferencia = Number(document.getElementById('mix-transferencia')?.value||0);
     pagos.pago_tarjeta = Number(document.getElementById('mix-tarjeta')?.value||0);
   } else {
-    pagos['pago_'+metodoPagoSel] = total;
+    if(metodoPagoSel==='daviplata') { pagos.pago_daviplata = total; } else { pagos['pago_'+metodoPagoSel] = total; }
   }
 
   const venta = {
@@ -3027,7 +3036,8 @@ function imprimirReciboCaja(venta) {
   const horaStr = fecha.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   const metodosStr = [];
   if(venta.pago_efectivo>0) metodosStr.push('Efectivo: $'+Number(venta.pago_efectivo).toLocaleString('es-CO'));
-  if(venta.pago_nequi>0) metodosStr.push('Nequi/Daviplata: $'+Number(venta.pago_nequi).toLocaleString('es-CO'));
+  if(venta.pago_nequi>0) metodosStr.push('Nequi: $'+Number(venta.pago_nequi).toLocaleString('es-CO'));
+  if(venta.pago_daviplata>0) metodosStr.push('Daviplata: $'+Number(venta.pago_daviplata).toLocaleString('es-CO'));
   if(venta.pago_transferencia>0) metodosStr.push('Transferencia: $'+Number(venta.pago_transferencia).toLocaleString('es-CO'));
   if(venta.pago_tarjeta>0) metodosStr.push('Tarjeta: $'+Number(venta.pago_tarjeta).toLocaleString('es-CO'));
 
@@ -3073,12 +3083,16 @@ function imprimirReciboCaja(venta) {
 async function cargarVentasHoy() {
   const el = document.getElementById('venta-historial-hoy');
   if(!el) return;
+  // Usar ultimo cierre para mostrar solo ventas del turno actual
+  const ultimoCierre = await obtenerUltimoCierre();
   const hoy = new Date().toISOString().split('T')[0];
-  const resp = await fetch(SUPA_URL+'/rest/v1/ventas?fecha=gte.'+hoy+'T00:00:00&order=fecha.desc&select=*', {
+  const desdeMs = ultimoCierre ? new Date(ultimoCierre).getTime() : new Date(hoy+'T00:00:00').getTime();
+  const resp = await fetch(SUPA_URL+'/rest/v1/ventas?select=*&order=fecha.desc', {
     headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
   });
-  const ventas = await resp.json();
-  if(!ventas.length) { el.innerHTML='<div class="empty"><div class="empty-text">Sin ventas hoy</div></div>'; return; }
+  const todasVentas = await resp.json();
+  const ventas = todasVentas.filter(v => v.fecha && new Date(v.fecha).getTime() >= desdeMs);
+  if(!ventas.length) { el.innerHTML='<div class="empty"><div class="empty-text">Sin ventas en este turno</div></div>'; return; }
 
   const activas = ventas.filter(v => v.tipo !== 'anulada');
   const totalHoy = activas.reduce((s,v)=>s+Number(v.total||0),0);
@@ -3333,31 +3347,31 @@ async function renderCajaDelDia(el) {
       const rj = await rc.json();
       if(rj && rj.length && rj[0].fecha) {
         // Convert to ISO and encode + sign for URL safety
-        desde = new Date(rj[0].fecha).toISOString().replace(/\+/g, '%2B');
+        desde = new Date(rj[0].fecha).toISOString();
       }
     } catch(e) {}
 
     const desdeLabel = desde === hoy+'T00:00:00' ? 'inicio del día' :
       new Date(desde).toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
 
-    // Ventas DESDE el ultimo cierre
-    const rv = await fetch(SUPA_URL+'/rest/v1/ventas?select=total,pago_efectivo,pago_nequi,pago_transferencia,pago_tarjeta&fecha=gte.'+desde, {
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
-    });
-    const ventas = rv.ok ? await rv.json() : [];
+    const desdeMs = new Date(desde).getTime();
+    const H = {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY};
 
-    // Movimientos DESDE el ultimo cierre
-    const rm = await fetch(SUPA_URL+'/rest/v1/caja?fecha=gte.'+desde+'&order=fecha.desc&select=*', {
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
-    });
-    const todosMovs = rm.ok ? await rm.json() : [];
-    const movCaja = todosMovs.filter(m => m.tipo === 'ingreso' || m.tipo === 'gasto');
+    // Traer TODO sin filtro de fecha y filtrar en JS
+    const [rv, rm, ro] = await Promise.all([
+      fetch(SUPA_URL+'/rest/v1/ventas?select=total,pago_efectivo,pago_nequi,pago_daviplata,pago_transferencia,pago_tarjeta,fecha,tipo', {headers:H}),
+      fetch(SUPA_URL+'/rest/v1/caja?select=*&order=fecha.desc', {headers:H}),
+      fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&select=presupuesto,repuestos,fecha', {headers:H})
+    ]);
 
-    // Ordenes entregadas DESDE el ultimo cierre
-    const ro = await fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&fecha=gte.'+desde+'&select=presupuesto,repuestos', {
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
-    });
-    const ordenes = ro.ok ? await ro.json() : [];
+    const todasVentas = rv.ok ? await rv.json() : [];
+    const todosCaja = rm.ok ? await rm.json() : [];
+    const todasOrdenes = ro.ok ? await ro.json() : [];
+
+    // Filtrar por timestamp en JS
+    const ventas = todasVentas.filter(v => v.tipo !== 'anulada' && v.fecha && new Date(v.fecha).getTime() >= desdeMs);
+    const movCaja = todosCaja.filter(m => (m.tipo==='ingreso'||m.tipo==='gasto') && m.fecha && new Date(m.fecha).getTime() >= desdeMs);
+    const ordenes = todasOrdenes.filter(o => o.fecha && new Date(o.fecha).getTime() >= desdeMs);
 
     const totVentas = ventas.reduce((s,v)=>s+Number(v.total||0),0);
     const totServicios = ordenes.reduce((s,o)=>s+Number(o.presupuesto||0)+(o.repuestos||[]).reduce((r,rep)=>r+Number(rep.precio||0),0),0);
@@ -3365,7 +3379,7 @@ async function renderCajaDelDia(el) {
     const totGastos = movCaja.filter(m=>m.tipo==='gasto').reduce((s,m)=>s+Number(m.valor||0),0);
     const totalCaja = totVentas + totServicios + totIngresos - totGastos;
 
-    const porMetodo = {efectivo:0,nequi:0,transferencia:0,tarjeta:0};
+    const porMetodo = {efectivo:0,nequi:0,daviplata:0,transferencia:0,tarjeta:0};
     ventas.forEach(v=>{
       porMetodo.efectivo += Number(v.pago_efectivo||0);
       porMetodo.nequi += Number(v.pago_nequi||0);
@@ -3388,7 +3402,7 @@ async function renderCajaDelDia(el) {
     html += '<div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:16px;">Desde: '+desdeLabel+'</div>';
 
     // Por metodo
-    const metNombres = {efectivo:'Efectivo',nequi:'Nequi/Daviplata',transferencia:'Transferencia',tarjeta:'Tarjeta'};
+    const metNombres = {efectivo:'Efectivo',nequi:'Nequi',daviplata:'Daviplata',transferencia:'Transferencia',tarjeta:'Tarjeta'};
     const metFiltrados = Object.entries(porMetodo).filter(([,v])=>v>0);
     if(metFiltrados.length) {
       html += '<div class="card" style="margin-bottom:16px;"><div class="card-title" style="margin-bottom:10px;">Por método de pago</div>';
@@ -3406,7 +3420,7 @@ async function renderCajaDelDia(el) {
     html += '</div>';
     html += '<div class="field"><label>Concepto</label><input type="text" id="mov-concepto" placeholder="Ej: Pago servicios, Compra repuestos..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;"></div>';
     html += '<div class="row2"><div class="field"><label>Valor $</label><input type="number" id="mov-valor" placeholder="0" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;"></div>';
-    html += '<div class="field"><label>Método</label><select id="mov-metodo" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;"><option value="efectivo">Efectivo</option><option value="nequi">Nequi/Daviplata</option><option value="transferencia">Transferencia</option><option value="tarjeta">Tarjeta</option></select></div></div>';
+    html += '<div class="field"><label>Método</label><select id="mov-metodo" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;"><option value="efectivo">Efectivo</option><option value="nequi">Nequi</option><option value="daviplata">Daviplata</option><option value="transferencia">Transferencia</option><option value="tarjeta">Tarjeta</option></select></div></div>';
     html += '<button class="btn btn-primary" onclick="registrarMovCaja()">Registrar</button></div>';
 
     // Movimientos del turno
@@ -3936,7 +3950,9 @@ async function obtenerUltimoCierre() {
     headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
   });
   const rows = await resp.json();
-  return rows.length ? rows[0].fecha : null;
+  if(!rows.length || !rows[0].fecha) return null;
+  // Convert to clean UTC ISO string (removes +00:00 timezone offset)
+  return new Date(rows[0].fecha).toISOString();
 }
 
 function confirmarCierreTurno() {
@@ -3966,7 +3982,7 @@ async function cierreCajaTurno() {
   try {
   const ultimoCierre = await obtenerUltimoCierre();
   const hoy = new Date().toISOString().split('T')[0];
-  const desde = (ultimoCierre || hoy+'T00:00:00.000Z').replace(/\+/g, '%2B');
+  const desde = ultimoCierre || hoy+'T00:00:00.000Z';
   const ahora = new Date().toISOString();
   // desdeTs y ahoraTs para filtrar en JS
   const desdeDate = new Date(desde);
@@ -3977,7 +3993,7 @@ async function cierreCajaTurno() {
   
   // Traer TODAS las ventas del dia y filtrar en JS por timestamp
   const [vResp, oResp, inResp, gaResp] = await Promise.all([
-    fetch(SUPA_URL+'/rest/v1/ventas?select=total,metodo_pago,pago_efectivo,pago_nequi,pago_transferencia,pago_tarjeta,items,cliente_nombre,fecha,created_at', {headers:H}),
+    fetch(SUPA_URL+'/rest/v1/ventas?select=total,metodo_pago,pago_efectivo,pago_nequi,pago_daviplata,pago_transferencia,pago_tarjeta,items,cliente_nombre,fecha,tipo', {headers:H}),
     fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&select=presupuesto,repuestos,nombre,servicio,fecha', {headers:H}),
     fetch(SUPA_URL+'/rest/v1/caja?tipo=eq.ingreso&select=*', {headers:H}),
     fetch(SUPA_URL+'/rest/v1/caja?tipo=eq.gasto&select=*', {headers:H})
@@ -3988,13 +4004,10 @@ async function cierreCajaTurno() {
   const todosIngresos = inResp.ok ? await inResp.json() : [];
   const todosGastos = gaResp.ok ? await gaResp.json() : [];
 
-  // Filtrar por timestamp - ambos en UTC via Date.getTime()
-  const desdeTs = new Date(desde).getTime();
-  const ahoraTs = new Date(ahora).getTime();
-  
-  console.log('CIERRE DEBUG desde:', desde, new Date(desde).toISOString());
-  console.log('CIERRE DEBUG ahora:', ahora);
-  console.log('CIERRE DEBUG todas ventas:', todasVentas.length, todasVentas.map(v=>({fecha:v.fecha,total:v.total})));
+  // Filtrar por timestamp
+  const desdeTs = desde ? new Date(desde).getTime() : 0;
+  const ahoraTs = new Date().getTime();
+  console.log('CIERRE - desde:', desde, 'desdeTs:', desdeTs, 'ventas totales:', todasVentas.length);
   
   const ventas = todasVentas.filter(v => {
     if(!v.fecha) return false;
@@ -4024,10 +4037,10 @@ async function cierreCajaTurno() {
   const totServicios = ordenes.reduce((s,o)=>s+Number(o.presupuesto||0)+(o.repuestos||[]).reduce((r,rep)=>r+Number(rep.precio||0),0),0);
   const totIngresos = movs.filter(m=>m.tipo==='ingreso').reduce((s,m)=>s+Number(m.valor||0),0);
   const totGastos = movs.filter(m=>m.tipo==='gasto').reduce((s,m)=>s+Number(m.valor||0),0);
-  const totalNeto = totVentas + totServicios + totIngresos - totGastos;
+  const totalNeto = (isNaN(totVentas)?0:totVentas) + (isNaN(totServicios)?0:totServicios) + (isNaN(totIngresos)?0:totIngresos) - (isNaN(totGastos)?0:totGastos);
 
   // Por metodo
-  const porMetodo = {efectivo:0,nequi:0,transferencia:0,tarjeta:0};
+  const porMetodo = {efectivo:0,nequi:0,daviplata:0,transferencia:0,tarjeta:0};
   ventas.forEach(v=>{
     porMetodo.efectivo += Number(v.pago_efectivo||0);
     porMetodo.nequi += Number(v.pago_nequi||0);
@@ -4094,7 +4107,7 @@ async function cierreCajaTurno() {
 function imprimirCierreTurno(r, ventas, ordenes, movs) {
   const fechaDesde = r.desde ? new Date(r.desde).toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
   const fechaHasta = r.hasta ? new Date(r.hasta).toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
-  const metodos = {efectivo:'Efectivo',nequi:'Nequi/Daviplata',transferencia:'Transferencia',tarjeta:'Tarjeta'};
+  const metodos = {efectivo:'Efectivo',nequi:'Nequi',daviplata:'Daviplata',transferencia:'Transferencia',tarjeta:'Tarjeta'};
   // Use detalle from resumen if available, otherwise from raw arrays
   const ventasD = r.ventas_detalle || (ventas||[]).map(function(v){ return {cliente:v.cliente_nombre||'Cliente',metodo:v.metodo_pago,total:v.total,items:(v.items||[])}; });
   const gastosD = r.gastos_detalle || (movs||[]).filter(function(m){return m.tipo==='gasto';}).map(function(g){return {concepto:g.concepto,valor:g.valor};});
@@ -4205,7 +4218,7 @@ async function renderHistorialCierres(el) {
       try { var raw = t.concepto||''; resumen = JSON.parse(raw.startsWith('CIERRE:') ? raw.slice(7) : raw); } catch(e) {}
       var hora = new Date(t.fecha).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
       var tid = 'det-'+t.id;
-      var metNombres = {efectivo:'Efectivo',nequi:'Nequi/Daviplata',transferencia:'Transferencia',tarjeta:'Tarjeta'};
+      var metNombres = {efectivo:'Efectivo',nequi:'Nequi',daviplata:'Daviplata',transferencia:'Transferencia',tarjeta:'Tarjeta'};
 
       // Card wrapper
       html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;">';
