@@ -915,7 +915,14 @@ Vehículo: ${[marca,ref,color].filter(Boolean).join(' · ')}`:'';
           '\n\n⚡ Te avisaremos cuando esté lista 🔔🚲';
     tel=tel.replace(/\D/g,''); if(!tel.startsWith('57')) tel='57'+tel;
   } else if(tipo==='lista'&&orden){
-    msg=`Hola ${orden.nombre} 🎉\n\n¡Tu bicicleta eléctrica ya está lista!\nPuedes pasar a recogerla.\n\n*${taller}*${cfg.dir?'\n'+cfg.dir:''}${cfg.tel?'\n📞 '+cfg.tel:''}\n\n*Orden:* ${orden.id} 🚲⚡`;
+    const vehiculoLista = [orden.marca, orden.referencia, orden.color_vehiculo].filter(Boolean).join(' ');
+    const trackLista = 'https://reparatueco.github.io/reparatueco/estado.html?orden='+orden.id;
+    msg = 'Hola '+orden.nombre+' 🎉\n'
+      +'¡Tu vehículo eléctrico'+(vehiculoLista?' '+vehiculoLista:'')+' ya está listo! Puedes pasar a recogerlo.\n\n'
+      +'*'+taller+'*'+(cfg.dir?' · '+cfg.dir:'')+(cfg.tel?' · 📞 '+cfg.tel:'')+'\n\n'
+      +'*Orden:* '+orden.id+' 🚲⚡\n\n'
+      +'Gracias por confiar en nosotros 🙌 Si quieres revisar fotos y estado aquí lo puedes hacer:\n'
+      +trackLista;
     tel=orden.tel.replace(/\D/g,''); if(!tel.startsWith('57')) tel='57'+tel;
   }
   window.open(`https://wa.me/${tel}?text=${encodeURIComponent(msg)}`, '_blank');
