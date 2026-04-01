@@ -2816,7 +2816,7 @@ function renderTablaPos() {
     </div>
     <div style="position:relative;min-width:90px;">
       <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:11px;pointer-events:none;">$</span>
-      <input type="number" value="${item.precio_unitario}" onchange="cambiarPrecio(${i},this.value)" style="width:90px;background:var(--bg4);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:12px;padding:6px 8px 6px 18px;outline:none;text-align:right;">
+      <input type="number" value="${item.precio_unitario}" oninput="cambiarPrecio(${i},this.value)" onblur="renderTablaPos()" style="width:90px;background:var(--bg4);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:12px;padding:6px 8px 6px 18px;outline:none;text-align:right;">
     </div>
     <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green);min-width:80px;text-align:right;">$${(item.precio_unitario*item.cantidad).toLocaleString('es-CO')}</div>
     <button onclick="quitarDelCarrito(${i})" style="width:28px;height:28px;border-radius:8px;border:none;background:rgba(255,23,68,0.15);color:var(--red);cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;">×</button>
@@ -2839,7 +2839,18 @@ function abrirPago() {
 }
 
 function cambiarCantidad(idx,delta) { carritoVenta[idx].cantidad=Math.max(1,carritoVenta[idx].cantidad+delta); renderTablaPos(); }
-function cambiarPrecio(idx,val) { carritoVenta[idx].precio_unitario=Number(val)||0; renderTablaPos(); }
+function cambiarPrecio(idx,val) {
+  carritoVenta[idx].precio_unitario = Number(val)||0;
+  // Update total display without re-rendering the table
+  const subtotal = carritoVenta.reduce((s,i)=>s+(i.precio_unitario*i.cantidad),0);
+  const totalEl = document.getElementById('pos-total-val');
+  if(totalEl) totalEl.textContent = '$'+subtotal.toLocaleString('es-CO');
+  const totalCobrarEl = document.getElementById('total-a-cobrar');
+  if(totalCobrarEl) totalCobrarEl.textContent = '$'+subtotal.toLocaleString('es-CO');
+  // Update row total
+  const rowTotal = document.getElementById('row-total-'+idx);
+  if(rowTotal) rowTotal.textContent = '$'+(carritoVenta[idx].precio_unitario*carritoVenta[idx].cantidad).toLocaleString('es-CO');
+}
 function quitarDelCarrito(idx) { carritoVenta.splice(idx,1); renderTablaPos(); }
 
 function renderFormPago(subtotal) {
@@ -2850,7 +2861,7 @@ function renderFormPago(subtotal) {
     <!-- Total a pagar -->
     <div style="background:linear-gradient(135deg,#0a2a1a,#0d3d24);border:1px solid rgba(0,230,118,0.2);border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:13px;color:var(--text2);">Total a cobrar</span>
-      <span style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--green);">$${subtotal.toLocaleString('es-CO')}</span>
+      <span id="total-a-cobrar" style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--green);">$${subtotal.toLocaleString('es-CO')}</span>
     </div>
 
     <!-- Cliente opcional -->
@@ -3390,11 +3401,11 @@ async function renderCajaDelDia(el) {
     const todasOrdenes = ro.ok ? await ro.json() : [];
 
     // Filtrar por timestamp en JS
-    const ventas = todasVentas.filter(v => v.tipo !== 'anulada' && v.fecha && new Date(v.fecha).getTime() >= desdeMs);
+    const ventas = todasVentas.filter(v => v.tipo !== 'anulada' && v.fecha && new Date(v.fecha).getTime() >= desdeMs); // Solo ventas activas
     const movCaja = todosCaja.filter(m => (m.tipo==='ingreso'||m.tipo==='gasto') && m.fecha && new Date(m.fecha).getTime() >= desdeMs);
     const ordenes = todasOrdenes.filter(o => o.fecha && new Date(o.fecha).getTime() >= desdeMs);
 
-    const totVentas = ventas.reduce((s,v)=>s+Number(v.total||0),0);
+    const totVentas = ventas.reduce((s,v)=>{ const t = Number(v.total||0); if(t>0) return s+t; return s+Number(v.pago_efectivo||0)+Number(v.pago_nequi||0)+Number(v.pago_daviplata||0)+Number(v.pago_transferencia||0)+Number(v.pago_tarjeta||0); },0);
     const totServicios = ordenes.reduce((s,o)=>s+Number(o.presupuesto||0)+(o.repuestos||[]).reduce((r,rep)=>r+Number(rep.precio||0),0),0);
     const totIngresos = movCaja.filter(m=>m.tipo==='ingreso').reduce((s,m)=>s+Number(m.valor||0),0);
     const totGastos = movCaja.filter(m=>m.tipo==='gasto').reduce((s,m)=>s+Number(m.valor||0),0);
@@ -3404,6 +3415,7 @@ async function renderCajaDelDia(el) {
     ventas.forEach(v=>{
       porMetodo.efectivo += Number(v.pago_efectivo||0);
       porMetodo.nequi += Number(v.pago_nequi||0);
+      porMetodo.daviplata += Number(v.pago_daviplata||0);
       porMetodo.transferencia += Number(v.pago_transferencia||0);
       porMetodo.tarjeta += Number(v.pago_tarjeta||0);
     });
@@ -3425,11 +3437,18 @@ async function renderCajaDelDia(el) {
     // Por metodo
     const metNombres = {efectivo:'Efectivo',nequi:'Nequi',daviplata:'Daviplata',transferencia:'Transferencia',tarjeta:'Tarjeta'};
     const metFiltrados = Object.entries(porMetodo).filter(([,v])=>v>0);
-    if(metFiltrados.length) {
+    if(metFiltrados.length || totGastos > 0) {
       html += '<div class="card" style="margin-bottom:16px;"><div class="card-title" style="margin-bottom:10px;">Por método de pago</div>';
       metFiltrados.forEach(([k,v])=>{
         html += '<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border);"><span>'+metNombres[k]+'</span><span style="font-family:var(--mono);">$'+v.toLocaleString('es-CO')+'</span></div>';
+        // Si es efectivo, mostrar gastos y neto debajo
+        if(k === 'efectivo' && totGastos > 0) {
+          const efectivoNeto = v - totGastos;
+          html += '<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border);padding-left:12px;color:var(--red);"><span>- Gastos en efectivo</span><span style="font-family:var(--mono);">-$'+totGastos.toLocaleString('es-CO')+'</span></div>';
+          html += '<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border);padding-left:12px;"><span style="font-weight:600;">Efectivo neto</span><span style="font-family:var(--mono);font-weight:700;color:'+(efectivoNeto>=0?'var(--green)':'var(--red)')+';">$'+efectivoNeto.toLocaleString('es-CO')+'</span></div>';
+        }
       });
+      html += '<div style="display:flex;justify-content:space-between;font-size:14px;padding:8px 0;font-weight:700;border-top:1px solid var(--border2);margin-top:4px;"><span>Total neto</span><span style="font-family:var(--mono);color:var(--green);">$'+totalCaja.toLocaleString('es-CO')+'</span></div>';
       html += '</div>';
     }
 
@@ -4030,8 +4049,10 @@ async function cierreCajaTurno() {
   const ahoraTs = new Date().getTime();
   console.log('CIERRE - desde:', desde, 'desdeTs:', desdeTs, 'ventas totales:', todasVentas.length);
   
+  // Solo ventas activas (excluir anuladas)
   const ventas = todasVentas.filter(v => {
     if(!v.fecha) return false;
+    if(v.tipo === 'anulada') return false;
     const t = new Date(v.fecha).getTime();
     return t >= desdeTs && t <= ahoraTs;
   });
@@ -4054,7 +4075,7 @@ async function cierreCajaTurno() {
 
   showToast('Ventas del turno: '+ventas.length+' de '+todasVentas.length+' totales');
 
-  const totVentas = ventas.reduce((s,v)=>s+Number(v.total||0),0);
+  const totVentas = ventas.reduce((s,v)=>{ const t = Number(v.total||0); if(t>0) return s+t; return s+Number(v.pago_efectivo||0)+Number(v.pago_nequi||0)+Number(v.pago_daviplata||0)+Number(v.pago_transferencia||0)+Number(v.pago_tarjeta||0); },0);
   const totServicios = ordenes.reduce((s,o)=>s+Number(o.presupuesto||0)+(o.repuestos||[]).reduce((r,rep)=>r+Number(rep.precio||0),0),0);
   const totIngresos = movs.filter(m=>m.tipo==='ingreso').reduce((s,m)=>s+Number(m.valor||0),0);
   const totGastos = movs.filter(m=>m.tipo==='gasto').reduce((s,m)=>s+Number(m.valor||0),0);
@@ -4065,6 +4086,7 @@ async function cierreCajaTurno() {
   ventas.forEach(v=>{
     porMetodo.efectivo += Number(v.pago_efectivo||0);
     porMetodo.nequi += Number(v.pago_nequi||0);
+    porMetodo.daviplata += Number(v.pago_daviplata||0);
     porMetodo.transferencia += Number(v.pago_transferencia||0);
     porMetodo.tarjeta += Number(v.pago_tarjeta||0);
   });
