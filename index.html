@@ -545,6 +545,7 @@ let usuarioActual = null;
 function mostrarLogin() {
   const ov = document.getElementById('login-overlay');
   if(!ov) return;
+  ov.classList.remove('login-oculto');
   ov.style.display = 'flex';
   const err = document.getElementById('login-error');
   if(err) err.textContent = '';
@@ -580,7 +581,7 @@ function intentarLogin() {
   if(btnEl) btnEl.textContent = 'Ingresando...';
   usuarioActual = Object.assign({}, u, {id: user});
   try { sessionStorage.setItem('rte_user', JSON.stringify(usuarioActual)); } catch(e) {}
-  document.getElementById('login-overlay').style.display = 'none';
+  const lov=document.getElementById('login-overlay'); if(lov){lov.style.display='none';lov.classList.add('login-oculto');}
   aplicarRol();
 }
 function aplicarRol() {
@@ -1638,7 +1639,7 @@ function imprimirRecibo() {
   </div>
 
 
-<div id="login-overlay" style="position:fixed;inset:0;background:#0a0a0a;z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;">
+<div id="login-overlay" style="position:fixed;inset:0;background:#0a0a0a;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;">
   <div style="background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:16px;width:100%;max-width:360px;padding:32px 24px;">
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-family:'Space Mono',monospace;font-size:18px;color:#00e676;letter-spacing:3px;margin-bottom:6px;">ReparaTuEco</div>
