@@ -4754,7 +4754,17 @@ function toggleDetalleCierre(id) {
 let tecOrdenes = [];
 let tecCalMes = new Date().getMonth();
 let tecCalAnio = new Date().getFullYear();
-let tecVistaActual = 'calendario'; // 'calendario' o 'filtro'
+let tecVistaActual = 'calendario';
+function tecNavMes(dir) {
+  tecCalMes += dir;
+  if(tecCalMes < 0) { tecCalMes = 11; tecCalAnio--; }
+  if(tecCalMes > 11) { tecCalMes = 0; tecCalAnio++; }
+  renderTecHistorialUI(document.getElementById('lista-historial'));
+}
+function selVistaTec(v) {
+  tecVistaActual = v;
+  renderTecHistorialUI(document.getElementById('lista-historial'));
+}
 
 async function renderHistorialTecnico() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -4778,8 +4788,8 @@ function renderTecHistorialUI(el) {
 
   // Header con tabs
   html += '<div style="display:flex;gap:8px;margin-bottom:16px;">';
-  html += '<button onclick="tecVistaActual='calendario';renderTecHistorialUI(document.getElementById('lista-historial'))" style="flex:1;padding:10px;border-radius:10px;border:none;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:'+(tecVistaActual==='calendario'?'var(--green)':'var(--bg3)')+';color:'+(tecVistaActual==='calendario'?'#000':'var(--text2)')+';">📅 Calendario</button>';
-  html += '<button onclick="tecVistaActual='filtro';renderTecHistorialUI(document.getElementById('lista-historial'))" style="flex:1;padding:10px;border-radius:10px;border:none;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:'+(tecVistaActual==='filtro'?'var(--green)':'var(--bg3)')+';color:'+(tecVistaActual==='filtro'?'#000':'var(--text2)')+';">🔍 Filtrar</button>';
+  html += '<button onclick="selVistaTec(&quot;calendario&quot;)" style="flex:1;padding:10px;border-radius:10px;border:none;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:'+(tecVistaActual==="calendario"?'var(--green)':'var(--bg3)')+';color:'+(tecVistaActual==="calendario"?'#000':'var(--text2)')+';">📅 Calendario</button>';
+  html += '<button onclick="selVistaTec(&quot;filtro&quot;)" style="flex:1;padding:10px;border-radius:10px;border:none;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:'+(tecVistaActual==="filtro"?'var(--green)':'var(--bg3)')+';color:'+(tecVistaActual==="filtro"?'#000':'var(--text2)')+';">🔍 Filtrar</button>';
   html += '</div>';
 
   // Resumen rápido
@@ -4817,9 +4827,9 @@ function renderTecCalendario() {
 
   // Navegacion mes
   html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">';
-  html += '<button onclick="tecCalMes--;if(tecCalMes<0){tecCalMes=11;tecCalAnio--;}renderTecHistorialUI(document.getElementById('lista-historial'))" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);cursor:pointer;font-size:16px;">‹</button>';
+  html += '<button onclick="tecNavMes(-1)" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);cursor:pointer;font-size:16px;">‹</button>';
   html += '<div style="font-size:15px;font-weight:700;">'+meses[tecCalMes]+' '+tecCalAnio+'</div>';
-  html += '<button onclick="tecCalMes++;if(tecCalMes>11){tecCalMes=0;tecCalAnio++;}renderTecHistorialUI(document.getElementById('lista-historial'))" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);cursor:pointer;font-size:16px;">›</button>';
+  html += '<button onclick="tecNavMes(1)" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);cursor:pointer;font-size:16px;">›</button>';
   html += '</div>';
 
   // Dias de la semana
@@ -4852,13 +4862,14 @@ function renderTecCalendario() {
     const esHoy = hoy.getDate()===dia && hoy.getMonth()===tecCalMes && hoy.getFullYear()===tecCalAnio;
     const ordenes = porDia[dia] || [];
     const tieneOrdenes = ordenes.length > 0;
-    html += '<div onclick="'+(tieneOrdenes?'mostrarDiaTecnico('+dia+','+tecCalMes+','+tecCalAnio+')':'')+'" style="';
-    html += 'aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;';
-    html += 'background:'+(esHoy?'var(--green-dim)':tieneOrdenes?'rgba(0,230,118,0.08)':'var(--bg2)')+';';
-    html += 'border:1px solid '+(esHoy?'var(--green)':tieneOrdenes?'rgba(0,230,118,0.3)':'var(--border)')+';';
-    html += 'cursor:'+(tieneOrdenes?'pointer':'default')+';';
-    html += '">';
-    html += '<div style="font-size:13px;font-weight:'+(esHoy||tieneOrdenes?'700':'400')+';color:'+(esHoy?'var(--green)':tieneOrdenes?'var(--text)':'var(--text3)')+';">'+dia+'</div>';
+    var onclk = tieneOrdenes ? 'mostrarDiaTecnico('+dia+','+tecCalMes+','+tecCalAnio+')' : '';
+    var bg = esHoy ? 'var(--green-dim)' : tieneOrdenes ? 'rgba(0,230,118,0.08)' : 'var(--bg2)';
+    var bdr = esHoy ? 'var(--green)' : tieneOrdenes ? 'rgba(0,230,118,0.3)' : 'var(--border)';
+    var cur = tieneOrdenes ? 'pointer' : 'default';
+    var fw = (esHoy||tieneOrdenes) ? '700' : '400';
+    var col = esHoy ? 'var(--green)' : tieneOrdenes ? 'var(--text)' : 'var(--text3)';
+    html += '<div onclick="'+onclk+'" style="aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:'+bg+';border:1px solid '+bdr+';cursor:'+cur+';">';
+    html += '<div style="font-size:13px;font-weight:'+fw+';color:'+col+';">'+dia+'</div>';
     if(tieneOrdenes) html += '<div style="font-size:9px;color:var(--green);font-weight:700;">'+ordenes.length+'</div>';
     html += '</div>';
   }
