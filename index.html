@@ -4801,7 +4801,7 @@ function mostrarServicioTec(servicio, periodo) {
 
   let html = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">';
   html += '<button onclick="mostrarResumenTec(\''+periodo+'\')" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);cursor:pointer;font-size:13px;">← Volver</button>';
-  html += '<div style="font-size:14px;font-weight:700;">'+servicio+' — '+filtradas.length+' orden'+(filtradas.length!==1?'es':'')+'</div>';
+  html += '<div style="font-size:14px;font-weight:700;">'+servicio+'  -  '+filtradas.length+' orden'+(filtradas.length!==1?'es':'')+'</div>';
   html += '</div>';
   html += renderOrdenCards(filtradas, 'abrirModalHistorial');
   el.innerHTML = html;
@@ -4817,7 +4817,7 @@ function descargarExcelTecnico() {
   });
 
   // Build CSV content
-  const headers = ['N° Orden','Fecha Entrega','Cliente','Servicio','Marca','Referencia','Color','Técnico','Valor $'];
+  const headers = ['No. Orden','Fecha Entrega','Cliente','Servicio','Marca','Referencia','Color','Técnico','Valor $'];
   const rows = filtradas.map(o => {
     const fecha = o.fecha ? new Date(o.fecha).toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
     const valor = Number(o.presupuesto||0) + (o.repuestos||[]).reduce((s,r)=>s+Number(r.precio||0),0);
@@ -4839,9 +4839,8 @@ function descargarExcelTecnico() {
   rows.push(['','','','','','','','TOTAL',"$"+totalValor.toLocaleString('es-CO')]);
 
   // Convert to CSV
-  const bom = '﻿'; // UTF-8 BOM for Excel
-  const csvContent = bom + [headers, ...rows].map(r => r.map(v => '"'+(String(v).replace(/"/g,'""'))+'"').join(',')).join('
-');
+  const bom = ''; // UTF-8 BOM for Excel
+  const csvContent = bom + [headers, ...rows].map(r => r.map(v => '"'+( String(v).replace(/"/g,'""') )+'"').join(',')).join('\n');
 
   // Download
   const blob = new Blob([csvContent], {type:'text/csv;charset=utf-8;'});
@@ -4863,10 +4862,10 @@ function mostrarResumenTec(periodo) {
 
   if(periodo === 'hoy') {
     filtradas = tecOrdenes.filter(o => o.fecha && o.fecha.startsWith(hoyStr));
-    titulo = 'Hoy — '+filtradas.length+' orden'+(filtradas.length!==1?'es':'');
+    titulo = 'Hoy  -  '+filtradas.length+' orden'+(filtradas.length!==1?'es':'');
   } else if(periodo === 'semana') {
     filtradas = tecOrdenes.filter(o => o.fecha && new Date(o.fecha).getTime() >= (hoyTs - semanaMs));
-    titulo = 'Esta semana — '+filtradas.length+' orden'+(filtradas.length!==1?'es':'');
+    titulo = 'Esta semana  -  '+filtradas.length+' orden'+(filtradas.length!==1?'es':'');
   } else if(periodo === 'mes') {
     filtradas = tecOrdenes.filter(o => {
       if(!o.fecha) return false;
@@ -4874,10 +4873,10 @@ function mostrarResumenTec(periodo) {
       return d.getMonth()===tecCalMes && d.getFullYear()===tecCalAnio;
     });
     const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    titulo = meses[tecCalMes]+' '+tecCalAnio+' — '+filtradas.length+' orden'+(filtradas.length!==1?'es':'');
+    titulo = meses[tecCalMes]+' '+tecCalAnio+'  -  '+filtradas.length+' orden'+(filtradas.length!==1?'es':'');
   } else {
     filtradas = tecOrdenes;
-    titulo = 'Total — '+filtradas.length+' órdenes entregadas';
+    titulo = 'Total  -  '+filtradas.length+' órdenes entregadas';
   }
 
   const el = document.getElementById('tec-resumen-detalle');
@@ -5124,28 +5123,6 @@ aplicarConfig();
 })();
 </script>
 
-<div id="login-overlay" style="position:fixed;inset:0;background:#0a0a0a;z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:16px;width:100%;max-width:360px;padding:32px 24px;">
-    <div style="text-align:center;margin-bottom:28px;">
-      <div style="font-family:'Space Mono',monospace;font-size:18px;color:#00e676;letter-spacing:3px;margin-bottom:6px;">ReparaTuEco</div>
-      <div style="font-size:12px;color:#555;">Ingresa tus credenciales</div>
-    </div>
-    <div style="margin-bottom:14px;">
-      <label style="display:block;font-size:12px;color:#888;margin-bottom:6px;font-weight:500;">Usuario</label>
-      <input id="login-user" type="text" placeholder="admin / Alonso / Andres / Dario" onkeydown="if(event.key==='Enter')document.getElementById('login-pin').focus()" style="width:100%;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#f0f0f0;font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 14px;outline:none;box-sizing:border-box;">
-    </div>
-    <div style="margin-bottom:20px;">
-      <label style="display:block;font-size:12px;color:#888;margin-bottom:6px;font-weight:500;">PIN</label>
-      <div style="position:relative;">
-        <input id="login-pin" type="password" placeholder="Tu PIN" onkeydown="if(event.key==='Enter')intentarLogin()" style="width:100%;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#f0f0f0;font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 44px 11px 14px;outline:none;box-sizing:border-box;">
-        <button type="button" id="pin-eye-btn" onclick="togglePinVisibility()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;">
-          <svg id="pin-eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-      </div>
-    </div>
-    <div id="login-error" style="color:#ff1744;font-size:12px;margin-bottom:12px;min-height:18px;text-align:center;"></div>
-    <button onclick="intentarLogin()" style="width:100%;background:#00e676;color:#000;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;padding:13px;cursor:pointer;">Ingresar</button>
-  </div>
-</div>
+
 </body>
 </html>
