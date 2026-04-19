@@ -587,8 +587,17 @@ function aplicarRol() {
       btn.className = 'top-tab active';
       btn.textContent = '🔧 ' + usuarioActual.nombre;
       btn.onclick = function(){ goScreen('tecnico', this); };
+      const btnH = document.createElement('button');
+      btnH.className = 'top-tab';
+      btnH.textContent = '📋 Mis órdenes';
+      btnH.onclick = function(){ 
+        document.querySelectorAll('.top-tab').forEach(t=>t.classList.remove('active'));
+        btnH.classList.add('active');
+        renderHistorialTecnico();
+      };
       topTabs.innerHTML = '';
       topTabs.appendChild(btn);
+      topTabs.appendChild(btnH);
     }
     // Vaciar sidebar
     const sidebarNav = document.getElementById('sidebarNav');
@@ -4738,6 +4747,30 @@ function toggleDetalleCierre(id) {
     el.style.display = 'none';
     if(btn) btn.textContent = '📊 Ver detalle';
   }
+}
+
+
+async function renderHistorialTecnico() {
+  // Show the historial screen
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const hScreen = document.getElementById('screen-historial');
+  if(hScreen) hScreen.classList.add('active');
+
+  const el = document.getElementById('lista-historial');
+  if(!el) return;
+  el.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
+
+  // Get only delivered orders by this technician
+  const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&tecnico=eq.'+encodeURIComponent(usuarioActual.nombre)+'&select=id,nombre,servicio,estado,fecha,presupuesto,marca,tecnico&order=fecha.desc', {
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  });
+  const data = resp.ok ? await resp.json() : [];
+  
+  if(!data.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No tienes órdenes entregadas aún</div></div>';
+    return;
+  }
+  el.innerHTML = '<div style="font-size:13px;color:var(--text3);margin-bottom:12px;">'+data.length+' órdenes entregadas</div>' + renderOrdenCards(data, 'abrirModalHistorial');
 }
 
 // ===== INIT =====
