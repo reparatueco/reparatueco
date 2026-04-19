@@ -196,7 +196,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <div><span id="topbar-badge" class="badge badge-amber" style="display:none"></span>
       <button onclick="cerrarSesion()" style="background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:6px;color:#888;font-size:11px;padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;">Salir</button></div>
     </div>
-    <div class="top-tabs">
+    <div class="top-tabs" style="justify-content:space-between;">
+      <div style="display:flex;overflow-x:auto;flex:1;">
       <button class="top-tab active" id="ttab-home" onclick="goScreen('home',this)">Inicio</button>
       <button class="top-tab" id="ttab-recepcion" onclick="goScreen('recepcion',this)">Nueva</button>
       <button class="top-tab" id="ttab-tecnico" onclick="goScreen('tecnico',this)">Técnico</button>
@@ -205,6 +206,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <button class="top-tab" id="ttab-caja" onclick="goScreen('caja',this)">Caja & Venta</button>
       <button class="top-tab" id="ttab-historial" onclick="goScreen('historial',this)">Historial</button>
       <button class="top-tab" id="ttab-config" onclick="goScreen('config',this)">Config</button>
+      </div>
+      <button onclick="cerrarSesion()" style="background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:6px;color:#888;font-size:11px;padding:4px 10px;cursor:pointer;font-family:var(--sans);white-space:nowrap;margin:8px 8px 8px 0;flex-shrink:0;">Salir</button>
     </div>
 
     <!-- HOME ADMIN -->
@@ -540,10 +543,15 @@ const USUARIOS = {
 let usuarioActual = null;
 
 function mostrarLogin() {
-  document.getElementById('login-overlay').style.display = 'flex';
-  document.getElementById('login-error').textContent = '';
-  document.getElementById('login-user').value = '';
-  document.getElementById('login-pin').value = '';
+  const ov = document.getElementById('login-overlay');
+  if(!ov) return;
+  ov.style.display = 'flex';
+  const err = document.getElementById('login-error');
+  if(err) err.textContent = '';
+  const usr = document.getElementById('login-user');
+  if(usr) usr.value = '';
+  const pin = document.getElementById('login-pin');
+  if(pin) pin.value = '';
 }
 function cerrarSesion() {
   usuarioActual = null;
@@ -1629,6 +1637,7 @@ function imprimirRecibo() {
     <button onclick="window.print()" style="background:#1a7a4a;color:white;border:none;padding:10px 30px;border-radius:6px;font-size:14px;cursor:pointer;font-weight:600;">🖨 Imprimir</button>
   </div>
 
+
 <div id="login-overlay" style="position:fixed;inset:0;background:#0a0a0a;z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;">
   <div style="background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:16px;width:100%;max-width:360px;padding:32px 24px;">
     <div style="text-align:center;margin-bottom:28px;">
@@ -1652,6 +1661,7 @@ function imprimirRecibo() {
     <button onclick="intentarLogin()" style="width:100%;background:#00e676;color:#000;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;padding:13px;cursor:pointer;">Ingresar</button>
   </div>
 </div>
+
 </body>
 </html>`);
   win.document.close();
@@ -5103,18 +5113,10 @@ function aplicarFiltroTecnico() {
 // ===== INIT =====
 aplicarConfig();
   if(typeof actualizarBadgePanel === "function") setTimeout(actualizarBadgePanel, 1500);
-// Restaurar sesion o mostrar login
+// Siempre pedir login al abrir
 (async () => {
-  const saved = sessionStorage.getItem('rte_user');
-  if(saved) {
-    try {
-      usuarioActual = JSON.parse(saved);
-      document.getElementById('login-overlay').style.display = 'none';
-      aplicarRol();
-    } catch(e) { mostrarLogin(); }
-  } else {
-    mostrarLogin();
-  }
+  sessionStorage.removeItem('rte_user');
+  mostrarLogin();
   try {
     const { error } = await db.from('ordenes').select('id', { count: 'exact', head: true });
     if(error) { showToast('Sin conexion a la base de datos'); }
