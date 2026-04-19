@@ -168,6 +168,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <button class="sidebar-nav-item" onclick="goScreen('tecnico',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>Panel técnico
       </button>
+      <button class="sidebar-nav-item" id="nav-mis-ordenes" onclick="renderHistorialTecnico()" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h8M8 18h5"/></svg>Mis órdenes
+      </button>
       <button class="sidebar-nav-item" onclick="goScreen('panel',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Panel
       </button>
@@ -609,6 +612,9 @@ function aplicarRol() {
     document.body.classList.add('tecnico-mode');
     const bottomNav = document.querySelector('.bottom-nav');
     if(bottomNav) { bottomNav.style.setProperty('display','none','important'); }
+    // Mostrar "Mis ordenes" en sidebar para tecnicos
+    const misOrdBtn = document.getElementById('nav-mis-ordenes');
+    if(misOrdBtn) misOrdBtn.style.display = 'flex';
     filtroTecnico = usuarioActual.nombre;
     const tabsTec = document.getElementById('tabs-tecnico');
     if(tabsTec) tabsTec.style.display = 'none';
@@ -4787,10 +4793,10 @@ function renderTecHistorialUI(el) {
   let html = '';
 
   // Header con tabs
+  // Tabs calendario/filtro
   html += '<div style="display:flex;gap:8px;margin-bottom:16px;">';
-  html += '<button onclick="selVistaTec(&quot;calendario&quot;)" style="flex:1;padding:10px;border-radius:10px;border:none;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:'+(tecVistaActual==="calendario"?'var(--green)':'var(--bg3)')+';color:'+(tecVistaActual==="calendario"?'#000':'var(--text2)')+';">📅 Calendario</button>';
-  html += '<button onclick="selVistaTec(&quot;filtro&quot;)" style="flex:1;padding:10px;border-radius:10px;border:none;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:'+(tecVistaActual==="filtro"?'var(--green)':'var(--bg3)')+';color:'+(tecVistaActual==="filtro"?'#000':'var(--text2)')+';">🔍 Filtrar</button>';
-  html += '</div>';
+  html += '<button data-vista="calendario" onclick="selVistaTec(this.dataset.vista)" style="flex:1;padding:10px;border-radius:10px;border:none;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:'+(tecVistaActual==='calendario'?'var(--green)':'var(--bg3)')+';color:'+(tecVistaActual==='calendario'?'#000':'var(--text2)')+';">📅 Calendario</button>';
+  html += '<button data-vista="filtro" onclick="selVistaTec(this.dataset.vista)" style="flex:1;padding:10px;border-radius:10px;border:none;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:'+(tecVistaActual==='filtro'?'var(--green)':'var(--bg3)')+';color:'+(tecVistaActual==='filtro'?'#000':'var(--text2)')+';">🔍 Filtrar</button>';
 
   // Resumen rápido
   const hoy = new Date().toISOString().split('T')[0];
