@@ -602,9 +602,17 @@ function aplicarRol() {
       topTabs.appendChild(btn);
       topTabs.appendChild(btnH);
     }
-    // Vaciar sidebar
+    // Ocultar todos los items del sidebar excepto Mis ordenes
     const sidebarNav = document.getElementById('sidebarNav');
-    if(sidebarNav) sidebarNav.innerHTML = '';
+    if(sidebarNav) {
+      sidebarNav.querySelectorAll('.sidebar-nav-item').forEach(function(btn) {
+        if(btn.id === 'nav-mis-ordenes') {
+          btn.style.display = 'flex';
+        } else {
+          btn.style.display = 'none';
+        }
+      });
+    }
     // Ocultar sidebar en mobile
     const sidebar = document.querySelector('.sidebar');
     if(sidebar) sidebar.style.display = 'none';
@@ -612,9 +620,6 @@ function aplicarRol() {
     document.body.classList.add('tecnico-mode');
     const bottomNav = document.querySelector('.bottom-nav');
     if(bottomNav) { bottomNav.style.setProperty('display','none','important'); }
-    // Mostrar "Mis ordenes" en sidebar para tecnicos
-    const misOrdBtn = document.getElementById('nav-mis-ordenes');
-    if(misOrdBtn) misOrdBtn.style.display = 'flex';
     filtroTecnico = usuarioActual.nombre;
     const tabsTec = document.getElementById('tabs-tecnico');
     if(tabsTec) tabsTec.style.display = 'none';
