@@ -3,152 +3,156 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0a0a0a">
+<meta name="theme-color" content="#f0f4ff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>ReparaTuEco — Gestión de Bicicletas Eléctricas</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" crossorigin="anonymous"></script>
 <script>window.supabaseReady=false;</script>
 <style>
 :root {
-  --green:#00e676;--green-dark:#00b248;--green-dim:rgba(0,230,118,0.12);--green-dim2:rgba(0,230,118,0.06);
-  --bg:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;--bg4:#222;
-  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
-  --text:#f0f0f0;--text2:#888;--text3:#555;
-  --amber:#ffb300;--amber-dim:rgba(255,179,0,0.12);
-  --blue:#2979ff;--blue-dim:rgba(41,121,255,0.12);
-  --red:#ff1744;--red-dim:rgba(255,23,68,0.12);
-  --radius:12px;--radius-sm:8px;
-  --mono:'Space Mono',monospace;--sans:'DM Sans',sans-serif;
+  --green:#16a34a;--green-dark:#15803d;--green-dim:rgba(22,163,74,0.10);--green-dim2:rgba(22,163,74,0.05);
+  --bg:#f0f4ff;--bg2:#ffffff;--bg3:#f8fafc;--bg4:#eef2ff;
+  --border:rgba(99,102,241,0.12);--border2:rgba(99,102,241,0.22);
+  --text:#1e1b4b;--text2:#6366f1;--text3:#94a3b8;
+  --amber:#d97706;--amber-dim:rgba(217,119,6,0.10);
+  --blue:#4f46e5;--blue-dim:rgba(79,70,229,0.10);
+  --red:#dc2626;--red-dim:rgba(220,38,38,0.10);
+  --accent:#6366f1;--accent2:#818cf8;
+  --radius:14px;--radius-sm:10px;
+  --mono:Arial,Helvetica,sans-serif;--sans:'Plus Jakarta Sans',sans-serif;
+  --shadow:0 1px 3px rgba(99,102,241,0.08),0 4px 16px rgba(99,102,241,0.06);
+  --shadow-md:0 4px 6px rgba(99,102,241,0.08),0 12px 32px rgba(99,102,241,0.10);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.5;}
 .app{display:flex;flex-direction:column;height:100vh;width:100%;}
 @media(min-width:768px){
   .app{flex-direction:row;}
-  .sidebar{width:220px;flex-shrink:0;border-right:1px solid var(--border);display:flex!important;flex-direction:column;}
+  .sidebar{width:232px;flex-shrink:0;border-right:1px solid var(--border);display:flex!important;flex-direction:column;}
   .main{flex:1;overflow-y:auto;}
   .bottom-nav,.top-tabs{display:none!important;}
   .tecnico-mode .bottom-nav{display:none!important;}
   .topbar{display:none!important;}
-  .screen{padding:24px 32px;}
+  .screen{padding:28px 36px;}
 }
-.sidebar{display:none;background:var(--bg2);overflow-y:auto;}
-.sidebar-logo{padding:24px 20px 16px;border-bottom:1px solid var(--border);}
-.sidebar-logo-main{font-family:var(--mono);font-size:15px;color:var(--green);letter-spacing:2px;}
-.sidebar-logo-sub{font-size:11px;color:var(--text3);margin-top:3px;}
-.sidebar-nav{display:flex;flex-direction:column;gap:2px;padding:12px 10px;flex:1;}
-.sidebar-nav-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text2);font-size:14px;transition:all .15s;border:none;background:none;width:100%;text-align:left;}
-.sidebar-nav-item:hover{background:var(--bg3);color:var(--text);}
-.sidebar-nav-item.active{background:var(--green-dim);color:var(--green);}
-.sidebar-nav-item svg{width:18px;height:18px;flex-shrink:0;}
-.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.topbar-logo{font-family:var(--mono);font-size:13px;color:var(--green);letter-spacing:1px;}
+.sidebar{display:none;background:var(--bg2);overflow-y:auto;box-shadow:2px 0 20px rgba(99,102,241,0.06);}
+.sidebar-logo{padding:28px 20px 20px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#eef2ff 0%,#f0f9ff 100%);}
+.sidebar-logo-main{font-family:var(--mono);font-size:16px;font-weight:800;color:var(--blue);letter-spacing:1px;}
+.sidebar-logo-sub{font-size:11px;color:var(--text3);margin-top:3px;font-weight:400;}
+.sidebar-nav{display:flex;flex-direction:column;gap:3px;padding:14px 10px;flex:1;}
+.sidebar-nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text3);font-size:13.5px;font-weight:500;transition:all .18s;border:none;background:none;width:100%;text-align:left;}
+.sidebar-nav-item:hover{background:var(--bg4);color:var(--text);}
+.sidebar-nav-item.active{background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(129,140,248,0.08));color:var(--blue);font-weight:600;box-shadow:inset 3px 0 0 var(--blue);}
+.sidebar-nav-item svg{width:17px;height:17px;flex-shrink:0;}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 12px rgba(99,102,241,0.06);}
+.topbar-logo{font-family:var(--mono);font-size:14px;font-weight:800;color:var(--blue);letter-spacing:.5px;}
 .topbar-subtitle{font-size:11px;color:var(--text3);margin-top:1px;}
 .top-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
-.top-tab{flex:1;padding:10px 4px;font-family:var(--sans);font-size:13px;font-weight:500;color:var(--text3);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;}
-.top-tab.active{color:var(--green);border-bottom-color:var(--green);}
+.top-tab{flex:1;padding:11px 4px;font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--text3);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .18s;}
+.top-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
 .main{flex:1;overflow-y:auto;background:var(--bg);}
 .screen{display:none;padding:16px;}
 .screen.active{display:block;}
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
-.card-title{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:var(--shadow);}
+.card-title{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px;}
 .field{margin-bottom:14px;}
-.field label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500;}
-.field input,.field select,.field textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;transition:border-color .15s;}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green);}
+.field label{display:block;font-size:12px;color:var(--text);margin-bottom:6px;font-weight:600;opacity:.7;}
+.field input,.field select,.field textarea{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;transition:all .18s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(99,102,241,0.10);}
 .field textarea{min-height:80px;resize:vertical;}
-.field select option{background:var(--bg3);}
+.field select option{background:#fff;color:var(--text);}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:var(--radius-sm);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all .15s;}
-.btn-primary{background:var(--green);color:#000;width:100%;}
-.btn-primary:hover{background:var(--green-dark);}
-.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);}
-.btn-ghost:hover{background:var(--bg3);color:var(--text);}
-.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,23,68,.2);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border-radius:var(--radius-sm);font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .18s;}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--accent2));color:#fff;width:100%;box-shadow:0 4px 14px rgba(99,102,241,0.25);}
+.btn-primary:hover{background:linear-gradient(135deg,#4338ca,var(--blue));box-shadow:0 6px 20px rgba(99,102,241,0.35);transform:translateY(-1px);}
+.btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--border2);}
+.btn-ghost:hover{background:var(--bg4);color:var(--text);}
+.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid rgba(220,38,38,.2);}
 .btn-wa{background:#25D366;color:white;}
 .btn-wa:hover{background:#1da851;}
-.btn-sm{padding:7px 12px;font-size:12px;}
-.btn-icon{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:all .15s;}
-.btn-icon:hover{background:var(--bg4);color:var(--text);}
-.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.3px;}
-.badge-amber{background:var(--amber-dim);color:var(--amber);}
-.badge-blue{background:var(--blue-dim);color:#82b1ff;}
-.badge-green{background:var(--green-dim);color:var(--green);}
-.badge-red{background:var(--red-dim);color:#ff6b6b;}
+.btn-sm{padding:7px 14px;font-size:12px;}
+.btn-icon{background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius-sm);width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);transition:all .18s;}
+.btn-icon:hover{background:var(--bg4);color:var(--blue);}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.3px;}
+.badge-amber{background:rgba(217,119,6,0.12);color:#b45309;}
+.badge-blue{background:rgba(79,70,229,0.12);color:var(--blue);}
+.badge-green{background:rgba(22,163,74,0.12);color:#15803d;}
+.badge-red{background:rgba(220,38,38,0.12);color:#dc2626;}
 .badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
-.order-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:border-color .15s;}
-.order-card:hover{border-color:var(--border2);}
-.order-num{font-family:var(--mono);font-size:12px;color:var(--green);margin-bottom:4px;}
-.order-name{font-size:15px;font-weight:500;margin-bottom:3px;}
-.order-service{font-size:12px;color:var(--text2);}
+.order-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px;cursor:pointer;transition:all .2s;box-shadow:var(--shadow);}
+.order-card:hover{border-color:var(--accent2);box-shadow:var(--shadow-md);transform:translateY(-1px);}
+.order-num{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);margin-bottom:4px;letter-spacing:.5px;}
+.order-name{font-size:15px;font-weight:600;margin-bottom:3px;color:var(--text);}
+.order-service{font-size:12px;color:var(--text3);}
 .order-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
 .order-date{font-size:11px;color:var(--text3);}
-.photo-zone{border:1px dashed var(--border2);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;transition:all .15s;}
-.photo-zone:hover{border-color:var(--green);background:var(--green-dim2);}
+.photo-zone{border:2px dashed var(--border2);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);}
+.photo-zone:hover{border-color:var(--accent);background:rgba(99,102,241,0.04);}
 .photo-zone-text{font-size:13px;color:var(--text3);}
 .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}.photo-grid>div{position:relative;display:block;}
-.photo-thumb{width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border);}
+.photo-thumb{width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius-sm);border:1.5px solid var(--border);}
 .stepper{display:flex;align-items:center;margin-bottom:20px;}
 .step-node{display:flex;flex-direction:column;align-items:center;gap:5px;}
-.step-circle{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--mono);border:1px solid var(--border2);color:var(--text3);background:var(--bg3);transition:all .3s;}
-.step-circle.done{background:var(--green);color:#000;border-color:var(--green);}
-.step-circle.active{background:var(--green-dim);color:var(--green);border-color:var(--green);}
-.step-lbl{font-size:9px;color:var(--text3);white-space:nowrap;}
-.step-lbl.active{color:var(--green);}
-.step-line{flex:1;height:1px;background:var(--border);margin:0 4px;margin-bottom:16px;transition:background .3s;}
+.step-circle{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--mono);border:1.5px solid var(--border2);color:var(--text3);background:var(--bg3);transition:all .3s;}
+.step-circle.done{background:linear-gradient(135deg,var(--green),#22c55e);color:#fff;border-color:var(--green);}
+.step-circle.active{background:linear-gradient(135deg,var(--blue),var(--accent2));color:#fff;border-color:var(--blue);box-shadow:0 0 0 3px rgba(99,102,241,0.15);}
+.step-lbl{font-size:9px;color:var(--text3);white-space:nowrap;font-weight:600;}
+.step-lbl.active{color:var(--blue);}
+.step-line{flex:1;height:2px;background:var(--border);margin:0 4px;margin-bottom:16px;transition:background .3s;border-radius:2px;}
 .step-line.done{background:var(--green);}
-.order-num-big{font-family:var(--mono);font-size:36px;color:var(--green);text-align:center;padding:16px 0 8px;letter-spacing:3px;}
-.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
-.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
-.stat-val{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.order-num-big{font-family:'Arial',sans-serif;font-size:36px;font-weight:700;letter-spacing:2px;color:var(--blue);text-align:center;padding:16px 0 8px;letter-spacing:3px;}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px;}
+.stat-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);}
+.stat-val{font-family:'Arial','Helvetica Neue',Arial,sans-serif;font-size:32px;font-weight:700;color:var(--text);margin-bottom:2px;letter-spacing:-1px;}
 .stat-val.green{color:var(--green);}
-.stat-lbl{font-size:11px;color:var(--text3);letter-spacing:.5px;}
-.wa-bubble{background:#1e3a2a;border-left:2px solid #25D366;border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;color:#d4f5d4;line-height:1.7;margin:10px 0;}
+.stat-lbl{font-size:11px;color:var(--text3);letter-spacing:.5px;font-weight:600;}
+.wa-bubble{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-left:3px solid #22c55e;border-radius:var(--radius-sm);padding:14px 16px;font-size:13px;color:#166534;line-height:1.7;margin:10px 0;border:1px solid #bbf7d0;}
 .repuesto-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
 .repuesto-row input{flex:1;}
 .repuesto-row input:last-of-type{flex:0.4;}
-.empty{text-align:center;padding:40px 20px;color:var(--text3);}
-.empty-icon{font-size:40px;margin-bottom:12px;opacity:.4;}
-.empty-text{font-size:14px;}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:flex-end;justify-content:center;}
+.empty{text-align:center;padding:48px 20px;color:var(--text3);}
+.empty-icon{font-size:44px;margin-bottom:14px;opacity:.35;}
+.empty-text{font-size:14px;font-weight:500;}
+.modal-overlay{position:fixed;inset:0;background:rgba(30,27,75,0.35);backdrop-filter:blur(4px);z-index:100;display:none;align-items:flex-end;justify-content:center;}
 .modal-overlay.open{display:flex;}
-.modal{background:var(--bg2);border-top:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;padding:20px 16px 32px;}
-@media(min-width:768px){.modal-overlay{align-items:center;}.modal{border-radius:var(--radius);border:1px solid var(--border);max-width:540px;max-height:85vh;}}
-.modal-handle{width:36px;height:3px;background:var(--border2);border-radius:2px;margin:0 auto 18px;}
-.search-bar{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;margin-bottom:14px;}
+.modal{background:var(--bg2);border-top:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;padding:20px 18px 32px;box-shadow:0 -8px 40px rgba(99,102,241,0.12);}
+@media(min-width:768px){.modal-overlay{align-items:center;}.modal{border-radius:var(--radius);border:1.5px solid var(--border);max-width:540px;max-height:85vh;box-shadow:var(--shadow-md);}}
+.modal-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 20px;}
+.search-bar{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;box-shadow:var(--shadow);transition:border-color .18s;}
+.search-bar:focus-within{border-color:var(--accent);}
 .search-bar svg{color:var(--text3);flex-shrink:0;}
 .search-bar input{background:none;border:none;outline:none;color:var(--text);font-family:var(--sans);font-size:14px;flex:1;}
 .setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);}
 .setting-row:last-child{border-bottom:none;}
-.setting-label{font-size:14px;}
+.setting-label{font-size:14px;font-weight:500;}
 .setting-sub{font-size:12px;color:var(--text3);margin-top:2px;}
-.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:10px 18px;font-size:13px;color:var(--text);z-index:200;opacity:0;transition:all .25s;white-space:nowrap;pointer-events:none;}
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);border-radius:var(--radius-sm);padding:10px 20px;font-size:13px;font-weight:500;color:#fff;z-index:200;opacity:0;transition:all .25s;white-space:nowrap;pointer-events:none;box-shadow:0 8px 24px rgba(30,27,75,0.2);}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 @media(min-width:768px){.toast{bottom:24px;}}
-.section-title{font-size:18px;font-weight:600;margin-bottom:16px;}
+.section-title{font-size:20px;font-weight:700;margin-bottom:18px;color:var(--text);}
 .filter-tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;}
-.filter-tab{flex-shrink:0;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text2);transition:all .15s;}
-.filter-tab.active{background:var(--green-dim);color:var(--green);border-color:var(--green);}
+.filter-tab{flex-shrink:0;padding:7px 16px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text3);transition:all .18s;}
+.filter-tab.active{background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(129,140,248,0.08));color:var(--blue);border-color:var(--accent);}
 .price-input-wrap{position:relative;}
 .price-input-wrap span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none;}
 .price-input-wrap input{padding-left:28px!important;}
-.divider{height:1px;background:var(--border);margin:14px 0;}
-.autz-item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;font-size:13px;}
-.autz-item.autorizado{border-color:rgba(0,230,118,0.3);background:var(--green-dim2);}
-.autz-item.rechazado{border-color:rgba(255,23,68,0.2);background:var(--red-dim);}
-.autz-item.pendiente{border-color:rgba(255,179,0,0.3);background:var(--amber-dim);}
-.autz-desc{font-weight:500;margin-bottom:4px;}
-.autz-meta{font-size:11px;color:var(--text2);display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
-.loading{display:flex;align-items:center;justify-content:center;padding:30px;color:var(--text3);font-size:13px;gap:10px;}
-.spinner{width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+.divider{height:1px;background:var(--border);margin:16px 0;}
+.autz-item{border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;font-size:13px;}
+.autz-item.autorizado{border-color:rgba(22,163,74,0.3);background:rgba(22,163,74,0.05);}
+.autz-item.rechazado{border-color:rgba(220,38,38,0.25);background:rgba(220,38,38,0.05);}
+.autz-item.pendiente{border-color:rgba(217,119,6,0.3);background:rgba(217,119,6,0.06);}
+.autz-desc{font-weight:600;margin-bottom:4px;}
+.autz-meta{font-size:11px;color:var(--text3);display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
+.loading{display:flex;align-items:center;justify-content:center;padding:36px;color:var(--text3);font-size:13px;gap:10px;}
+.spinner{width:20px;height:20px;border:2.5px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.upload-progress{height:3px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden;}
-.upload-progress-bar{height:100%;background:var(--green);border-radius:2px;transition:width .3s;}
-.bottom-nav{display:flex;background:var(--bg2);border-top:1px solid var(--border);flex-shrink:0;}.tecnico-mode .bottom-nav{display:none!important;}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;cursor:pointer;color:var(--text3);font-size:10px;border:none;background:none;transition:color .15s;}
-.nav-item.active{color:var(--green);}
+.upload-progress{height:4px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden;}
+.upload-progress-bar{height:100%;background:linear-gradient(90deg,var(--blue),var(--accent2));border-radius:2px;transition:width .3s;}
+.bottom-nav{display:flex;background:var(--bg2);border-top:1.5px solid var(--border);flex-shrink:0;box-shadow:0 -2px 16px rgba(99,102,241,0.07);}.tecnico-mode .bottom-nav{display:none!important;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:600;border:none;background:none;transition:color .18s;}
+.nav-item.active{color:var(--blue);}
 .nav-item svg{width:20px;height:20px;}
 </style>
 </head>
@@ -192,9 +196,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
   <div class="main">
     <div class="topbar" style="padding:8px 18px;">
       <img src="data:image/png;base64,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" alt="ReparaTuEco" style="height:42px;">
-      <span id="topbar-local" style="font-family:'Space Mono',monospace;font-size:11px;color:#00e676;letter-spacing:1px;"></span>
+      <span id="topbar-local" style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#4f46e5;letter-spacing:1px;"></span>
       <div><span id="topbar-badge" class="badge badge-amber" style="display:none"></span>
-      <button onclick="cerrarSesion()" style="background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:6px;color:#888;font-size:11px;padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;">Salir</button></div>
+      <button onclick="cerrarSesion()" style="background:transparent;border:1.5px solid rgba(99,102,241,0.25);border-radius:6px;color:#6366f1;font-size:11px;font-weight:600;padding:4px 10px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;background:#f0f4ff;">Salir</button></div>
     </div>
     <div class="top-tabs" style="justify-content:space-between;">
       <div style="display:flex;overflow-x:auto;flex:1;">
@@ -207,15 +211,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <button class="top-tab" id="ttab-historial" onclick="goScreen('historial',this)">Historial</button>
       <button class="top-tab" id="ttab-config" onclick="goScreen('config',this)">Config</button>
       </div>
-      <button onclick="cerrarSesion()" style="background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:6px;color:#888;font-size:11px;padding:4px 10px;cursor:pointer;font-family:var(--sans);white-space:nowrap;margin:8px 8px 8px 0;flex-shrink:0;">Salir</button>
+      <button onclick="cerrarSesion()" style="background:transparent;border:1.5px solid rgba(99,102,241,0.25);border-radius:6px;color:#6366f1;font-size:11px;font-weight:600;padding:4px 10px;cursor:pointer;font-family:var(--sans);white-space:nowrap;margin:8px 8px 8px 0;flex-shrink:0;background:#f0f4ff;">Salir</button>
     </div>
 
     <!-- HOME ADMIN -->
     <div id="screen-home" class="screen">
       <!-- Header saludo -->
-      <div style="background:linear-gradient(135deg,#0a2a1a,#0d3d24);border:1px solid rgba(0,230,118,0.2);border-radius:16px;padding:18px 20px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="background:linear-gradient(135deg,#eef2ff,#e0f9ee);border:1.5px solid rgba(22,163,74,0.2);border-radius:16px;padding:18px 20px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <div style="font-size:20px;font-weight:700;color:var(--green);" id="home-saludo">Buenos dias</div>
+          <div style="font-size:20px;font-weight:700;color:var(--blue);" id="home-saludo">Buenos dias</div>
           <div style="font-size:12px;color:var(--text2);margin-top:2px;">ReparaTuEco · Especialistas en Movilidad Eléctrica</div>
         </div>
         <div style="font-size:36px;">🚲</div>
@@ -397,25 +401,25 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 
       <!-- Estado selector cards -->
       <div id="tec-estado-cards" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
-        <button onclick="selEstadoTec('pendiente')" id="card-pendiente" style="background:linear-gradient(135deg,#3d2c00,#5c4200);border:2px solid #ffb300;border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;transition:transform .15s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform=''">
+        <button onclick="selEstadoTec('pendiente')" id="card-pendiente" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2px solid #f59e0b;border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;transition:all .18s;box-shadow:0 2px 10px rgba(245,158,11,0.15);" onmouseover="this.style.transform='scale(1.03)';this.style.boxShadow='0 6px 20px rgba(245,158,11,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 10px rgba(245,158,11,0.15)'">
           <div style="font-size:28px;margin-bottom:6px;">📋</div>
-          <div style="font-size:14px;font-weight:700;color:#ffb300;">Pendientes</div>
-          <div id="cnt-pendiente" style="font-family:var(--mono);font-size:22px;font-weight:700;color:#ffb300;margin-top:4px;">—</div>
+          <div style="font-size:14px;font-weight:700;color:#b45309;">Pendientes</div>
+          <div id="cnt-pendiente" style="font-family:'Arial',sans-serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;color:#d97706;margin-top:4px;">—</div>
         </button>
-        <button onclick="selEstadoTec('en_proceso')" id="card-en_proceso" style="background:linear-gradient(135deg,#001a3d,#00255c);border:2px solid #2979ff;border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;transition:transform .15s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform=''">
+        <button onclick="selEstadoTec('en_proceso')" id="card-en_proceso" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:2px solid #3b82f6;border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;transition:all .18s;box-shadow:0 2px 10px rgba(59,130,246,0.15);" onmouseover="this.style.transform='scale(1.03)';this.style.boxShadow='0 6px 20px rgba(59,130,246,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 10px rgba(59,130,246,0.15)'">
           <div style="font-size:28px;margin-bottom:6px;">🔧</div>
-          <div style="font-size:14px;font-weight:700;color:#82b1ff;">En proceso</div>
-          <div id="cnt-en_proceso" style="font-family:var(--mono);font-size:22px;font-weight:700;color:#82b1ff;margin-top:4px;">—</div>
+          <div style="font-size:14px;font-weight:700;color:#1d4ed8;">En proceso</div>
+          <div id="cnt-en_proceso" style="font-family:'Arial',sans-serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;color:#2563eb;margin-top:4px;">—</div>
         </button>
-        <button onclick="selEstadoTec('pendiente_admin')" id="card-pendiente_admin" style="background:linear-gradient(135deg,#3d1a00,#5c2800);border:2px solid #ff6d00;border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;transition:transform .15s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform=''">
+        <button onclick="selEstadoTec('pendiente_admin')" id="card-pendiente_admin" style="background:linear-gradient(135deg,#fff7ed,#ffedd5);border:2px solid #f97316;border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;transition:all .18s;box-shadow:0 2px 10px rgba(249,115,22,0.15);" onmouseover="this.style.transform='scale(1.03)';this.style.boxShadow='0 6px 20px rgba(249,115,22,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 10px rgba(249,115,22,0.15)'">
           <div style="font-size:28px;margin-bottom:6px;">⏳</div>
-          <div style="font-size:14px;font-weight:700;color:#ffab40;">Esp. admin</div>
-          <div id="cnt-pendiente_admin" style="font-family:var(--mono);font-size:22px;font-weight:700;color:#ffab40;margin-top:4px;">—</div>
+          <div style="font-size:14px;font-weight:700;color:#c2410c;">Esp. admin</div>
+          <div id="cnt-pendiente_admin" style="font-family:'Arial',sans-serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;color:#ea580c;margin-top:4px;">—</div>
         </button>
-        <button onclick="selEstadoTec('listo')" id="card-listo" style="background:linear-gradient(135deg,#003d1a,#005c28);border:2px solid #00e676;border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;transition:transform .15s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform=''">
+        <button onclick="selEstadoTec('listo')" id="card-listo" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #22c55e;border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;transition:all .18s;box-shadow:0 2px 10px rgba(34,197,94,0.15);" onmouseover="this.style.transform='scale(1.03)';this.style.boxShadow='0 6px 20px rgba(34,197,94,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 10px rgba(34,197,94,0.15)'">
           <div style="font-size:28px;margin-bottom:6px;">✅</div>
-          <div style="font-size:14px;font-weight:700;color:var(--green);">Listas</div>
-          <div id="cnt-listo" style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--green);margin-top:4px;">—</div>
+          <div style="font-size:14px;font-weight:700;color:#15803d;">Listas</div>
+          <div id="cnt-listo" style="font-family:'Arial',sans-serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;color:#16a34a;margin-top:4px;">—</div>
         </button>
       </div>
 
@@ -1638,31 +1642,6 @@ function imprimirRecibo() {
     <button onclick="window.print()" style="background:#1a7a4a;color:white;border:none;padding:10px 30px;border-radius:6px;font-size:14px;cursor:pointer;font-weight:600;">🖨 Imprimir</button>
   </div>
 
-
-<div id="login-overlay" style="position:fixed;inset:0;background:#0a0a0a;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:16px;width:100%;max-width:360px;padding:32px 24px;">
-    <div style="text-align:center;margin-bottom:28px;">
-      <div style="font-family:'Space Mono',monospace;font-size:18px;color:#00e676;letter-spacing:3px;margin-bottom:6px;">ReparaTuEco</div>
-      <div style="font-size:12px;color:#555;">Ingresa tus credenciales</div>
-    </div>
-    <div style="margin-bottom:14px;">
-      <label style="display:block;font-size:12px;color:#888;margin-bottom:6px;font-weight:500;">Usuario</label>
-      <input id="login-user" type="text" placeholder="admin / Alonso / Andres / Dario" onkeydown="if(event.key==='Enter')document.getElementById('login-pin').focus()" style="width:100%;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#f0f0f0;font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 14px;outline:none;box-sizing:border-box;">
-    </div>
-    <div style="margin-bottom:20px;">
-      <label style="display:block;font-size:12px;color:#888;margin-bottom:6px;font-weight:500;">PIN</label>
-      <div style="position:relative;">
-        <input id="login-pin" type="password" placeholder="Tu PIN" onkeydown="if(event.key==='Enter')intentarLogin()" style="width:100%;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#f0f0f0;font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 44px 11px 14px;outline:none;box-sizing:border-box;">
-        <button type="button" id="pin-eye-btn" onclick="togglePinVisibility()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;">
-          <svg id="pin-eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-      </div>
-    </div>
-    <div id="login-error" style="color:#ff1744;font-size:12px;margin-bottom:12px;min-height:18px;text-align:center;"></div>
-    <button onclick="intentarLogin()" style="width:100%;background:#00e676;color:#000;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;padding:13px;cursor:pointer;">Ingresar</button>
-  </div>
-</div>
-
 </body>
 </html>`);
   win.document.close();
@@ -1694,7 +1673,7 @@ function renderAutorizaciones(autzs, ordenId) {
 
 function abrirNuevaAutorizacion(ordenId, clienteNombre, clienteTel) {
   const overlay = document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:flex-end;justify-content:center;';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(30,27,75,0.35);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:flex-end;justify-content:center;';
   overlay.innerHTML=`
     <div style="background:var(--bg2);border-top:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 16px 32px;">
       <div style="width:36px;height:3px;background:var(--border2);border-radius:2px;margin:0 auto 18px;"></div>
@@ -2278,7 +2257,7 @@ async function marcarEntregada(ordenId) {
 
 function mostrarModalEntrega(o, venta, items, total) {
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;display:flex;align-items:flex-end;justify-content:center;';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.5);backdrop-filter:blur(4px);z-index:300;display:flex;align-items:flex-end;justify-content:center;';
   overlay.innerHTML = `
   <div style="background:var(--bg2);border-top:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 16px 36px;max-height:85vh;overflow-y:auto;">
     <div style="width:36px;height:3px;background:var(--border2);border-radius:2px;margin:0 auto 16px;"></div>
@@ -2740,7 +2719,7 @@ async function renderVentas(el) {
       <input type="text" id="venta-buscar" placeholder="🔍 Escanea código de barras o escribe el nombre del producto..." oninput="buscarProducto(this.value)" autocomplete="off" style="background:none;border:none;outline:none;color:var(--text);font-family:var(--sans);font-size:14px;flex:1;" autofocus>
       <span style="font-size:10px;color:var(--text3);white-space:nowrap;">⌨ o escáner</span>
     </div>
-    <div id="venta-resultados" style="position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:50;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.4);"></div>
+    <div id="venta-resultados" style="position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:50;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(99,102,241,0.15);"></div>
   </div>
 
   <!-- Tabla productos -->
@@ -2895,7 +2874,7 @@ function renderFormPago(subtotal) {
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px;">
 
     <!-- Total a pagar -->
-    <div style="background:linear-gradient(135deg,#0a2a1a,#0d3d24);border:1px solid rgba(0,230,118,0.2);border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="background:linear-gradient(135deg,#eef2ff,#e0f9ee);border:1.5px solid rgba(22,163,74,0.2);border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:13px;color:var(--text2);">Total a cobrar</span>
       <span id="total-a-cobrar" style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--green);">$${subtotal.toLocaleString('es-CO')}</span>
     </div>
@@ -3204,7 +3183,7 @@ async function imprimirVenta(id) {
 
 function abrirAnulacion(ventaId) {
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.5);backdrop-filter:blur(4px);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;';
   const box = document.createElement('div');
   box.style.cssText = 'background:var(--bg2);border:1px solid rgba(255,23,68,0.3);border-radius:16px;width:100%;max-width:360px;padding:24px;';
   const titulo = document.createElement('div');
@@ -3339,7 +3318,7 @@ async function eliminarProducto(id, nombre) {
 
 function abrirFormInventario(producto) {
   const overlay = document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:flex-end;justify-content:center;';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(30,27,75,0.35);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:flex-end;justify-content:center;';
   overlay.innerHTML=`
   <div style="background:var(--bg2);border-top:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 16px 32px;max-height:85vh;overflow-y:auto;">
     <div style="width:36px;height:3px;background:var(--border2);border-radius:2px;margin:0 auto 18px;"></div>
@@ -3386,7 +3365,7 @@ async function guardarInventario(id, overlay) {
 
 function ajustarStock(id, stockActual, nombre) {
   const overlay = document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(30,27,75,0.35);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;';
   overlay.innerHTML=`
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:320px;padding:24px;">
     <div style="font-size:15px;font-weight:600;margin-bottom:4px;">Ajustar stock</div>
@@ -3516,7 +3495,7 @@ async function renderCajaDelDia(el) {
     html += '</div>';
 
     // Cierre
-    html += '<div style="margin-top:20px;"><button class="btn btn-primary" style="width:100%;background:#1a1a1a;border:1px solid var(--green);color:var(--green);" onclick="confirmarCierreTurno()">🔒 Cierre de turno</button></div>';
+    html += '<div style="margin-top:20px;"><button class="btn btn-primary" style="width:100%;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #22c55e;color:#15803d;font-weight:700;" onclick="confirmarCierreTurno()">🔒 Cierre de turno</button></div>';
 
     el.innerHTML = html;
     selTipoMov('ingreso');
@@ -3614,7 +3593,7 @@ async function importarExcelInventario(input) {
 
   // Show preview
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:300;display:flex;align-items:flex-end;justify-content:center;';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.45);backdrop-filter:blur(4px);z-index:300;display:flex;align-items:flex-end;justify-content:center;';
   overlay.innerHTML = `
   <div style="background:var(--bg2);border-top:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:540px;padding:20px 16px 32px;max-height:80vh;overflow-y:auto;">
     <div style="width:36px;height:3px;background:var(--border2);border-radius:2px;margin:0 auto 16px;"></div>
@@ -3776,14 +3755,14 @@ async function procesarCodigoBarras(codigo) {
 
 function mostrarProductoBarcode(p) {
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.35);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;';
   overlay.innerHTML = `
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:360px;padding:24px;">
     <div style="font-size:11px;font-family:var(--mono);color:var(--green);margin-bottom:4px;">${p.codigo_barras||''}</div>
     <div style="font-size:17px;font-weight:700;margin-bottom:8px;">${p.nombre}</div>
     <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
       <div><div style="font-size:11px;color:var(--text3);">Stock actual</div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:${p.stock<=2?'var(--red)':p.stock<=5?'var(--amber)':'var(--text)'};">${p.stock}</div></div>
-      <div style="text-align:right;"><div style="font-size:11px;color:var(--text3);">Precio venta</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green);">$${Number(p.precio_venta||0).toLocaleString('es-CO')}</div></div>
+      <div style="text-align:right;"><div style="font-size:11px;color:var(--text3);">Precio venta</div><div style="font-family:Arial,sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.5px;color:var(--green);">$${Number(p.precio_venta||0).toLocaleString('es-CO')}</div></div>
     </div>
     <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Ajustar stock:</div>
     <div style="display:flex;gap:8px;margin-bottom:14px;">
@@ -3830,7 +3809,7 @@ function filtrarInventario(q) {
 const _origAbrirForm = abrirFormInventario;
 function abrirFormInventario(producto) {
   const overlay = document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:flex-end;justify-content:center;';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(30,27,75,0.35);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:flex-end;justify-content:center;';
   overlay.innerHTML=`
   <div style="background:var(--bg2);border-top:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 16px 32px;max-height:85vh;overflow-y:auto;">
     <div style="width:36px;height:3px;background:var(--border2);border-radius:2px;margin:0 auto 18px;"></div>
@@ -4033,7 +4012,7 @@ async function obtenerUltimoCierre() {
 
 function confirmarCierreTurno() {
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.45);backdrop-filter:blur(4px);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;';
   const box = document.createElement('div');
   box.style.cssText = 'background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:340px;padding:24px;';
   box.innerHTML = '<div style="font-size:20px;text-align:center;margin-bottom:10px;">🔒</div>'+
@@ -4507,7 +4486,7 @@ async function abrirFormAbono(clienteKey) {
 
   const pendiente = totalProducto - totalAbonado;
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:300;display:flex;align-items:flex-end;justify-content:center;';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.45);backdrop-filter:blur(4px);z-index:300;display:flex;align-items:flex-end;justify-content:center;';
   overlay.innerHTML = `
   <div style="background:var(--bg2);border-top:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 16px 36px;max-height:85vh;overflow-y:auto;">
     <div style="width:36px;height:3px;background:var(--border2);border-radius:2px;margin:0 auto 16px;"></div>
@@ -4926,6 +4905,18 @@ function selVistaTec(v) {
   renderTecHistorialUI(document.getElementById('lista-historial'));
 }
 
+function volverTecnicoDashboard() {
+  // Volver a la pantalla principal del técnico
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const tScreen = document.getElementById('screen-tecnico');
+  if(tScreen) tScreen.classList.add('active');
+  // Actualizar tab activo si existe
+  document.querySelectorAll('.top-tab').forEach(t => t.classList.remove('active'));
+  const tabTec = document.getElementById('ttab-tecnico');
+  if(tabTec) tabTec.classList.add('active');
+  renderTecnicoDashboard();
+}
+
 async function renderHistorialTecnico() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const hScreen = document.getElementById('screen-historial');
@@ -4945,6 +4936,9 @@ async function renderHistorialTecnico() {
 function renderTecHistorialUI(el) {
   const total = tecOrdenes.length;
   let html = '';
+
+  // Botón volver al dashboard principal del técnico
+  html += '<button onclick="volverTecnicoDashboard()" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid rgba(99,102,241,0.25);border-radius:12px;padding:10px 18px;font-family:var(--sans);font-size:14px;font-weight:600;color:#4f46e5;cursor:pointer;margin-bottom:16px;transition:all .18s;box-shadow:0 2px 8px rgba(99,102,241,0.10);" onmouseover="this.style.background=\'linear-gradient(135deg,#e0e7ff,#c7d2fe)\';this.style.transform=\'translateY(-1px)\'" onmouseout="this.style.background=\'linear-gradient(135deg,#eef2ff,#e0e7ff)\';this.style.transform=\'\'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Volver al inicio</button>';
 
   // Header con tabs
   // Tabs calendario/filtro
@@ -4974,7 +4968,7 @@ function renderTecHistorialUI(el) {
     var col = t.v > 0 ? 'var(--green)' : 'var(--text3)';
     var cur = t.v > 0 ? 'pointer' : 'default';
     var onclick = t.v > 0 ? 'mostrarResumenTec(\''+t.k+'\')' : '';
-    html += '<div onclick="'+onclick+'" style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;cursor:'+cur+';"><div style="font-size:18px;font-weight:700;color:'+col+';">'+t.v+'</div><div style="font-size:10px;color:var(--text3);">'+t.l+'</div></div>';
+    html += '<div onclick="'+onclick+'" style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;cursor:'+cur+';"><div style="font-family:Arial,sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.5px;color:'+col+';">'+t.v+'</div><div style="font-size:10px;color:var(--text3);">'+t.l+'</div></div>';
   });
   html += '</div>';
   html += '<div id="tec-resumen-detalle"></div>';
@@ -5126,6 +5120,29 @@ aplicarConfig();
 })();
 </script>
 
+<div id="login-overlay" style="position:fixed;inset:0;background:linear-gradient(135deg,#eef2ff 0%,#e0f2fe 50%,#f0fdf4 100%);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border:1.5px solid rgba(99,102,241,0.15);border-radius:20px;width:100%;max-width:360px;padding:36px 28px;box-shadow:0 8px 40px rgba(99,102,241,0.15);">
+    <div style="text-align:center;margin-bottom:30px;">
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#4f46e5;letter-spacing:1px;margin-bottom:6px;">ReparaTuEco</div>
+      <div style="font-size:12px;color:#94a3b8;font-weight:500;">Ingresa tus credenciales</div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:12px;color:#1e1b4b;margin-bottom:6px;font-weight:600;opacity:.7;">Usuario</label>
+      <input id="login-user" type="text" placeholder="admin / Alonso / Andres / Dario" onkeydown="if(event.key==='Enter')document.getElementById('login-pin').focus()" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;padding:11px 14px;outline:none;box-sizing:border-box;transition:border-color .18s;" onfocus="this.style.borderColor='#6366f1';this.style.background='#fff'" onblur="this.style.borderColor='rgba(99,102,241,0.18)';this.style.background='#f8fafc'">
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:12px;color:#1e1b4b;margin-bottom:6px;font-weight:600;opacity:.7;">PIN</label>
+      <div style="position:relative;">
+        <input id="login-pin" type="password" placeholder="Tu PIN" onkeydown="if(event.key==='Enter')intentarLogin()" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;padding:11px 44px 11px 14px;outline:none;box-sizing:border-box;transition:border-color .18s;" onfocus="this.style.borderColor='#6366f1';this.style.background='#fff'" onblur="this.style.borderColor='rgba(99,102,241,0.18)';this.style.background='#f8fafc'">
+        <button type="button" id="pin-eye-btn" onclick="togglePinVisibility()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;">
+          <svg id="pin-eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="login-error" style="color:#dc2626;font-size:12px;margin-bottom:12px;min-height:18px;text-align:center;font-weight:500;"></div>
+    <button onclick="intentarLogin()" style="width:100%;background:linear-gradient(135deg,#4f46e5,#818cf8);color:#fff;border:none;border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;padding:13px;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,0.3);transition:all .18s;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(99,102,241,0.4)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(99,102,241,0.3)'">Ingresar</button>
+  </div>
+</div>
 
 </body>
 </html>
