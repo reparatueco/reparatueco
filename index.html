@@ -4750,27 +4750,186 @@ function toggleDetalleCierre(id) {
 }
 
 
+// ===== HISTORIAL TECNICO CON CALENDARIO =====
+let tecOrdenes = [];
+let tecCalMes = new Date().getMonth();
+let tecCalAnio = new Date().getFullYear();
+let tecVistaActual = 'calendario'; // 'calendario' o 'filtro'
+
 async function renderHistorialTecnico() {
-  // Show the historial screen
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const hScreen = document.getElementById('screen-historial');
   if(hScreen) hScreen.classList.add('active');
 
   const el = document.getElementById('lista-historial');
   if(!el) return;
-  el.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
+  el.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando mis órdenes...</div>';
 
-  // Get only delivered orders by this technician
-  const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&tecnico=eq.'+encodeURIComponent(usuarioActual.nombre)+'&select=id,nombre,servicio,estado,fecha,presupuesto,marca,tecnico&order=fecha.desc', {
+  const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&tecnico=eq.'+encodeURIComponent(usuarioActual.nombre)+'&select=id,nombre,servicio,estado,fecha,presupuesto,marca,referencia,color_vehiculo,tecnico&order=fecha.desc', {
     headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
   });
-  const data = resp.ok ? await resp.json() : [];
-  
-  if(!data.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No tienes órdenes entregadas aún</div></div>';
-    return;
+  tecOrdenes = resp.ok ? await resp.json() : [];
+  renderTecHistorialUI(el);
+}
+
+function renderTecHistorialUI(el) {
+  const total = tecOrdenes.length;
+  let html = '';
+
+  // Header con tabs
+  html += '<div style="display:flex;gap:8px;margin-bottom:16px;">';
+  html += '<button onclick="tecVistaActual='calendario';renderTecHistorialUI(document.getElementById('lista-historial'))" style="flex:1;padding:10px;border-radius:10px;border:none;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:'+(tecVistaActual==='calendario'?'var(--green)':'var(--bg3)')+';color:'+(tecVistaActual==='calendario'?'#000':'var(--text2)')+';">📅 Calendario</button>';
+  html += '<button onclick="tecVistaActual='filtro';renderTecHistorialUI(document.getElementById('lista-historial'))" style="flex:1;padding:10px;border-radius:10px;border:none;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:'+(tecVistaActual==='filtro'?'var(--green)':'var(--bg3)')+';color:'+(tecVistaActual==='filtro'?'#000':'var(--text2)')+';">🔍 Filtrar</button>';
+  html += '</div>';
+
+  // Resumen rápido
+  const hoy = new Date().toISOString().split('T')[0];
+  const semanaMs = 7*24*60*60*1000;
+  const hoyTs = new Date(hoy).getTime();
+  const tdHoy = tecOrdenes.filter(o=>o.fecha&&o.fecha.startsWith(hoy)).length;
+  const tdSemana = tecOrdenes.filter(o=>o.fecha&&new Date(o.fecha).getTime()>=(hoyTs-semanaMs)).length;
+  const tdMes = tecOrdenes.filter(o=>{
+    if(!o.fecha) return false;
+    const d=new Date(o.fecha);
+    return d.getMonth()===new Date().getMonth()&&d.getFullYear()===new Date().getFullYear();
+  }).length;
+
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:16px;">';
+  html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--green);">'+tdHoy+'</div><div style="font-size:10px;color:var(--text3);">HOY</div></div>';
+  html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--green);">'+tdSemana+'</div><div style="font-size:10px;color:var(--text3);">SEMANA</div></div>';
+  html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--green);">'+tdMes+'</div><div style="font-size:10px;color:var(--text3);">MES</div></div>';
+  html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--green);">'+total+'</div><div style="font-size:10px;color:var(--text3);">TOTAL</div></div>';
+  html += '</div>';
+
+  if(tecVistaActual === 'calendario') {
+    html += renderTecCalendario();
+  } else {
+    html += renderTecFiltro();
   }
-  el.innerHTML = '<div style="font-size:13px;color:var(--text3);margin-bottom:12px;">'+data.length+' órdenes entregadas</div>' + renderOrdenCards(data, 'abrirModalHistorial');
+
+  el.innerHTML = html;
+}
+
+function renderTecCalendario() {
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const diasSem = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  let html = '';
+
+  // Navegacion mes
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">';
+  html += '<button onclick="tecCalMes--;if(tecCalMes<0){tecCalMes=11;tecCalAnio--;}renderTecHistorialUI(document.getElementById('lista-historial'))" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);cursor:pointer;font-size:16px;">‹</button>';
+  html += '<div style="font-size:15px;font-weight:700;">'+meses[tecCalMes]+' '+tecCalAnio+'</div>';
+  html += '<button onclick="tecCalMes++;if(tecCalMes>11){tecCalMes=0;tecCalAnio++;}renderTecHistorialUI(document.getElementById('lista-historial'))" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);cursor:pointer;font-size:16px;">›</button>';
+  html += '</div>';
+
+  // Dias de la semana
+  html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;">';
+  diasSem.forEach(d => { html += '<div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0;">'+d+'</div>'; });
+  html += '</div>';
+
+  // Calcular dias del mes
+  const primerDia = new Date(tecCalAnio, tecCalMes, 1).getDay();
+  const diasEnMes = new Date(tecCalAnio, tecCalMes+1, 0).getDate();
+  const hoy = new Date();
+
+  // Mapa de ordenes por dia
+  const porDia = {};
+  tecOrdenes.forEach(o => {
+    if(!o.fecha) return;
+    const d = new Date(o.fecha);
+    if(d.getMonth()===tecCalMes && d.getFullYear()===tecCalAnio) {
+      const key = d.getDate();
+      if(!porDia[key]) porDia[key] = [];
+      porDia[key].push(o);
+    }
+  });
+
+  html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;">';
+  // Espacios vacíos antes del primer día
+  for(let i=0; i<primerDia; i++) html += '<div></div>';
+
+  for(let dia=1; dia<=diasEnMes; dia++) {
+    const esHoy = hoy.getDate()===dia && hoy.getMonth()===tecCalMes && hoy.getFullYear()===tecCalAnio;
+    const ordenes = porDia[dia] || [];
+    const tieneOrdenes = ordenes.length > 0;
+    html += '<div onclick="'+(tieneOrdenes?'mostrarDiaTecnico('+dia+','+tecCalMes+','+tecCalAnio+')':'')+'" style="';
+    html += 'aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;';
+    html += 'background:'+(esHoy?'var(--green-dim)':tieneOrdenes?'rgba(0,230,118,0.08)':'var(--bg2)')+';';
+    html += 'border:1px solid '+(esHoy?'var(--green)':tieneOrdenes?'rgba(0,230,118,0.3)':'var(--border)')+';';
+    html += 'cursor:'+(tieneOrdenes?'pointer':'default')+';';
+    html += '">';
+    html += '<div style="font-size:13px;font-weight:'+(esHoy||tieneOrdenes?'700':'400')+';color:'+(esHoy?'var(--green)':tieneOrdenes?'var(--text)':'var(--text3)')+';">'+dia+'</div>';
+    if(tieneOrdenes) html += '<div style="font-size:9px;color:var(--green);font-weight:700;">'+ordenes.length+'</div>';
+    html += '</div>';
+  }
+  html += '</div>';
+  html += '<div id="tec-dia-detalle" style="margin-top:16px;"></div>';
+  return html;
+}
+
+function mostrarDiaTecnico(dia, mes, anio) {
+  const ordenes = tecOrdenes.filter(o => {
+    if(!o.fecha) return false;
+    const d = new Date(o.fecha);
+    return d.getDate()===dia && d.getMonth()===mes && d.getFullYear()===anio;
+  });
+  const el = document.getElementById('tec-dia-detalle');
+  if(!el) return;
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  let html = '<div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--green);">'+dia+' de '+meses[mes]+' — '+ordenes.length+' orden'+(ordenes.length!==1?'es':'')+'</div>';
+  html += renderOrdenCards(ordenes, 'abrirModalHistorial');
+  el.innerHTML = html;
+}
+
+function renderTecFiltro() {
+  let html = '';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">';
+  html += '<div><label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">Desde</label>';
+  html += '<input type="date" id="tec-fecha-desde" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:13px;padding:8px 10px;outline:none;"></div>';
+  html += '<div><label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">Hasta</label>';
+  html += '<input type="date" id="tec-fecha-hasta" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:13px;padding:8px 10px;outline:none;"></div>';
+  html += '</div>';
+  html += '<button onclick="aplicarFiltroTecnico()" style="width:100%;background:var(--green);color:#000;border:none;border-radius:10px;padding:11px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:16px;">Buscar</button>';
+  html += '<div id="tec-filtro-resultado"></div>';
+  return html;
+}
+
+function aplicarFiltroTecnico() {
+  const desde = document.getElementById('tec-fecha-desde')?.value;
+  const hasta = document.getElementById('tec-fecha-hasta')?.value;
+  const el = document.getElementById('tec-filtro-resultado');
+  if(!el) return;
+  if(!desde || !hasta) { el.innerHTML='<div style="color:var(--red);font-size:13px;">Selecciona las dos fechas</div>'; return; }
+
+  const desdeTs = new Date(desde).getTime();
+  const hastaTs = new Date(hasta+'T23:59:59').getTime();
+
+  const filtradas = tecOrdenes.filter(o => {
+    if(!o.fecha) return false;
+    const t = new Date(o.fecha).getTime();
+    return t >= desdeTs && t <= hastaTs;
+  });
+
+  if(!filtradas.length) { el.innerHTML='<div class="empty"><div class="empty-text">Sin órdenes en ese rango</div></div>'; return; }
+
+  // Resumen por servicio
+  const porServicio = {};
+  filtradas.forEach(o => {
+    const s = o.servicio || 'Sin servicio';
+    if(!porServicio[s]) porServicio[s] = 0;
+    porServicio[s]++;
+  });
+
+  let html = '<div style="background:var(--green-dim);border:1px solid rgba(0,230,118,0.3);border-radius:12px;padding:14px;margin-bottom:14px;">';
+  html += '<div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:10px;">'+filtradas.length+' órdenes entregadas</div>';
+  html += '<div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;">POR TIPO DE SERVICIO</div>';
+  Object.entries(porServicio).sort((a,b)=>b[1]-a[1]).forEach(([s,n]) => {
+    html += '<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid rgba(0,230,118,0.15);">';
+    html += '<span>'+s+'</span><span style="font-weight:700;color:var(--green);">'+n+'</span></div>';
+  });
+  html += '</div>';
+  html += renderOrdenCards(filtradas, 'abrirModalHistorial');
+  el.innerHTML = html;
 }
 
 // ===== INIT =====
