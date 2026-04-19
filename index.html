@@ -181,6 +181,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <button class="sidebar-nav-item" onclick="goScreen('historial',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Historial
       </button>
+      <button class="sidebar-nav-item" id="nav-clientes" onclick="goScreen('clientes',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes
+      </button>
       <button class="sidebar-nav-item" id="nav-inventario" onclick="goScreen('inventario',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"/></svg>Inventario
       </button>
@@ -189,6 +192,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       </button>
       <button class="sidebar-nav-item" onclick="goScreen('config',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Configuración
+      </button>
+      <button class="sidebar-nav-item" id="nav-clientes" onclick="goScreen('clientes',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes
       </button>
     </nav>
   </div>
@@ -209,6 +215,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <button class="top-tab" id="ttab-inventario" onclick="goScreen('inventario',this)">Inventario</button>
       <button class="top-tab" id="ttab-caja" onclick="goScreen('caja',this)">Caja & Venta</button>
       <button class="top-tab" id="ttab-historial" onclick="goScreen('historial',this)">Historial</button>
+      <button class="top-tab" id="ttab-clientes" onclick="goScreen('clientes',this)">Clientes</button>
       <button class="top-tab" id="ttab-config" onclick="goScreen('config',this)">Config</button>
       </div>
       <button onclick="cerrarSesion()" style="background:transparent;border:1.5px solid rgba(99,102,241,0.25);border-radius:6px;color:#6366f1;font-size:11px;font-weight:600;padding:4px 10px;cursor:pointer;font-family:var(--sans);white-space:nowrap;margin:8px 8px 8px 0;flex-shrink:0;background:#f0f4ff;">Salir</button>
@@ -290,8 +297,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <div id="rec-p1">
         <div class="card">
           <div class="card-title">Cliente</div>
-          <div class="field"><label>Nombre completo</label><input type="text" id="r-nombre" placeholder="Ej: María García"></div>
-          <div class="field"><label>Teléfono / WhatsApp</label><input type="tel" id="r-tel" placeholder="3001234567"></div>
+          <div class="row2">
+            <div class="field"><label>Nombre</label><input type="text" id="r-nombre" placeholder="Ej: María"></div>
+            <div class="field"><label>Apellido</label><input type="text" id="r-apellido" placeholder="Ej: García"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Teléfono / WhatsApp</label><input type="tel" id="r-tel" placeholder="3001234567"></div>
+            <div class="field"><label>Nº Documento</label><input type="text" id="r-documento" placeholder="Cédula o ID"></div>
+          </div>
         </div>
         <div class="card">
           <div class="card-title">Datos del vehículo</div>
@@ -334,11 +347,18 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
         </div>
         <div class="card">
           <div class="card-title">Foto de ingreso</div>
-          <div class="photo-zone" onclick="document.getElementById('f-ingreso').click()">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" style="margin-bottom:8px;"><rect x="2" y="6" width="20" height="15" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-3h5L16 6"/></svg>
-            <div class="photo-zone-text">Toca para agregar foto de la bicicleta</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+            <button onclick="document.getElementById('f-ingreso-camara').click()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid rgba(99,102,241,0.3);border-radius:12px;padding:16px 10px;cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:600;color:#4f46e5;transition:all .18s;" onmouseover="this.style.background='linear-gradient(135deg,#e0e7ff,#c7d2fe)'" onmouseout="this.style.background='linear-gradient(135deg,#eef2ff,#e0e7ff)'">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="1.8"><rect x="2" y="6" width="20" height="15" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-3h5L16 6"/></svg>
+              📷 Tomar foto
+            </button>
+            <button onclick="document.getElementById('f-ingreso-archivo').click()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid rgba(22,163,74,0.3);border-radius:12px;padding:16px 10px;cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:600;color:#16a34a;transition:all .18s;" onmouseover="this.style.background='linear-gradient(135deg,#dcfce7,#bbf7d0)'" onmouseout="this.style.background='linear-gradient(135deg,#f0fdf4,#dcfce7)'">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              📎 Adjuntar foto
+            </button>
           </div>
-          <input type="file" id="f-ingreso" accept="image/*" capture="environment" multiple style="display:none" onchange="previewFotos(this,'pg-ingreso')">
+          <input type="file" id="f-ingreso-camara" accept="image/*" capture="environment" multiple style="display:none" onchange="previewFotos(this,'pg-ingreso')">
+          <input type="file" id="f-ingreso-archivo" accept="image/*" multiple style="display:none" onchange="previewFotos(this,'pg-ingreso')">
           <div class="photo-grid" id="pg-ingreso"></div>
           <div class="upload-progress" id="prog-ingreso" style="display:none"><div class="upload-progress-bar" id="prog-bar-ingreso" style="width:0%"></div></div>
         </div>
@@ -358,23 +378,48 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
             <div style="display:flex;justify-content:space-between;font-size:14px;"><span style="color:var(--text2)">Técnico</span><span id="conf-tecnico" style="font-weight:500;color:var(--green)"></span></div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-title">Mensaje para el cliente</div>
-          <div class="wa-bubble" id="msg-cliente"></div>
-          <button class="btn btn-wa" style="width:100%;margin-top:8px;" onclick="enviarWA('cliente')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            Enviar confirmación por WhatsApp
+
+        <!-- PASO A: Guardar primero -->
+        <div id="rec-bloque-guardar">
+          <button class="btn btn-primary" id="btn-guardar" onclick="guardarOrden()" style="margin-bottom:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Guardar orden
           </button>
-          <button class="btn btn-primary" style="margin-top:10px;" id="btn-guardar" onclick="guardarOrden()">Guardar orden ✓</button>
-          <button class="btn btn-wa" id="btn-wa-recepcion" style="width:100%;margin-top:10px;display:none;" onclick="enviarWA('cliente')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            📱 Enviar link de seguimiento al cliente
+          <button class="btn btn-ghost" style="width:100%;" onclick="recepcionP1()">← Volver y corregir</button>
+        </div>
+
+        <!-- PASO B: Después de guardar -->
+        <div id="rec-bloque-postguar" style="display:none;">
+          <!-- Confirmación visual -->
+          <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #22c55e;border-radius:14px;padding:16px;text-align:center;margin-bottom:14px;">
+            <div style="font-size:32px;margin-bottom:6px;">✅</div>
+            <div style="font-size:16px;font-weight:700;color:#15803d;margin-bottom:4px;">¡Orden guardada!</div>
+            <div id="conf-num-ok" style="font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#16a34a;"></div>
+          </div>
+
+          <!-- Editar -->
+          <button class="btn btn-ghost" style="width:100%;margin-bottom:8px;" onclick="abrirEditarOrden()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            ✏️ Editar orden
           </button>
-          <button class="btn btn-ghost" style="width:100%;margin-top:8px;" onclick="imprimirRecibo()">
+
+          <!-- WhatsApp -->
+          <div class="card" style="margin-bottom:8px;">
+            <div class="card-title">Mensaje para el cliente</div>
+            <div class="wa-bubble" id="msg-cliente"></div>
+            <button class="btn btn-wa" style="width:100%;margin-top:10px;" onclick="enviarWA('cliente')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              📱 Enviar WhatsApp al cliente
+            </button>
+          </div>
+
+          <button class="btn btn-ghost" style="width:100%;margin-bottom:8px;" onclick="imprimirRecibo()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
             Imprimir recibo
           </button>
-          <button class="btn btn-ghost" style="width:100%;margin-top:8px;" onclick="recepcionP1()">← Volver</button>
+          <button class="btn btn-primary" style="width:100%;" onclick="resetRecepcion()">
+            + Nueva orden
+          </button>
         </div>
       </div>
     </div>
@@ -430,29 +475,52 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 
     <!-- PANEL ADMIN -->
     <div id="screen-panel" class="screen">
-      <div style="padding-top:4px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">
-        <div class="section-title" style="margin:0;">Panel de control</div>
+      <div style="padding-top:4px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button onclick="goScreen('home',document.getElementById('ttab-home'))" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid rgba(99,102,241,0.25);border-radius:10px;padding:7px 14px;font-family:var(--sans);font-size:13px;font-weight:600;color:#4f46e5;cursor:pointer;transition:all .18s;" onmouseover="this.style.background='linear-gradient(135deg,#e0e7ff,#c7d2fe)'" onmouseout="this.style.background='linear-gradient(135deg,#eef2ff,#e0e7ff)'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Inicio</button>
+          <div class="section-title" style="margin:0;">Panel de control</div>
+        </div>
         <button class="btn btn-ghost btn-sm" onclick="renderPanel()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
           Actualizar
         </button>
       </div>
-      <div class="filter-tabs" id="panel-tabs" style="margin-bottom:14px;">
-        <div class="filter-tab active" onclick="cambiarTabPanel('pendiente',this)" id="ptab-pendiente">Pendientes</div>
-        <div class="filter-tab" onclick="cambiarTabPanel('en_proceso',this)" id="ptab-en_proceso">En proceso</div>
-        <div class="filter-tab" onclick="cambiarTabPanel('listo',this)" id="ptab-listo">Terminadas</div>
-        <div class="filter-tab" onclick="cambiarTabPanel('entregada',this)" id="ptab-entregada">Entregadas</div>
-        <div class="filter-tab" onclick="cambiarTabPanel('nomina',this)" id="ptab-nomina">Nomina</div>
+      <!-- Buscador global -->
+      <div style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid rgba(99,102,241,0.2);border-radius:12px;padding:10px 14px;margin-bottom:14px;box-shadow:0 2px 8px rgba(99,102,241,0.07);transition:border-color .18s;" onfocusin="this.style.borderColor='#6366f1'" onfocusout="this.style.borderColor='rgba(99,102,241,0.2)'">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="panel-search-global" placeholder="Buscar orden o nombre en todos los estados..." oninput="buscarEnPanel(this.value)" style="background:none;border:none;outline:none;color:#1e1b4b;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;flex:1;font-weight:500;" autocomplete="off">
+        <button onclick="document.getElementById('panel-search-global').value='';buscarEnPanel('')" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:18px;padding:0;line-height:1;display:none;" id="panel-search-clear">✕</button>
       </div>
-      <div id="panel-alertas"></div>
-      <div id="panel-lista"></div>
+      <!-- Resultado búsqueda global -->
+      <div id="panel-search-resultado" style="display:none;"></div>
+      <div id="panel-tabs-wrap">
+        <div class="filter-tabs" id="panel-tabs" style="margin-bottom:12px;">
+          <div class="filter-tab active" onclick="cambiarTabPanel('pendiente',this)" id="ptab-pendiente">Pendientes</div>
+          <div class="filter-tab" onclick="cambiarTabPanel('en_proceso',this)" id="ptab-en_proceso">En proceso</div>
+          <div class="filter-tab" onclick="cambiarTabPanel('pendiente_admin',this)" id="ptab-pendiente_admin">Por aprobar</div>
+          <div class="filter-tab" onclick="cambiarTabPanel('listo',this)" id="ptab-listo">Terminadas</div>
+          <div class="filter-tab" onclick="cambiarTabPanel('entregada',this)" id="ptab-entregada">Entregadas</div>
+          <div class="filter-tab" onclick="cambiarTabPanel('nomina',this)" id="ptab-nomina">Nomina</div>
+        </div>
+        <!-- Buscador por tab -->
+        <div id="panel-search-tab-wrap" style="display:flex;align-items:center;gap:8px;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.15);border-radius:10px;padding:8px 12px;margin-bottom:12px;transition:border-color .18s;" onfocusin="this.style.borderColor='#6366f1'" onfocusout="this.style.borderColor='rgba(99,102,241,0.15)'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="panel-search-tab" placeholder="Filtrar en esta pestaña..." oninput="filtrarTabPanel(this.value)" style="background:none;border:none;outline:none;color:#1e1b4b;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;flex:1;" autocomplete="off">
+          <span id="panel-tab-count" style="font-size:11px;color:#94a3b8;font-weight:600;white-space:nowrap;"></span>
+        </div>
+        <div id="panel-alertas"></div>
+        <div id="panel-lista"></div>
+      </div>
     </div>
 
 
     <!-- CAJA -->
     <div id="screen-caja" class="screen">
       <div style="padding-top:4px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">
-        <div class="section-title" style="margin:0;">Caja</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button onclick="goScreen('home',document.getElementById('ttab-home'))" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid rgba(99,102,241,0.25);border-radius:10px;padding:7px 14px;font-family:var(--sans);font-size:13px;font-weight:600;color:#4f46e5;cursor:pointer;flex-shrink:0;" onmouseover="this.style.background='linear-gradient(135deg,#e0e7ff,#c7d2fe)'" onmouseout="this.style.background='linear-gradient(135deg,#eef2ff,#e0e7ff)'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Inicio</button>
+          <div class="section-title" style="margin:0;">Caja</div>
+        </div>
         <button class="btn btn-ghost btn-sm" onclick="renderCaja()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
           Actualizar
@@ -470,7 +538,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
     <!-- INVENTARIO -->
     <div id="screen-inventario" class="screen">
       <div style="padding-top:4px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">
-        <div class="section-title" style="margin:0;">Inventario</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button onclick="goScreen('home',document.getElementById('ttab-home'))" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid rgba(99,102,241,0.25);border-radius:10px;padding:7px 14px;font-family:var(--sans);font-size:13px;font-weight:600;color:#4f46e5;cursor:pointer;flex-shrink:0;" onmouseover="this.style.background='linear-gradient(135deg,#e0e7ff,#c7d2fe)'" onmouseout="this.style.background='linear-gradient(135deg,#eef2ff,#e0e7ff)'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Inicio</button>
+          <div class="section-title" style="margin:0;">Inventario</div>
+        </div>
         <button class="btn btn-ghost btn-sm" onclick="renderScreenInventario()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
           Actualizar
@@ -481,7 +552,16 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 
     <!-- HISTORIAL -->
     <div id="screen-historial" class="screen">
-      <div style="padding-top:4px;margin-bottom:16px;"><div class="section-title">Historial de órdenes</div></div>
+      <div style="padding-top:4px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button onclick="goScreen('home',document.getElementById('ttab-home'))" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid rgba(99,102,241,0.25);border-radius:10px;padding:7px 14px;font-family:var(--sans);font-size:13px;font-weight:600;color:#4f46e5;cursor:pointer;flex-shrink:0;" onmouseover="this.style.background='linear-gradient(135deg,#e0e7ff,#c7d2fe)'" onmouseout="this.style.background='linear-gradient(135deg,#eef2ff,#e0e7ff)'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Inicio</button>
+          <div class="section-title" style="margin:0;">Historial de órdenes</div>
+        </div>
+        <button onclick="exportarHistorialAdminExcel()" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid rgba(22,163,74,0.3);border-radius:10px;padding:7px 14px;font-family:var(--sans);font-size:13px;font-weight:600;color:#15803d;cursor:pointer;flex-shrink:0;" onmouseover="this.style.background='linear-gradient(135deg,#dcfce7,#bbf7d0)'" onmouseout="this.style.background='linear-gradient(135deg,#f0fdf4,#dcfce7)'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Excel
+        </button>
+      </div>
       <div class="stats-grid" id="stats-grid"></div>
       <div class="search-bar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -490,9 +570,31 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <div id="lista-historial"></div>
     </div>
 
+    <!-- CLIENTES -->
+    <div id="screen-clientes" class="screen">
+      <div style="padding-top:4px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button onclick="goScreen('home',document.getElementById('ttab-home'))" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid rgba(99,102,241,0.25);border-radius:10px;padding:7px 14px;font-family:var(--sans);font-size:13px;font-weight:600;color:#4f46e5;cursor:pointer;flex-shrink:0;" onmouseover="this.style.background='linear-gradient(135deg,#e0e7ff,#c7d2fe)'" onmouseout="this.style.background='linear-gradient(135deg,#eef2ff,#e0e7ff)'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Inicio</button>
+          <div class="section-title" style="margin:0;">Registro Clientes</div>
+        </div>
+        <button onclick="exportarClientesExcel()" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid rgba(22,163,74,0.3);border-radius:10px;padding:7px 14px;font-family:var(--sans);font-size:13px;font-weight:600;color:#15803d;cursor:pointer;flex-shrink:0;" onmouseover="this.style.background='linear-gradient(135deg,#dcfce7,#bbf7d0)'" onmouseout="this.style.background='linear-gradient(135deg,#f0fdf4,#dcfce7)'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Excel
+        </button>
+      </div>
+      <div class="search-bar" style="margin-bottom:14px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="clientes-search" placeholder="Buscar por nombre, apellido o documento..." oninput="buscarClientes(this.value)" style="background:none;border:none;outline:none;color:#1e1b4b;font-family:var(--sans);font-size:14px;flex:1;">
+      </div>
+      <div id="clientes-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;"></div>
+      <div id="clientes-lista"></div>
+    </div>
+
     <!-- CONFIG -->
     <div id="screen-config" class="screen">
-      <div style="padding-top:4px;margin-bottom:16px;"><div class="section-title">Configuración</div></div>
+      <div style="padding-top:4px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+        <button onclick="goScreen('home',document.getElementById('ttab-home'))" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid rgba(99,102,241,0.25);border-radius:10px;padding:7px 14px;font-family:var(--sans);font-size:13px;font-weight:600;color:#4f46e5;cursor:pointer;flex-shrink:0;" onmouseover="this.style.background='linear-gradient(135deg,#e0e7ff,#c7d2fe)'" onmouseout="this.style.background='linear-gradient(135deg,#eef2ff,#e0e7ff)'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Inicio</button>
+        <div class="section-title" style="margin:0;">Configuración</div>
+      </div>
       <div class="card">
         <div class="card-title">Mi taller</div>
         <div class="field"><label>Nombre del local</label><input type="text" id="cfg-nombre" placeholder="ReparaTuEco Bogotá" oninput="guardarConfig()"></div>
@@ -594,7 +696,7 @@ function aplicarRol() {
   const tallerNombre = cfg.nombre || 'ReparaTuEco';
   document.getElementById('topbar-local').textContent = tallerNombre + ' — ' + usuarioActual.nombre;
   const sb = document.getElementById('sb-local-name'); if(sb) sb.textContent = tallerNombre;
-  const ocultarIds = ['nav-recepcion','nav-historial','nav-config','nav-caja','ttab-recepcion','ttab-historial','ttab-config','ttab-caja'];
+  const ocultarIds = ['nav-recepcion','nav-historial','nav-config','nav-caja','nav-clientes','ttab-recepcion','ttab-historial','ttab-config','ttab-caja','ttab-clientes'];
   if(esTecnico) {
     // Vaciar completamente la barra de tabs y reconstruir solo con el nombre del tecnico
     const topTabs = document.querySelector('.top-tabs');
@@ -674,6 +776,7 @@ function goScreen(name, el) {
   const ne = document.getElementById('nav-' + name); if(ne) ne.classList.add('active');
   const te = document.getElementById('ttab-' + name); if(te) te.classList.add('active');
   if(name==='historial'){renderHistorial();renderStats();}
+  if(name==='clientes'){renderClientes();}
   if(name==='panel'){renderPanel();}
   if(name==='caja'){
     // Reset to active tab or default
@@ -833,9 +936,10 @@ async function genOrdenNum() {
 }
 async function recepcionP2() {
   const nombre=document.getElementById('r-nombre').value.trim();
+  const apellido=document.getElementById('r-apellido').value.trim();
   const tel=document.getElementById('r-tel').value.trim();
   const serv=document.getElementById('r-servicio').value;
-  if(!nombre||!tel||!serv){showToast('\u26a0 Completa nombre, tel\u00e9fono y servicio');return;}
+  if(!nombre||!tel||!serv){showToast('⚠ Completa nombre, teléfono y servicio');return;}
   const btn=document.getElementById('btn-guardar');
   btn.disabled=true;
   try {
@@ -844,24 +948,27 @@ async function recepcionP2() {
     const referencia=document.getElementById('r-referencia').value.trim();
     const color=document.getElementById('r-color').value.trim();
     const taller=cfg.nombre||'ReparaTuEco';
+    const nombreCompleto = apellido ? nombre+' '+apellido : nombre;
     document.getElementById('conf-num').textContent=ordenNum;
-    document.getElementById('conf-nombre').textContent=nombre;
+    document.getElementById('conf-nombre').textContent=nombreCompleto;
     document.getElementById('conf-tel').textContent=tel;
-    document.getElementById('conf-marca').textContent=marca||'\u2014';
-    document.getElementById('conf-ref').textContent=referencia||'\u2014';
-    document.getElementById('conf-color').textContent=color||'\u2014';
+    document.getElementById('conf-marca').textContent=marca||'—';
+    document.getElementById('conf-ref').textContent=referencia||'—';
+    document.getElementById('conf-color').textContent=color||'—';
     document.getElementById('conf-serv').textContent=serv;
     const tecnico=document.getElementById('r-tecnico').value;
     document.getElementById('conf-tecnico').textContent=tecnico||'Sin asignar';
-    const partsV=[marca,referencia,color].filter(Boolean).join(' \u00b7 ');
-    const vehiculoLine=(marca||referencia)?'\n\nVeh\u00edculo: '+partsV:'';
-    const msg='Hola '+nombre+' \ud83d\udc4b\n\nGracias por confiar en *'+taller+'*!\n\nTu bicicleta el\u00e9ctrica qued\u00f3 registrada con la orden *'+ordenNum+'*.'+vehiculoLine+'\n\nServicio: '+serv+'\n\nTe avisaremos cuando est\u00e9 lista. \ud83d\udeb2\u26a1';
+    const partsV=[marca,referencia,color].filter(Boolean).join(' · ');
+    const vehiculoLine=(marca||referencia)?'\n\nVehículo: '+partsV:'';
+    const trackUrl='https://reparatueco.github.io/reparatueco/estado.html?orden='+ordenNum;
+    // WA usa solo el nombre (sin apellido)
+    const msg='Hola '+nombre+' 👋\n\nGracias por confiar en *'+taller+'*!\n\nTu vehículo eléctrico quedó registrado con la orden *'+ordenNum+'*.'+vehiculoLine+'\n\nServicio: '+serv+'\n\nTe avisaremos cuando esté lista. 🚲⚡\n\n🔗 Puedes seguir el estado de tu orden aquí:\n'+trackUrl;
     document.getElementById('msg-cliente').innerHTML=msg.replace(/\n/g,'<br>').replace(/[*]([^*]+)[*]/g,'<b>$1</b>');
     document.getElementById('rec-p1').style.display='none';
     document.getElementById('rec-p2').style.display='';
     setStep(2);
   } catch(e) {
-    showToast('\u274c Error al continuar: '+e.message);
+    showToast('❌ Error al continuar: '+e.message);
   }
   btn.disabled=false;
 }
@@ -889,10 +996,15 @@ async function guardarOrden() {
     try { fotosUrls = await subirFotos(fotosIngreso, ordenNum, 'ingreso'); } catch(e) { console.warn('Fotos error:',e); }
   }
   document.getElementById('prog-bar-ingreso').style.width='90%';
+  const nombre = document.getElementById('r-nombre').value.trim();
+  const apellido = document.getElementById('r-apellido').value.trim();
+  const documento = document.getElementById('r-documento').value.trim();
+  const tel = document.getElementById('r-tel').value.trim();
+  const nombreCompleto = apellido ? nombre+' '+apellido : nombre;
   const orden = {
     id: ordenNum,
-    nombre: document.getElementById('r-nombre').value.trim(),
-    tel: document.getElementById('r-tel').value.trim(),
+    nombre: nombreCompleto,
+    tel,
     marca: document.getElementById('r-marca').value.trim(),
     referencia: document.getElementById('r-referencia').value.trim(),
     color_vehiculo: document.getElementById('r-color').value.trim(),
@@ -909,27 +1021,239 @@ async function guardarOrden() {
   try {
     const { error } = await db.from('ordenes').insert(orden);
     document.getElementById('prog-bar-ingreso').style.width='100%';
-    if(error){ showToast('❌ '+error.message); btn.textContent='Guardar orden ✓'; btn.disabled=false; prog.style.display='none'; return; }
-    showToast('✓ Orden '+ordenNum+' guardada en la nube ☁');
+    if(error){ showToast('❌ '+error.message); btn.textContent='Guardar orden'; btn.disabled=false; prog.style.display='none'; return; }
+    // Registrar cliente (sin duplicar por documento)
+    await registrarCliente({nombre, apellido, tel, documento});
     actualizarBadge();
     prog.style.display='none';
-    // Show WA button prominently
-    const waBtn = document.getElementById('btn-wa-recepcion');
-    if(waBtn) { waBtn.style.display='flex'; waBtn.scrollIntoView({behavior:'smooth',block:'center'}); }
+    setStep(3);
+    // Mostrar bloque post-guardado
+    document.getElementById('rec-bloque-guardar').style.display='none';
+    document.getElementById('rec-bloque-postguar').style.display='';
+    document.getElementById('conf-num-ok').textContent = ordenNum;
+    // Preparar mensaje WA
+    const nombre=document.getElementById('r-nombre').value.trim();
+    const serv=document.getElementById('r-servicio').value;
+    const marca=document.getElementById('r-marca').value.trim();
+    const ref=document.getElementById('r-referencia').value.trim();
+    const color=document.getElementById('r-color').value.trim();
+    const taller=cfg.nombre||'ReparaTuEco';
+    const vehiculoLine=(marca||ref)?'\n\nVehículo: '+[marca,ref,color].filter(Boolean).join(' · '):'';
+    const trackUrl='https://reparatueco.github.io/reparatueco/estado.html?orden='+ordenNum;
+    const msg='Hola '+nombre+' 👋\n\nGracias por confiar en *'+taller+'*!\n\nTu vehículo eléctrico quedó registrado con la orden *'+ordenNum+'*.'+vehiculoLine+'\n\nServicio: '+serv+'\n\nTe avisaremos cuando esté listo. 🚲⚡\n\n🔗 Puedes seguir el estado de tu orden aquí:\n'+trackUrl;
+    document.getElementById('msg-cliente').innerHTML=msg.replace(/\n/g,'<br>').replace(/[*]([^*]+)[*]/g,'<b>$1</b>');
+    document.getElementById('rec-bloque-postguar').scrollIntoView({behavior:'smooth',block:'start'});
   } catch(e) {
-    showToast('❌ Error de conexión'); btn.textContent='Guardar orden ✓'; btn.disabled=false; prog.style.display='none';
+    showToast('❌ Error de conexión'); btn.textContent='Guardar orden'; btn.disabled=false; prog.style.display='none';
+  }
+}
+
+
+// ===== CLIENTES =====
+async function registrarCliente(datos) {
+  // Silencioso - no bloquea si la tabla clientes no existe aún en Supabase
+  try {
+    const nombre=datos.nombre||'', apellido=datos.apellido||'', tel=datos.tel||'', documento=datos.documento||'';
+    if(!nombre) return;
+    if(documento) {
+      const {data:existe}=await db.from('clientes').select('id').eq('documento',documento).maybeSingle();
+      if(existe){await db.from('clientes').update({tel,nombre,apellido}).eq('documento',documento);return;}
+    } else {
+      const {data:existe}=await db.from('clientes').select('id').eq('tel',tel).maybeSingle();
+      if(existe){await db.from('clientes').update({nombre,apellido}).eq('tel',tel);return;}
+    }
+    await db.from('clientes').insert({nombre,apellido,tel,documento});
+  } catch(e){/* tabla no existe aún — ignorar */}
+}
+let _clientesCache=[];
+async function renderClientes(){
+  const el=document.getElementById('clientes-lista');
+  if(!el)return;
+  el.innerHTML='<div class="loading"><div class="spinner"></div>Cargando clientes...</div>';
+  try{
+    const {data,error}=await db.from('clientes').select('*').order('nombre',{ascending:true});
+    if(error) throw error;
+    _clientesCache=data||[];
+    renderClientesLista(_clientesCache);
+  }catch(e){
+    el.innerHTML='<div class="empty"><div class="empty-icon">👤</div><div class="empty-text">Para activar el módulo de clientes, crea la tabla <b>clientes</b> en Supabase con las columnas: id, nombre, apellido, tel, documento.</div></div>';
+  }
+}
+function renderClientesLista(lista){
+  const el=document.getElementById('clientes-lista');
+  if(!el)return;
+  const cnt=document.getElementById('clientes-count');
+  if(cnt)cnt.textContent=lista.length+' cliente'+(lista.length!==1?'s':'');
+  if(!lista.length){el.innerHTML='<div class="empty"><div class="empty-icon">👤</div><div class="empty-text">Sin resultados</div></div>';return;}
+  el.innerHTML=lista.map(c=>`<div style="background:#fff;border:1.5px solid rgba(99,102,241,0.12);border-radius:12px;padding:14px 16px;margin-bottom:8px;box-shadow:0 2px 8px rgba(99,102,241,0.06);"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:15px;font-weight:600;color:#1e1b4b;">${c.nombre||''}${c.apellido?' '+c.apellido:''}</div><div style="font-size:12px;color:#94a3b8;margin-top:3px;">📱 ${c.tel||'—'}</div>${c.documento?`<div style="font-size:12px;color:#94a3b8;">🪪 ${c.documento}</div>`:''}</div><div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#eef2ff,#e0e7ff);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#4f46e5;">${(c.nombre||'?')[0].toUpperCase()}</div></div></div>`).join('');
+}
+function buscarClientes(q){
+  const term=q.trim().toLowerCase();
+  if(!term){renderClientesLista(_clientesCache);return;}
+  const f=_clientesCache.filter(c=>(c.nombre||'').toLowerCase().includes(term)||(c.apellido||'').toLowerCase().includes(term)||(c.documento||'').includes(term)||(c.tel||'').includes(term));
+  renderClientesLista(f);
+}
+function exportarClientesExcel(){
+  if(!_clientesCache.length){showToast('No hay clientes');return;}
+  try{
+    const wb=XLSX.utils.book_new();
+    const datos=_clientesCache.map(c=>({'Nombre':c.nombre||'','Apellido':c.apellido||'','Teléfono':c.tel||'','Documento':c.documento||''}));
+    const ws=XLSX.utils.json_to_sheet(datos);
+    ws['!cols']=[{wch:20},{wch:20},{wch:15},{wch:16}];
+    XLSX.utils.book_append_sheet(wb,ws,'Clientes');
+    XLSX.writeFile(wb,'clientes_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    showToast('✅ Excel descargado');
+  }catch(e){showToast('❌ '+e.message);}
+}
+function abrirEditarOrden() {
+  if(!ordenNum) return;
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.4);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
+  const tecnicoOpts = ['','Alonso','Andres','Dario'].map(t=>`<option value="${t}" ${(document.getElementById('r-tecnico').value||'')=== t?'selected':''}>${t||'Sin asignar'}</option>`).join('');
+  const servicioOpts = ['Mantenimiento Full','Mantenimiento Básico','Despinche','Revisión eléctrica','Lavada','Revisión de frenos','Reparación de tapas','Revisión general','Cambio de batería','Cambio de motor','Frenos y mecánica','Pantalla / controlador','Diagnóstico completo','Otro'].map(s=>`<option value="${s}" ${document.getElementById('r-servicio').value===s?'selected':''}>${s}</option>`).join('');
+  overlay.innerHTML = `
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;padding:24px 20px 36px;box-shadow:0 -8px 40px rgba(99,102,241,0.15);">
+    <div style="width:40px;height:4px;background:#e0e7ff;border-radius:2px;margin:0 auto 20px;"></div>
+    <div style="font-size:17px;font-weight:700;color:#1e1b4b;margin-bottom:16px;">✏️ Editar orden <span style="color:#4f46e5;font-family:Arial,sans-serif;">${ordenNum}</span></div>
+    <div class="field"><label>Nombre cliente</label><input type="text" id="edit-nombre" value="${document.getElementById('r-nombre').value}" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;box-sizing:border-box;"></div>
+    <div class="field"><label>Teléfono</label><input type="tel" id="edit-tel" value="${document.getElementById('r-tel').value}" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;box-sizing:border-box;"></div>
+    <div class="row2">
+      <div class="field"><label>Marca</label><input type="text" id="edit-marca" value="${document.getElementById('r-marca').value}" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;box-sizing:border-box;"></div>
+      <div class="field"><label>Referencia</label><input type="text" id="edit-ref" value="${document.getElementById('r-referencia').value}" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;box-sizing:border-box;"></div>
+    </div>
+    <div class="field"><label>Color</label><input type="text" id="edit-color" value="${document.getElementById('r-color').value}" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;box-sizing:border-box;"></div>
+    <div class="field"><label>Servicio</label><select id="edit-servicio" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;">${servicioOpts}</select></div>
+    <div class="field"><label>Técnico</label><select id="edit-tecnico" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;">${tecnicoOpts}</select></div>
+    <div class="field"><label>Descripción / falla</label><textarea id="edit-desc" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;min-height:80px;resize:vertical;">${document.getElementById('r-desc').value}</textarea></div>
+    <button onclick="guardarEdicionOrden(this.closest('div[style*=fixed]'))" style="width:100%;background:linear-gradient(135deg,#4f46e5,#818cf8);color:#fff;border:none;border-radius:12px;padding:14px;font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 14px rgba(99,102,241,0.3);">💾 Guardar cambios</button>
+    <button onclick="this.closest('div[style*=fixed]').remove()" style="width:100%;background:none;border:1.5px solid rgba(99,102,241,0.2);border-radius:12px;padding:12px;font-family:var(--sans);font-size:14px;color:#6366f1;cursor:pointer;">Cancelar</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+}
+
+async function guardarEdicionOrden(overlay) {
+  const nombre = document.getElementById('edit-nombre').value.trim();
+  const tel = document.getElementById('edit-tel').value.trim();
+  const servicio = document.getElementById('edit-servicio').value;
+  if(!nombre||!tel||!servicio){ showToast('⚠ Completa los campos requeridos'); return; }
+  const updates = {
+    nombre, tel,
+    marca: document.getElementById('edit-marca').value.trim(),
+    referencia: document.getElementById('edit-ref').value.trim(),
+    color_vehiculo: document.getElementById('edit-color').value.trim(),
+    servicio,
+    tecnico: document.getElementById('edit-tecnico').value || null,
+    descripcion: document.getElementById('edit-desc').value
+  };
+  try {
+    const { error } = await db.from('ordenes').update(updates).eq('id', ordenNum);
+    if(error){ showToast('❌ '+error.message); return; }
+    // Actualizar campos del formulario y confirmación
+    document.getElementById('r-nombre').value = nombre;
+    document.getElementById('r-tel').value = tel;
+    document.getElementById('r-marca').value = updates.marca;
+    document.getElementById('r-referencia').value = updates.referencia;
+    document.getElementById('r-color').value = updates.color_vehiculo;
+    document.getElementById('r-servicio').value = servicio;
+    document.getElementById('r-tecnico').value = updates.tecnico||'';
+    document.getElementById('r-desc').value = updates.descripcion;
+    document.getElementById('conf-nombre').textContent = nombre;
+    document.getElementById('conf-tel').textContent = tel;
+    document.getElementById('conf-marca').textContent = updates.marca||'—';
+    document.getElementById('conf-ref').textContent = updates.referencia||'—';
+    document.getElementById('conf-color').textContent = updates.color_vehiculo||'—';
+    document.getElementById('conf-serv').textContent = servicio;
+    document.getElementById('conf-tecnico').textContent = updates.tecnico||'Sin asignar';
+    overlay.remove();
+    showToast('✅ Orden actualizada correctamente');
+  } catch(e) { showToast('❌ Error: '+e.message); }
+}
+
+function abrirServicioAdicional(ordenId, clienteNombre, tecnicoActual) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.4);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
+  const servicioOpts = ['Mantenimiento Full','Mantenimiento Básico','Despinche','Revisión eléctrica','Lavada','Revisión de frenos','Reparación de tapas','Revisión general','Cambio de batería','Cambio de motor','Frenos y mecánica','Pantalla / controlador','Diagnóstico completo','Otro'].map(s=>`<option value="${s}">${s}</option>`).join('');
+  overlay.innerHTML = `
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;padding:24px 20px 36px;box-shadow:0 -8px 40px rgba(249,115,22,0.15);">
+    <div style="width:40px;height:4px;background:#ffedd5;border-radius:2px;margin:0 auto 20px;"></div>
+    <div style="font-size:17px;font-weight:700;color:#1e1b4b;margin-bottom:4px;">➕ Servicio adicional</div>
+    <div style="font-size:13px;color:#94a3b8;margin-bottom:18px;">Orden <b style="color:#4f46e5;">${ordenId}</b> · ${clienteNombre}</div>
+    <div class="field">
+      <label>Servicio adicional</label>
+      <select id="sa-servicio" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;">${servicioOpts}</select>
+    </div>
+    <div class="field">
+      <label>Técnico asignado para este servicio</label>
+      <select id="sa-tecnico" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;">
+        <option value="">Sin asignar</option>
+        <option value="Alonso" ${tecnicoActual==='Alonso'?'selected':''}>Alonso</option>
+        <option value="Andres" ${tecnicoActual==='Andres'?'selected':''}>Andres</option>
+        <option value="Dario" ${tecnicoActual==='Dario'?'selected':''}>Dario</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Descripción / instrucciones</label>
+      <textarea id="sa-desc" placeholder="Ej: Lavar con desengrasante, secado completo..." style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;min-height:72px;resize:vertical;"></textarea>
+    </div>
+    <button onclick="guardarServicioAdicional('${ordenId}',this.closest('div[style*=fixed]'))" style="width:100%;background:linear-gradient(135deg,#f97316,#fb923c);color:#fff;border:none;border-radius:12px;padding:14px;font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 14px rgba(249,115,22,0.3);">✅ Agregar servicio</button>
+    <button onclick="this.closest('div[style*=fixed]').remove()" style="width:100%;background:none;border:1.5px solid rgba(99,102,241,0.2);border-radius:12px;padding:12px;font-family:var(--sans);font-size:14px;color:#6366f1;cursor:pointer;">Cancelar</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+}
+
+async function guardarServicioAdicional(ordenId, overlay) {
+  const servicio = document.getElementById('sa-servicio').value;
+  const tecnico = document.getElementById('sa-tecnico').value;
+  const desc = document.getElementById('sa-desc').value.trim();
+  if(!servicio){ showToast('⚠ Selecciona un servicio'); return; }
+
+  const btn = overlay.querySelector('button');
+  if(btn){ btn.textContent = 'Guardando...'; btn.disabled = true; }
+
+  try {
+    // Cargar la orden actual (usar repuestos como almacén, ya existe en Supabase)
+    const { data, error: fetchErr } = await db.from('ordenes').select('repuestos').eq('id', ordenId).single();
+    if(fetchErr){ showToast('❌ '+fetchErr.message); if(btn){btn.textContent='✅ Agregar servicio';btn.disabled=false;} return; }
+
+    // Los servicios adicionales se guardan en repuestos con _tipo:'servicio_extra'
+    const repsActual = (data.repuestos || []).filter(r => !r._tipo); // repuestos normales
+    const extrasActual = (data.repuestos || []).filter(r => r._tipo === 'servicio_extra');
+
+    extrasActual.push({
+      _tipo: 'servicio_extra',
+      servicio,
+      tecnico: tecnico || null,
+      descripcion: desc,
+      fecha: new Date().toISOString(),
+      estado: 'pendiente'
+    });
+
+    const nuevosRepuestos = [...repsActual, ...extrasActual];
+
+    const { error: updateErr } = await db.from('ordenes').update({ repuestos: nuevosRepuestos }).eq('id', ordenId);
+    if(updateErr){ showToast('❌ '+updateErr.message); if(btn){btn.textContent='✅ Agregar servicio';btn.disabled=false;} return; }
+
+    overlay.remove();
+    showToast('✅ Servicio adicional agregado: '+servicio+(tecnico?' → '+tecnico:''));
+    abrirModalTecnico(ordenId);
+  } catch(e) {
+    showToast('❌ Error: '+e.message);
+    if(btn){ btn.textContent='✅ Agregar servicio'; btn.disabled=false; }
   }
 }
 function resetRecepcion() {
-  ['r-nombre','r-tel','r-marca','r-referencia','r-color','r-desc'].forEach(id=>{document.getElementById(id).value='';});
+  ['r-nombre','r-apellido','r-tel','r-documento','r-marca','r-referencia','r-color','r-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('r-tecnico').value='';
   document.getElementById('r-servicio').value='';
   document.getElementById('pg-ingreso').innerHTML='';
   document.getElementById('rec-p1').style.display='';
   document.getElementById('rec-p2').style.display='none';
-  const btn=document.getElementById('btn-guardar'); btn.textContent='Guardar orden ✓'; btn.disabled=false;
+  document.getElementById('rec-bloque-guardar').style.display='';
+  document.getElementById('rec-bloque-postguar').style.display='none';
+  const btn=document.getElementById('btn-guardar'); btn.textContent='Guardar orden'; btn.disabled=false;
   fotosIngreso=[]; ordenNum=null; setStep(1);
-  const wab = document.getElementById('btn-wa-recepcion'); if(wab) wab.style.display='none';
 }
 function enviarWA(tipo, orden) {
   const taller=cfg.nombre||'ReparaTuEco';
@@ -955,12 +1279,13 @@ Vehículo: ${[marca,ref,color].filter(Boolean).join(' · ')}`:'';
   } else if(tipo==='lista'&&orden){
     const vehiculoLista = [orden.marca, orden.referencia, orden.color_vehiculo].filter(Boolean).join(' ');
     const trackLista = 'https://reparatueco.github.io/reparatueco/estado.html?orden='+orden.id;
-    msg = 'Hola '+orden.nombre+' 🎉\n'
-      +'¡Tu vehículo eléctrico'+(vehiculoLista?' '+vehiculoLista:'')+' ya está listo! Puedes pasar a recogerlo.\n\n'
-      +'*'+taller+'*'+(cfg.dir?' · '+cfg.dir:'')+(cfg.tel?' · 📞 '+cfg.tel:'')+'\n\n'
-      +'*Orden:* '+orden.id+' 🚲⚡\n\n'
-      +'Gracias por confiar en nosotros 🙌 Si quieres revisar fotos y estado aquí lo puedes hacer:\n'
-      +trackLista;
+    msg = '⚡ Hola, '+orden.nombre+'.\n'
+      +'Tu vehículo eléctrico ya está listo para recoger.\n\n'
+      +'Orden: *'+orden.id+'*\n'
+      +'Taller: *'+taller+'*\n\n'
+      +'Puedes pasar a recogerlo dentro de nuestro horario de atención o coordinando previamente la entrega.\n\n'
+      +'¡Quedamos atentos a tu confirmación!\n\n'
+      +'🔗 '+trackLista;
     tel=orden.tel.replace(/\D/g,''); if(!tel.startsWith('57')) tel='57'+tel;
   }
   window.open(`https://wa.me/${tel}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -976,13 +1301,9 @@ async function renderTecnico(estado, intento) {
   if(!el) return;
   el.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
   try {
-    // Para "listos" incluir también pendiente_admin (esperando aprobación admin)
+    // Cada estado se consulta por separado sin mezclas
     let url;
-    if(estado === 'listo') {
-      url = SUPA_URL + '/rest/v1/ordenes?select=id,nombre,servicio,estado,fecha,tel,descripcion,marca,referencia,color_vehiculo,presupuesto,diagnostico,repuestos,fotos_ingreso,fotos_proceso,tecnico&estado=in.(listo,pendiente_admin)&order=fecha.desc';
-    } else {
-      url = SUPA_URL + '/rest/v1/ordenes?select=id,nombre,servicio,estado,fecha,tel,descripcion,marca,referencia,color_vehiculo,presupuesto,diagnostico,repuestos,fotos_ingreso,fotos_proceso,tecnico&estado=eq.' + estado + '&order=fecha.desc';
-    }
+    url = SUPA_URL + '/rest/v1/ordenes?select=id,nombre,servicio,estado,fecha,tel,descripcion,marca,referencia,color_vehiculo,presupuesto,diagnostico,repuestos,fotos_ingreso,fotos_proceso,tecnico&estado=eq.' + estado + '&order=fecha.desc';
     if(filtroTecnico === 'sin_asignar') url += '&tecnico=is.null';
     else if(filtroTecnico !== 'todos') url += '&tecnico=eq.' + encodeURIComponent(filtroTecnico);
 
@@ -1038,7 +1359,7 @@ function renderOrdenCards(data, fn) {
     const c = cfg[o.estado] || cfg.pendiente;
     const mins = Math.round((Date.now() - new Date(o.fecha)) / 60000);
     const tiempo = mins < 60 ? mins + 'm' : mins < 1440 ? Math.floor(mins/60) + 'h' : Math.floor(mins/1440) + 'd';
-    html += '<div data-id="' + o.id + '" data-fn="' + fn + '" onclick="window[this.dataset.fn](this.dataset.id)"';
+    html += '<div onclick="(function(){try{window[\''+fn+'\']( \''+o.id+'\');}catch(e){console.error(e);}})();"';
     html += ' style="background:' + c.bg + ';border:2px solid ' + c.border + ';border-radius:16px;padding:16px;margin-bottom:10px;cursor:pointer;">';
     html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">';
     html += '<div style="width:44px;height:44px;border-radius:12px;background:' + c.border + ';display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">' + c.emoji + '</div>';
@@ -1088,8 +1409,8 @@ async function abrirModalTecnico(id) {
   if(!o){ document.getElementById('modal-body').innerHTML='<p>Error al cargar</p>'; return; }
   const esAdmin = usuarioActual && usuarioActual.rol === 'admin';
 
-  // Repuestos HTML
-  const repsArr = o.repuestos || [];
+  // Repuestos HTML (solo los que no son servicios extra)
+  const repsArr = (o.repuestos || []).filter(r => !r._tipo);
   let repHTML = '';
   repsArr.forEach((r, i) => {
     repHTML += '<div class="repuesto-row" id="rep-'+id+'-'+i+'">';
@@ -1189,22 +1510,77 @@ async function abrirModalTecnico(id) {
   // Build full HTML
   let html = '';
   html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">';
-  html += '<div><div class="order-num" style="font-size:15px;">'+o.id+'</div><div style="font-size:17px;font-weight:600;margin-top:2px;">'+o.nombre+'</div></div>';
+  html += '<div style="flex:1;min-width:0;"><div class="order-num" style="font-size:15px;">'+o.id+'</div><div style="font-size:17px;font-weight:600;margin-top:2px;">'+o.nombre+'</div></div>';
+  html += '<div style="display:flex;align-items:center;gap:8px;">';
   html += estadoBadge(o.estado);
+  if(esAdmin) {
+    html += '<button onclick="editarClienteModal(this.dataset.id,this.dataset.nombre,this.dataset.tel)" data-id="'+o.id+'" data-nombre="'+o.nombre.replace(/"/g,'&quot;')+'" data-tel="'+o.tel+'" style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid rgba(99,102,241,0.25);border-radius:8px;padding:6px 10px;font-family:var(--sans);font-size:12px;font-weight:600;color:#4f46e5;cursor:pointer;flex-shrink:0;" title="Editar cliente"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</button>';
+  }
+  html += '</div>';
   html += '</div>';
   html += '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;font-size:13px;color:var(--text2);">';
   html += '<div>📱 '+o.tel+'</div>';
   if(o.marca||o.referencia) html += '<div>🚲 '+[o.marca,o.referencia,o.color_vehiculo].filter(Boolean).join(' · ')+'</div>';
-  html += '<div>🔧 '+o.servicio+'</div>';
+  // Servicio editable inline
+  const servicioOpciones = ['Mantenimiento Full','Mantenimiento Básico','Despinche','Revisión eléctrica','Lavada','Revisión de frenos','Reparación de tapas','Revisión general','Cambio de batería','Cambio de motor','Frenos y mecánica','Pantalla / controlador','Diagnóstico completo','Otro'];
+  const servicioOptsModal = servicioOpciones.map(s=>`<option value="${s}" ${o.servicio===s?'selected':''}>${s}</option>`).join('');
+  html += '<div style="display:flex;align-items:center;gap:8px;">';
+  html += '<span>🔧</span>';
+  html += '<select id="sel-serv-'+o.id+'" onchange="cambiarServicio(\''+o.id+'\',this.value)" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:5px 10px;outline:none;">'+servicioOptsModal+'</select>';
+  html += '</div>';
   if(o.descripcion) html += '<div>📝 '+o.descripcion+'</div>';
   html += '<div>📅 '+formatFecha(o.fecha)+'</div>';
-  html += '<div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><span>👨‍🔧</span>';
-  html += '<select id="sel-tec-'+o.id+'" onchange="cambiarTecnico(\''+o.id+'\',this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:5px 10px;outline:none;flex:1;">';
-  html += '<option value="" '+((!o.tecnico)?'selected':'')+'>Sin asignar</option>';
-  html += '<option value="Alonso" '+(o.tecnico==='Alonso'?'selected':'')+'>Alonso</option>';
-  html += '<option value="Andres" '+(o.tecnico==='Andres'?'selected':'')+'>Andres</option>';
-  html += '<option value="Dario" '+(o.tecnico==='Dario'?'selected':'')+'>Dario</option>';
-  html += '</select></div></div>';
+  // Servicios adicionales (guardados en repuestos con _tipo:'servicio_extra')
+  const extras = (o.repuestos || []).filter(r => r._tipo === 'servicio_extra');
+  if(extras.length) {
+    html += '<div style="margin-top:8px;background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1.5px solid rgba(249,115,22,0.25);border-radius:12px;padding:12px 14px;">';
+    html += '<div style="font-size:11px;font-weight:700;color:#ea580c;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Servicios adicionales</div>';
+    extras.forEach((ex, i) => {
+      const estDone = ex.estado === 'terminado';
+      const estColor = estDone ? '#16a34a' : '#ea580c';
+      const estBg = estDone ? 'rgba(22,163,74,0.1)' : 'rgba(249,115,22,0.1)';
+      const estLabel = estDone ? '✅ Terminado' : '⏳ Pendiente';
+      html += '<div style="background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid rgba(249,115,22,0.15);">';
+      // Fila superior: servicio + tecnico
+      html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">';
+      html += '<div>';
+      html += '<div style="font-size:13px;font-weight:700;color:#1e1b4b;">'+ex.servicio+'</div>';
+      if(ex.tecnico) html += '<div style="font-size:11px;color:#94a3b8;margin-top:1px;">👨‍🔧 '+ex.tecnico+'</div>';
+      if(ex.descripcion) html += '<div style="font-size:11px;color:#94a3b8;margin-top:2px;">📝 '+ex.descripcion+'</div>';
+      html += '</div>';
+      html += '<span style="font-size:10px;font-weight:700;color:'+estColor+';background:'+estBg+';border-radius:999px;padding:3px 8px;white-space:nowrap;">'+estLabel+'</span>';
+      html += '</div>';
+      // Botones de acción
+      html += '<div style="display:flex;gap:6px;margin-top:8px;">';
+      // Cambiar estado (solo técnico puede marcar terminado)
+      if(!estDone) {
+        html += '<button onclick="cambiarEstadoExtra(\''+id+'\','+i+')" style="flex:1;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid rgba(22,163,74,0.3);border-radius:8px;padding:7px;font-family:var(--sans);font-size:12px;font-weight:600;color:#16a34a;cursor:pointer;">✅ Marcar terminado</button>';
+      } else {
+        html += '<button onclick="cambiarEstadoExtra(\''+id+'\','+i+')" style="flex:1;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.2);border-radius:8px;padding:7px;font-family:var(--sans);font-size:12px;font-weight:600;color:#6366f1;cursor:pointer;">↩ Reabrir</button>';
+      }
+      // Editar y eliminar solo para admin
+      if(esAdmin) {
+        html += '<button onclick="editarServicioExtra(\''+id+'\','+i+')" style="background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid rgba(99,102,241,0.25);border-radius:8px;padding:7px 10px;font-family:var(--sans);font-size:12px;font-weight:600;color:#4f46e5;cursor:pointer;">✏️</button>';
+        html += '<button onclick="eliminarServicioExtra(\''+id+'\','+i+')" style="background:#fff5f5;border:1.5px solid rgba(220,38,38,0.2);border-radius:8px;padding:7px 10px;font-family:var(--sans);font-size:12px;font-weight:600;color:#dc2626;cursor:pointer;">🗑</button>';
+      }
+      html += '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+  if(esAdmin) {
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><span>👨‍🔧</span>';
+    html += '<select id="sel-tec-'+o.id+'" onchange="cambiarTecnico(\''+o.id+'\',this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:5px 10px;outline:none;flex:1;">';
+    html += '<option value="" '+((!o.tecnico)?'selected':'')+'>Sin asignar</option>';
+    html += '<option value="Alonso" '+(o.tecnico==='Alonso'?'selected':'')+'>Alonso</option>';
+    html += '<option value="Andres" '+(o.tecnico==='Andres'?'selected':'')+'>Andres</option>';
+    html += '<option value="Dario" '+(o.tecnico==='Dario'?'selected':'')+'>Dario</option>';
+    html += '</select></div>';
+  } else {
+    // Técnico: solo muestra quién está asignado, sin selector
+    if(o.tecnico) html += '<div style="display:flex;align-items:center;gap:6px;margin-top:4px;font-size:13px;color:var(--text2);">👨‍🔧 <span style="font-weight:600;color:var(--text);">'+o.tecnico+'</span></div>';
+  }
+  html += '</div>';
   html += '<div class="divider"></div>';
 
   if(o.estado !== 'pendiente') {
@@ -1230,9 +1606,12 @@ async function abrirModalTecnico(id) {
 
   html += '<div style="margin-bottom:14px;"><div class="card-title">Fotos</div>';
   if(fotosHTML) html += '<div class="photo-grid" style="margin-bottom:10px;">'+fotosHTML+'</div>';
-  html += '<div class="photo-zone" onclick="document.getElementById(\'fp-'+o.id+'\').click()" style="padding:12px;">';
-  html += '<div class="photo-zone-text" style="font-size:12px;">+ Agregar fotos del proceso</div></div>';
-  html += '<input type="file" id="fp-'+o.id+'" accept="image/*" capture="environment" multiple style="display:none" onchange="uploadProceso(this,\''+o.id+'\')">';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">';
+  html += '<button onclick="document.getElementById(\'fp-cam-'+o.id+'\').click()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid rgba(99,102,241,0.25);border-radius:10px;padding:12px 8px;cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;color:#4f46e5;">📷 Tomar foto</button>';
+  html += '<button onclick="document.getElementById(\'fp-arc-'+o.id+'\').click()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid rgba(22,163,74,0.25);border-radius:10px;padding:12px 8px;cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;color:#16a34a;">📎 Adjuntar foto</button>';
+  html += '</div>';
+  html += '<input type="file" id="fp-cam-'+o.id+'" accept="image/*" capture="environment" multiple style="display:none" onchange="uploadProceso(this,\''+o.id+'\')">';
+  html += '<input type="file" id="fp-arc-'+o.id+'" accept="image/*" multiple style="display:none" onchange="uploadProceso(this,\''+o.id+'\')">';
   html += '<div class="upload-progress" id="prog-proceso" style="display:none"><div class="upload-progress-bar" id="prog-bar-proceso" style="width:0%"></div></div>';
   html += '</div>';
 
@@ -1240,6 +1619,32 @@ async function abrirModalTecnico(id) {
   html += botones;
   html += '<button class="btn btn-primary" onclick="guardarYCerrar(\''+id+'\')">';
   html += '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Guardar cambios</button>';
+
+  if(esAdmin) {
+    // WhatsApp buttons
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">';
+    html += '<button onclick="reenviarWARecepcion(\''+id+'\',\''+o.nombre.replace(/'/g,"\\'")+'\',\''+o.tel+'\',\''+o.servicio+'\',\''+o.marca+'\')" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#f0fdf4;border:1.5px solid rgba(37,211,102,0.4);border-radius:10px;padding:10px 8px;font-family:var(--sans);font-size:12px;font-weight:600;color:#15803d;cursor:pointer;">📱 WA Recepción</button>';
+    html += '<button onclick="reenviarWAListo(\''+id+'\',\''+o.nombre.replace(/'/g,"\\'")+'\',\''+o.tel+'\')" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#f0fdf4;border:1.5px solid rgba(37,211,102,0.4);border-radius:10px;padding:10px 8px;font-family:var(--sans);font-size:12px;font-weight:600;color:#15803d;cursor:pointer;">📱 WA Lista/Terminada</button>';
+    html += '</div>';
+
+    // Cambiar estado
+    html += '<div style="background:#f8fafc;border:1.5px solid rgba(99,102,241,0.15);border-radius:10px;padding:10px 12px;">';
+    html += '<div style="font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Cambiar estado</div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">';
+    const estados = [{v:'pendiente',l:'⏳ Pendiente',c:'#d97706'},{v:'en_proceso',l:'🔧 En proceso',c:'#2563eb'},{v:'pendiente_admin',l:'🔍 Por aprobar',c:'#ea580c'},{v:'listo',l:'✅ Terminada',c:'#16a34a'},{v:'entregada',l:'🎉 Entregada',c:'#6366f1'}];
+    estados.forEach(e => {
+      const esActual = o.estado === e.v;
+      html += '<button onclick="cambiarEstadoOrden(\''+id+'\',\''+e.v+'\')" style="padding:8px 6px;border-radius:8px;border:1.5px solid '+(esActual?e.c:'rgba(99,102,241,0.15)')+';background:'+(esActual?e.c+'20':'#fff')+';color:'+(esActual?e.c:'#64748b')+';font-family:var(--sans);font-size:11px;font-weight:600;cursor:pointer;'+(esActual?'pointer-events:none;':'')+'">'+(esActual?'● ':'')+e.l+'</button>';
+    });
+    html += '</div></div>';
+
+    // Servicio adicional
+    html += '<button onclick="abrirServicioAdicional(this.dataset.id,this.dataset.nombre,this.dataset.tecnico)" data-id="'+id+'" data-nombre="'+o.nombre.replace(/"/g,'&quot;')+'" data-tecnico="'+(o.tecnico||'').replace(/"/g,'&quot;')+'" style="width:100%;background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1.5px solid rgba(249,115,22,0.3);border-radius:10px;padding:11px;font-family:var(--sans);font-size:14px;font-weight:600;color:#ea580c;cursor:pointer;">➕ Agregar servicio adicional</button>';
+
+    // Eliminar orden
+    html += '<button onclick="eliminarOrden(\''+id+'\')" style="width:100%;background:#fff5f5;border:1.5px solid rgba(220,38,38,0.25);border-radius:10px;padding:10px;font-family:var(--sans);font-size:13px;font-weight:600;color:#dc2626;cursor:pointer;">🗑 Eliminar orden</button>';
+  }
+
   html += '<button class="btn btn-ghost" onclick="guardarYCerrar(\''+id+'\',true)">Cerrar sin guardar</button>';
   html += '</div>';
 
@@ -1260,8 +1665,34 @@ async function cambiarEstado(id, estado) {
   closeModal(); renderTecnico(filtroTec); actualizarBadge(); showToast('✓ Trabajo iniciado');
 }
 async function marcarListo(id) {
+  // Mostrar confirmación antes de marcar terminada
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.45);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.innerHTML = `
+  <div style="background:#fff;border-radius:20px;width:100%;max-width:360px;padding:28px 24px;box-shadow:0 8px 40px rgba(22,163,74,0.2);">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:42px;margin-bottom:10px;">✅</div>
+      <div style="font-size:17px;font-weight:700;color:#1e1b4b;margin-bottom:8px;">¿Trabajo completado?</div>
+      <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid rgba(22,163,74,0.3);border-radius:12px;padding:12px 14px;text-align:left;margin-bottom:4px;">
+        <div style="font-size:13px;font-weight:700;color:#15803d;margin-bottom:6px;">Antes de marcar terminada verifica:</div>
+        <div style="font-size:12px;color:#166534;line-height:1.8;">
+          ✔ Se realizó todo el servicio solicitado<br>
+          ✔ Se registraron los repuestos usados<br>
+          ✔ Se agregó el diagnóstico<br>
+          ✔ Se tomaron las fotos del proceso
+        </div>
+      </div>
+    </div>
+    <button onclick="confirmarMarcarListo('${id}',this.closest('div[style*=fixed]'))" style="width:100%;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:12px;padding:13px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 14px rgba(22,163,74,0.3);">✅ Sí, marcar como terminada</button>
+    <button onclick="this.closest('div[style*=fixed]').remove()" style="width:100%;background:none;border:1.5px solid rgba(99,102,241,0.2);border-radius:12px;padding:11px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:#6366f1;cursor:pointer;">Revisar antes de terminar</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+}
+
+async function confirmarMarcarListo(id, overlay) {
+  overlay.remove();
   await guardarDiagRepuestos(id);
-  // Queda en espera de aprobacion admin — no pasa a 'listo' todavia
   await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+id, {
     method:'PATCH',
     headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
@@ -1277,9 +1708,220 @@ async function cambiarTecnico(id, tecnico) {
   allOrdenes=[];
   showToast('✓ Técnico actualizado');
 }
+async function cambiarServicio(id, servicio) {
+  if(!servicio) return;
+  try {
+    const { error } = await db.from('ordenes').update({servicio}).eq('id',id);
+    if(error){ showToast('❌ '+error.message); return; }
+    ['vt_tec_pendiente','vt_tec_en_proceso','vt_tec_listo','vt_all_ordenes'].forEach(k=>localStorage.removeItem(k));
+    allOrdenes=[];
+    showToast('✅ Servicio cambiado a: '+servicio);
+  } catch(e){ showToast('❌ Error: '+e.message); }
+}
+
+async function _getExtras(ordenId) {
+  const { data } = await db.from('ordenes').select('repuestos').eq('id', ordenId).single();
+  return data?.repuestos || [];
+}
+async function _saveExtras(ordenId, repuestos) {
+  const { error } = await db.from('ordenes').update({ repuestos }).eq('id', ordenId);
+  return error;
+}
+
+async function cambiarEstadoExtra(ordenId, idx) {
+  const reps = await _getExtras(ordenId);
+  const extras = reps.filter(r => r._tipo === 'servicio_extra');
+  const normales = reps.filter(r => !r._tipo);
+  if(!extras[idx]) return;
+  extras[idx].estado = extras[idx].estado === 'terminado' ? 'pendiente' : 'terminado';
+  const err = await _saveExtras(ordenId, [...normales, ...extras]);
+  if(err){ showToast('❌ '+err.message); return; }
+  showToast(extras[idx].estado === 'terminado' ? '✅ Marcado como terminado' : '↩ Reabierto');
+  abrirModalTecnico(ordenId);
+}
+
+async function eliminarServicioExtra(ordenId, idx) {
+  if(!confirm('¿Eliminar este servicio adicional?')) return;
+  const reps = await _getExtras(ordenId);
+  const extras = reps.filter(r => r._tipo === 'servicio_extra');
+  const normales = reps.filter(r => !r._tipo);
+  extras.splice(idx, 1);
+  const err = await _saveExtras(ordenId, [...normales, ...extras]);
+  if(err){ showToast('❌ '+err.message); return; }
+  showToast('🗑 Servicio eliminado');
+  abrirModalTecnico(ordenId);
+}
+
+async function editarServicioExtra(ordenId, idx) {
+  const reps = await _getExtras(ordenId);
+  const extras = reps.filter(r => r._tipo === 'servicio_extra');
+  const ex = extras[idx];
+  if(!ex) return;
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.4);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
+  const servicioOpts = ['Mantenimiento Full','Mantenimiento Básico','Despinche','Revisión eléctrica','Lavada','Revisión de frenos','Reparación de tapas','Revisión general','Cambio de batería','Cambio de motor','Frenos y mecánica','Pantalla / controlador','Diagnóstico completo','Otro'].map(s=>`<option value="${s}" ${ex.servicio===s?'selected':''}>${s}</option>`).join('');
+  overlay.innerHTML = `
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;padding:24px 20px 36px;box-shadow:0 -8px 40px rgba(249,115,22,0.15);">
+    <div style="width:40px;height:4px;background:#ffedd5;border-radius:2px;margin:0 auto 20px;"></div>
+    <div style="font-size:17px;font-weight:700;color:#1e1b4b;margin-bottom:16px;">✏️ Editar servicio adicional</div>
+    <div class="field" style="margin-bottom:12px;">
+      <label style="display:block;font-size:12px;color:#1e1b4b;font-weight:600;opacity:.7;margin-bottom:6px;">Servicio</label>
+      <select id="esa-servicio" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;">${servicioOpts}</select>
+    </div>
+    <div class="field" style="margin-bottom:12px;">
+      <label style="display:block;font-size:12px;color:#1e1b4b;font-weight:600;opacity:.7;margin-bottom:6px;">Técnico</label>
+      <select id="esa-tecnico" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;">
+        <option value="" ${!ex.tecnico?'selected':''}>Sin asignar</option>
+        <option value="Alonso" ${ex.tecnico==='Alonso'?'selected':''}>Alonso</option>
+        <option value="Andres" ${ex.tecnico==='Andres'?'selected':''}>Andres</option>
+        <option value="Dario" ${ex.tecnico==='Dario'?'selected':''}>Dario</option>
+      </select>
+    </div>
+    <div class="field" style="margin-bottom:20px;">
+      <label style="display:block;font-size:12px;color:#1e1b4b;font-weight:600;opacity:.7;margin-bottom:6px;">Descripción</label>
+      <textarea id="esa-desc" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;min-height:72px;resize:vertical;box-sizing:border-box;">${ex.descripcion||''}</textarea>
+    </div>
+    <button onclick="guardarEdicionExtra('${ordenId}',${idx},this.closest('div[style*=fixed]'))" style="width:100%;background:linear-gradient(135deg,#f97316,#fb923c);color:#fff;border:none;border-radius:12px;padding:14px;font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 14px rgba(249,115,22,0.3);">💾 Guardar cambios</button>
+    <button onclick="this.closest('div[style*=fixed]').remove()" style="width:100%;background:none;border:1.5px solid rgba(99,102,241,0.2);border-radius:12px;padding:12px;font-family:var(--sans);font-size:14px;color:#6366f1;cursor:pointer;">Cancelar</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+}
+
+async function guardarEdicionExtra(ordenId, idx, overlay) {
+  const servicio = document.getElementById('esa-servicio').value;
+  const tecnico = document.getElementById('esa-tecnico').value;
+  const desc = document.getElementById('esa-desc').value.trim();
+  const btn = overlay.querySelector('button');
+  if(btn){ btn.textContent='Guardando...'; btn.disabled=true; }
+  try {
+    const reps = await _getExtras(ordenId);
+    const extras = reps.filter(r => r._tipo === 'servicio_extra');
+    const normales = reps.filter(r => !r._tipo);
+    if(!extras[idx]){ showToast('❌ Servicio no encontrado'); return; }
+    extras[idx] = { ...extras[idx], servicio, tecnico: tecnico||null, descripcion: desc };
+    const err = await _saveExtras(ordenId, [...normales, ...extras]);
+    if(err){ showToast('❌ '+err.message); if(btn){btn.textContent='💾 Guardar cambios';btn.disabled=false;} return; }
+    overlay.remove();
+    showToast('✅ Servicio actualizado');
+    abrirModalTecnico(ordenId);
+  } catch(e) {
+    showToast('❌ Error: '+e.message);
+    if(btn){ btn.textContent='💾 Guardar cambios'; btn.disabled=false; }
+  }
+}
+
+// ===== REENVIAR WHATSAPP =====
+function reenviarWARecepcion(ordenId, nombre, tel, servicio, marca) {
+  const taller = cfg.nombre || 'ReparaTuEco';
+  const vehiculoLine = marca ? '\n\nVehículo: '+marca : '';
+  const msg = 'Hola '+nombre+' 👋\n\nGracias por confiar en *'+taller+'*!\n\nTu vehículo eléctrico quedó registrado con la orden *'+ordenId+'*.'+vehiculoLine+'\n\nServicio: '+servicio+'\n\nTe avisaremos cuando esté lista. 🚲⚡';
+  let t = tel.replace(/\D/g,'');
+  if(!t.startsWith('57')) t='57'+t;
+  window.open('https://wa.me/'+t+'?text='+encodeURIComponent(msg),'_blank');
+}
+function reenviarWAListo(ordenId, nombre, tel) {
+  const taller = cfg.nombre || 'ReparaTuEco';
+  const trackUrl = 'https://reparatueco.github.io/reparatueco/estado.html?orden='+ordenId;
+  const msg = '⚡ Hola, '+nombre+'.\nTu vehículo eléctrico ya está listo para recoger.\n\nOrden: *'+ordenId+'*\nTaller: *'+taller+'*\n\nPuedes pasar a recogerlo dentro de nuestro horario de atención o coordinando previamente la entrega.\n\n¡Quedamos atentos a tu confirmación!\n\n🔗 '+trackUrl;
+  let t = tel.replace(/\D/g,'');
+  if(!t.startsWith('57')) t='57'+t;
+  window.open('https://wa.me/'+t+'?text='+encodeURIComponent(msg),'_blank');
+}
+
+// ===== ELIMINAR ORDEN =====
+async function eliminarOrden(ordenId) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.5);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.innerHTML = `
+  <div style="background:#fff;border-radius:20px;width:100%;max-width:360px;padding:28px 24px;box-shadow:0 8px 40px rgba(220,38,38,0.2);">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:40px;margin-bottom:10px;">⚠️</div>
+      <div style="font-size:17px;font-weight:700;color:#1e1b4b;margin-bottom:6px;">Eliminar orden ${ordenId}</div>
+      <div style="font-size:13px;color:#94a3b8;">Esta acción no se puede deshacer. ¿Estás seguro?</div>
+    </div>
+    <button onclick="confirmarEliminarOrden('${ordenId}',this.closest('div[style*=fixed]'))" style="width:100%;background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;border:none;border-radius:12px;padding:13px;font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;">🗑 Sí, eliminar orden</button>
+    <button onclick="this.closest('div[style*=fixed]').remove()" style="width:100%;background:none;border:1.5px solid rgba(99,102,241,0.2);border-radius:12px;padding:11px;font-family:var(--sans);font-size:14px;color:#6366f1;cursor:pointer;">Cancelar</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+}
+async function confirmarEliminarOrden(ordenId, overlay) {
+  const btn = overlay.querySelector('button');
+  if(btn){ btn.textContent='Eliminando...'; btn.disabled=true; }
+  try {
+    const { error } = await db.from('ordenes').delete().eq('id', ordenId);
+    if(error){ showToast('❌ '+error.message); if(btn){btn.textContent='🗑 Sí, eliminar orden';btn.disabled=false;} return; }
+    overlay.remove();
+    closeModal();
+    showToast('🗑 Orden '+ordenId+' eliminada');
+    actualizarBadge();
+    renderPanel();
+  } catch(e) { showToast('❌ Error: '+e.message); if(btn){btn.textContent='🗑 Sí, eliminar orden';btn.disabled=false;} }
+}
+
+// ===== CAMBIAR ESTADO LIBRE =====
+async function cambiarEstadoOrden(ordenId, nuevoEstado) {
+  if(nuevoEstado === 'entregada') {
+    // Flujo especial de entrega
+    await guardarYCerrar(ordenId);
+    await marcarEntregada(ordenId);
+    return;
+  }
+  try {
+    const { error } = await db.from('ordenes').update({estado: nuevoEstado}).eq('id', ordenId);
+    if(error){ showToast('❌ '+error.message); return; }
+    ['vt_tec_pendiente','vt_tec_en_proceso','vt_tec_listo','vt_all_ordenes'].forEach(k=>localStorage.removeItem(k));
+    allOrdenes=[];
+    const labels = {pendiente:'Pendiente',en_proceso:'En proceso',pendiente_admin:'Por aprobar',listo:'Terminada',entregada:'Entregada'};
+    showToast('✅ Estado cambiado a: '+labels[nuevoEstado]);
+    abrirModalTecnico(ordenId);
+    actualizarBadge();
+  } catch(e){ showToast('❌ Error: '+e.message); }
+}
+
+function editarClienteModal(ordenId, nombreActual, telActual) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.4);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.innerHTML = `
+  <div style="background:#fff;border-radius:20px;width:100%;max-width:400px;padding:28px 24px;box-shadow:0 8px 40px rgba(99,102,241,0.18);">
+    <div style="font-size:17px;font-weight:700;color:#1e1b4b;margin-bottom:4px;">✏️ Editar datos del cliente</div>
+    <div style="font-size:12px;color:#94a3b8;margin-bottom:20px;">Orden <b style="color:#4f46e5;">${ordenId}</b></div>
+    <div class="field" style="margin-bottom:14px;">
+      <label style="display:block;font-size:12px;color:#1e1b4b;margin-bottom:6px;font-weight:600;opacity:.7;">Nombre completo</label>
+      <input type="text" id="ec-nombre" value="${nombreActual}" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;padding:11px 14px;outline:none;box-sizing:border-box;transition:border-color .18s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='rgba(99,102,241,0.18)'">
+    </div>
+    <div class="field" style="margin-bottom:20px;">
+      <label style="display:block;font-size:12px;color:#1e1b4b;margin-bottom:6px;font-weight:600;opacity:.7;">Teléfono / WhatsApp</label>
+      <input type="tel" id="ec-tel" value="${telActual}" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;padding:11px 14px;outline:none;box-sizing:border-box;transition:border-color .18s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='rgba(99,102,241,0.18)'">
+    </div>
+    <button onclick="guardarClienteModal('${ordenId}',this.closest('div[style*=fixed]'))" style="width:100%;background:linear-gradient(135deg,#4f46e5,#818cf8);color:#fff;border:none;border-radius:12px;padding:13px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 14px rgba(99,102,241,0.3);">💾 Guardar cambios</button>
+    <button onclick="this.closest('div[style*=fixed]').remove()" style="width:100%;background:none;border:1.5px solid rgba(99,102,241,0.15);border-radius:12px;padding:11px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:#6366f1;cursor:pointer;">Cancelar</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+  setTimeout(()=>document.getElementById('ec-nombre')?.focus(), 100);
+}
+
+async function guardarClienteModal(ordenId, overlay) {
+  const nombre = document.getElementById('ec-nombre').value.trim();
+  const tel = document.getElementById('ec-tel').value.trim();
+  if(!nombre){ showToast('⚠ El nombre no puede estar vacío'); return; }
+  const btn = overlay.querySelector('button');
+  if(btn){ btn.textContent='Guardando...'; btn.disabled=true; }
+  try {
+    const { error } = await db.from('ordenes').update({ nombre, tel }).eq('id', ordenId);
+    if(error){ showToast('❌ '+error.message); if(btn){btn.textContent='💾 Guardar cambios';btn.disabled=false;} return; }
+    overlay.remove();
+    showToast('✅ Datos del cliente actualizados');
+    abrirModalTecnico(ordenId);
+  } catch(e) {
+    showToast('❌ Error: '+e.message);
+    if(btn){ btn.textContent='💾 Guardar cambios'; btn.disabled=false; }
+  }
+}
 async function guardarDiagRepuestos(id) {
   const diag = document.getElementById('diag-'+id);
-  // Count repuesto rows dynamically
   const repsDiv = document.getElementById('reps-'+id);
   const reps = [];
   if(repsDiv) {
@@ -1290,10 +1932,14 @@ async function guardarDiagRepuestos(id) {
       if(nombre) reps.push({nombre, precio});
     });
   }
+  // Preservar servicios extra existentes
+  const { data: current } = await db.from('ordenes').select('repuestos').eq('id', id).single();
+  const extras = (current?.repuestos || []).filter(r => r._tipo === 'servicio_extra');
+  const todosRepuestos = [...reps, ...extras];
   await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+id, {
     method:'PATCH',
     headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-    body: JSON.stringify({diagnostico: diag?.value||'', repuestos: reps})
+    body: JSON.stringify({diagnostico: diag?.value||'', repuestos: todosRepuestos})
   });
 }
 
@@ -1308,9 +1954,10 @@ async function guardarYCerrar(id, sinGuardar) {
 }
 async function addRep(id) {
   const {data:o}=await db.from('ordenes').select('repuestos').eq('id',id).single();
-  const reps=[...(o?.repuestos||[]),{nombre:'',precio:''}];
+  const extras = (o?.repuestos||[]).filter(r=>r._tipo==='servicio_extra');
+  const reps=[...(o?.repuestos||[]).filter(r=>!r._tipo),{nombre:'',precio:''},...extras];
   await db.from('ordenes').update({repuestos:reps}).eq('id',id);
-  const i=reps.length-1;
+  const i=reps.filter(r=>!r._tipo).length-1;
   const el=document.getElementById('reps-'+id);
   const div=document.createElement('div'); div.className='repuesto-row'; div.id=`rep-${id}-${i}`;
   div.innerHTML=`<input type="text" placeholder="Repuesto" id="repn-${id}-${i}"><input type="number" placeholder="Precio" id="repp-${id}-${i}" oninput="recalcularTotal('${id}',0)"><button class="btn-icon" onclick="elimRep('${id}',${i})">×</button>`;
@@ -1365,12 +2012,45 @@ async function renderHistorial() {
   } else {
     el.innerHTML='<div class="loading"><div class="spinner"></div>Cargando...</div>';
   }
-  const {data}=await db.from('ordenes').select('id,nombre,servicio,estado,fecha,presupuesto,marca,tecnico').order('fecha',{ascending:false});
+  const {data}=await db.from('ordenes').select('id,nombre,tel,servicio,estado,fecha,presupuesto,marca,referencia,tecnico').order('fecha',{ascending:false});
   if(!data) return;
   allOrdenes=data;
   localStorage.setItem('vt_all_ordenes', JSON.stringify(data));
   const filtered=data.filter(o=>!q||o.nombre.toLowerCase().includes(q)||o.id.toLowerCase().includes(q));
   el.innerHTML=filtered.length ? renderOrdenCards(filtered,'abrirModalHistorial') : '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No hay órdenes</div></div>';
+}
+
+function exportarHistorialAdminExcel() {
+  const ordenes = allOrdenes.length ? allOrdenes : [];
+  if(!ordenes.length){ showToast('⚠ Carga el historial primero'); return; }
+  const q = (document.getElementById('search-input')?.value||'').toLowerCase();
+  const filtradas = q ? ordenes.filter(o=>o.nombre.toLowerCase().includes(q)||o.id.toLowerCase().includes(q)) : ordenes;
+  if(!filtradas.length){ showToast('No hay órdenes para exportar'); return; }
+  try {
+    const wb = XLSX.utils.book_new();
+    const estadoLabel = {pendiente:'Pendiente',en_proceso:'En proceso',pendiente_admin:'Por aprobar',listo:'Terminada',entregada:'Entregada'};
+    const datos = filtradas.map(o => ({
+      'Orden':        o.id || '',
+      'Fecha':        o.fecha ? new Date(o.fecha).toLocaleDateString('es-CO') : '',
+      'Hora':         o.fecha ? new Date(o.fecha).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}) : '',
+      'Cliente':      o.nombre || '',
+      'Teléfono':     o.tel || '',
+      'Servicio':     o.servicio || '',
+      'Técnico':      o.tecnico || 'Sin asignar',
+      'Estado':       estadoLabel[o.estado] || o.estado || '',
+      'Marca':        o.marca || '',
+      'Referencia':   o.referencia || '',
+      'Presupuesto':  o.presupuesto ? Number(o.presupuesto) : 0,
+    }));
+    const ws = XLSX.utils.json_to_sheet(datos);
+    ws['!cols'] = [{wch:10},{wch:12},{wch:8},{wch:24},{wch:14},{wch:22},{wch:12},{wch:14},{wch:14},{wch:16},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, ws, 'Historial');
+    const fecha = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, 'historial_ordenes_'+fecha+'.xlsx');
+    showToast('✅ Excel descargado ('+filtradas.length+' órdenes)');
+  } catch(e) {
+    showToast('❌ Error: '+e.message);
+  }
 }
 async function renderStats() {
   if(allOrdenes.length>0) renderStatsData(allOrdenes);
@@ -1380,12 +2060,47 @@ async function renderStats() {
 }
 function renderStatsData(data) {
   const total=data.length, pend=data.filter(x=>x.estado==='pendiente').length;
-  const proc=data.filter(x=>x.estado==='en_proceso').length, list=data.filter(x=>x.estado==='listo').length;
+  const proc=data.filter(x=>x.estado==='en_proceso').length, list=data.filter(x=>x.estado==='entregada').length;
+
+  function cardStyle(color, bg, active) {
+    return `background:${bg};border:1.5px solid ${color}30;border-radius:14px;padding:16px 14px;text-align:center;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px ${color}15;`;
+  }
+
   document.getElementById('stats-grid').innerHTML=`
-    <div class="stat-card"><div class="stat-val green">${total}</div><div class="stat-lbl">TOTAL</div></div>
-    <div class="stat-card"><div class="stat-val">${pend}</div><div class="stat-lbl">PENDIENTES</div></div>
-    <div class="stat-card"><div class="stat-val">${proc}</div><div class="stat-lbl">EN PROCESO</div></div>
-    <div class="stat-card"><div class="stat-val">${list}</div><div class="stat-lbl">ENTREGADAS</div></div>`;
+    <div onclick="filtrarHistorialPorEstado('')" style="${cardStyle('#4f46e5','#eef2ff')}" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+      <div style="font-family:Arial,sans-serif;font-size:32px;font-weight:700;color:#4f46e5;letter-spacing:-1px;line-height:1;">${total}</div>
+      <div style="font-size:11px;font-weight:700;color:#4f46e5;opacity:.7;margin-top:4px;letter-spacing:.5px;">TOTAL</div>
+    </div>
+    <div onclick="filtrarHistorialPorEstado('pendiente')" style="${cardStyle('#d97706','#fffbeb')}" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+      <div style="font-family:Arial,sans-serif;font-size:32px;font-weight:700;color:#d97706;letter-spacing:-1px;line-height:1;">${pend}</div>
+      <div style="font-size:11px;font-weight:700;color:#d97706;opacity:.7;margin-top:4px;letter-spacing:.5px;">PENDIENTES</div>
+    </div>
+    <div onclick="filtrarHistorialPorEstado('en_proceso')" style="${cardStyle('#2563eb','#eff6ff')}" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+      <div style="font-family:Arial,sans-serif;font-size:32px;font-weight:700;color:#2563eb;letter-spacing:-1px;line-height:1;">${proc}</div>
+      <div style="font-size:11px;font-weight:700;color:#2563eb;opacity:.7;margin-top:4px;letter-spacing:.5px;">EN PROCESO</div>
+    </div>
+    <div onclick="filtrarHistorialPorEstado('entregada')" style="${cardStyle('#16a34a','#f0fdf4')}" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+      <div style="font-family:Arial,sans-serif;font-size:32px;font-weight:700;color:#16a34a;letter-spacing:-1px;line-height:1;">${list}</div>
+      <div style="font-size:11px;font-weight:700;color:#16a34a;opacity:.7;margin-top:4px;letter-spacing:.5px;">ENTREGADAS</div>
+    </div>`;
+}
+
+function filtrarHistorialPorEstado(estado) {
+  const q = (document.getElementById('search-input')?.value || '').toLowerCase();
+  let filtradas = estado ? allOrdenes.filter(o => o.estado === estado) : allOrdenes;
+  if(q) filtradas = filtradas.filter(o => (o.nombre||'').toLowerCase().includes(q) || (o.id||'').toLowerCase().includes(q));
+  const el = document.getElementById('lista-historial');
+  if(!el) return;
+  // Mostrar indicador de filtro activo
+  if(estado) {
+    const labels = {pendiente:'Pendientes',en_proceso:'En proceso',listo:'Terminadas',pendiente_admin:'Por aprobar',entregada:'Entregadas'};
+    el.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;background:#eef2ff;border-radius:10px;padding:10px 14px;">
+      <span style="font-size:13px;font-weight:600;color:#4f46e5;">Filtrando: ${labels[estado]||estado} (${filtradas.length})</span>
+      <button onclick="filtrarHistorialPorEstado('')" style="background:none;border:none;color:#6366f1;font-size:13px;font-weight:600;cursor:pointer;">✕ Ver todas</button>
+    </div>` + (filtradas.length ? renderOrdenCards(filtradas,'abrirModalHistorial') : '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No hay órdenes en este estado</div></div>');
+  } else {
+    el.innerHTML = filtradas.length ? renderOrdenCards(filtradas,'abrirModalHistorial') : '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No hay órdenes</div></div>';
+  }
 }
 async function abrirModalHistorial(id) {
   document.getElementById('modal-body').innerHTML='<div class="loading"><div class="spinner"></div>Cargando...</div>';
@@ -1486,7 +2201,7 @@ async function adminEnviarAutzCliente(ordenId, idx) {
   const precio = a.precio;
   const msg = `Hola ${nombre} 👋
 
-Revisamos tu bicicleta eléctrica (Orden: *${ordenId}*) y encontramos que necesita el siguiente repuesto:
+Revisamos tu vehículo eléctrico (Orden: *${ordenId}*) y encontramos que necesita el siguiente repuesto:
 
 🔧 *${a.repuesto}*${precio ? '\n💰 Costo: *$' + Number(precio).toLocaleString('es-CO') + '*' : ''}
 
@@ -1710,7 +2425,7 @@ async function guardarYEnviarAutz(ordenId, clienteNombre, clienteTel, overlay) {
   if(!tel.startsWith('57')) tel='57'+tel;
   const msg = `Hola ${clienteNombre} 👋
 
-Durante la revisión de tu bicicleta encontramos lo siguiente:
+Durante la revisión de tu vehículo encontramos lo siguiente:
 
 🔧 *${desc}*${valor?'\n💰 Costo adicional: $'+Number(valor).toLocaleString('es-CO'):''}
 
@@ -1742,7 +2457,7 @@ async function enviarWAAutz(ordenId, idx) {
   if(!tel.startsWith('57')) tel='57'+tel;
   const msg = `Hola ${o.nombre} 👋
 
-Recordatorio sobre la revisión de tu bicicleta:
+Recordatorio sobre la revisión de tu vehículo:
 
 🔧 *${a.descripcion}*${a.valor?'\n💰 Costo adicional: $'+Number(a.valor).toLocaleString('es-CO'):''}
 
@@ -1929,7 +2644,7 @@ async function adminAprobarAutz(ordenId, idx, clienteNombre, clienteTel) {
   if(!tel.startsWith('57')) tel='57'+tel;
   const msg = `Hola ${clienteNombre} 👋
 
-Durante la revision de tu bicicleta encontramos que necesita:
+Durante la revision de tu vehículo encontramos que necesita:
 
 🔧 *${a.repuesto}*${a.precio ? '\n💰 Costo: *$' + Number(a.precio).toLocaleString('es-CO') + '*' : ''}
 
@@ -2002,13 +2717,14 @@ async function renderPanel() {
     const counts = {
       pendiente: ordenes.filter(o=>o.estado==='pendiente').length,
       en_proceso: ordenes.filter(o=>o.estado==='en_proceso').length,
-      listo: ordenes.filter(o=>['listo','pendiente_admin'].includes(o.estado)).length,
+      listo: ordenes.filter(o=>o.estado==='listo').length,
+      pendiente_admin: ordenes.filter(o=>o.estado==='pendiente_admin').length,
       entregada: ordenes.filter(o=>o.estado==='entregada').length,
     };
-    ['pendiente','en_proceso','listo','entregada'].forEach(est => {
+    ['pendiente','en_proceso','listo','pendiente_admin','entregada'].forEach(est => {
       const tab = document.getElementById('ptab-'+est);
       if(tab) {
-        const labels = {pendiente:'Pendientes',en_proceso:'En proceso',listo:'Terminadas',entregada:'Entregadas'};
+        const labels = {pendiente:'Pendientes',en_proceso:'En proceso',listo:'Terminadas',pendiente_admin:'Por aprobar',entregada:'Entregadas'};
         tab.textContent = labels[est] + (counts[est]?' ('+counts[est]+')':'');
       }
     });
@@ -2026,7 +2742,7 @@ async function renderPanel() {
           <div style="font-size:11px;color:var(--text3);">El técnico terminó — revisa y aprueba para marcar como lista</div></div>
         </div>
         ${esperandoAdmin.map(o=>`
-        <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+        <div id="aprobcard-${o.id}" style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
             <span style="font-family:var(--mono);font-size:11px;color:var(--green);">${o.id}</span>
             <span style="font-size:11px;color:var(--amber);">⏳ Esperando aprobación</span>
@@ -2035,7 +2751,7 @@ async function renderPanel() {
           <div style="font-size:11px;color:var(--text2);margin-bottom:10px;">${o.servicio}${o.marca?' · '+o.marca:''} · ${o.tecnico||'Sin asignar'}</div>
           <div style="display:flex;gap:6px;">
             <button onclick="abrirModalTecnico('${o.id}')" style="flex:1;background:var(--bg4);color:var(--text2);border:1px solid var(--border);border-radius:7px;padding:8px;font-family:var(--sans);font-size:12px;cursor:pointer;">Ver orden</button>
-            <button onclick="adminAprobarListo('${o.id}','${o.nombre}','${o.tel}')" style="flex:2;background:var(--green);color:#000;border:none;border-radius:7px;padding:8px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;">✓ Aprobar — marcar lista</button>
+            <button onclick="adminAprobarListo('${o.id}','${o.nombre}','${o.tel}',this)" style="flex:2;background:var(--green);color:#000;border:none;border-radius:7px;padding:8px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;">✓ Aprobar — marcar lista</button>
           </div>
         </div>`).join('')}
       </div>`;
@@ -2048,7 +2764,7 @@ async function renderPanel() {
       alertasHTML += `<div class="card" style="border-color:rgba(0,230,118,0.4);background:rgba(0,230,118,0.04);margin-bottom:12px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
           <div style="width:32px;height:32px;border-radius:50%;background:var(--green-dim);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🎉</div>
-          <div><div style="font-size:14px;font-weight:600;color:var(--green);">${listasParaAviso.length} bicicleta${listasParaAviso.length!==1?'s':''} lista${listasParaAviso.length!==1?'s':''} para entrega</div>
+          <div><div style="font-size:14px;font-weight:600;color:var(--green);">${listasParaAviso.length} vehículo${listasParaAviso.length!==1?'s':''} listo${listasParaAviso.length!==1?'s':''} para entrega</div>
           <div style="font-size:11px;color:var(--text3);">Avisa al cliente que puede pasar</div></div>
         </div>
         ${listasParaAviso.map(o=>`
@@ -2103,6 +2819,8 @@ async function renderPanel() {
     // Renderizar lista segun tab activo
     const tabActivo = document.querySelector('#panel-tabs .filter-tab.active');
     const estadoActivo = tabActivo ? tabActivo.id.replace('ptab-','') : 'pendiente';
+    // Ocultar alertas si no estamos en "Por aprobar"
+    alertasEl.style.display = estadoActivo === 'pendiente_admin' ? '' : 'none';
     renderPanelLista(ordenes, estadoActivo);
 
   } catch(e) {
@@ -2114,6 +2832,12 @@ let _panelOrdenes = [];
 function cambiarTabPanel(estado, el) {
   document.querySelectorAll('#panel-tabs .filter-tab').forEach(t=>t.classList.remove('active'));
   if(el) el.classList.add('active');
+  // Limpiar buscador de tab
+  const tabInput = document.getElementById('panel-search-tab');
+  if(tabInput) tabInput.value = '';
+  // Mostrar alertas solo en la tab "Por aprobar"
+  const alertasEl = document.getElementById('panel-alertas');
+  if(alertasEl) alertasEl.style.display = estado === 'pendiente_admin' ? '' : 'none';
   if(_panelOrdenes.length) {
     renderPanelLista(_panelOrdenes, estado);
   } else {
@@ -2122,27 +2846,106 @@ function cambiarTabPanel(estado, el) {
 }
 
 function renderPanelLista(ordenes, estado) {
+  // Reset buscador de tab al cambiar
+  const tabInput = document.getElementById('panel-search-tab');
+  if(tabInput) tabInput.value = '';
+
   const listaEl = document.getElementById('panel-lista');
   if(!listaEl) return;
 
   if(estado === 'nomina') {
+    const countEl = document.getElementById('panel-tab-count');
+    if(countEl) countEl.textContent = '';
     renderNomina(ordenes);
     return;
   }
 
-  const filtradas = estado==='listo'
-    ? ordenes.filter(o=>['listo','pendiente_admin'].includes(o.estado))
-    : ordenes.filter(o=>o.estado===estado);
+  const filtradas = ordenes.filter(o=>o.estado===estado);
+  _panelFiltradas = filtradas; // guardar para búsqueda de tab
 
+  const countEl = document.getElementById('panel-tab-count');
+  if(countEl) countEl.textContent = filtradas.length + ' orden' + (filtradas.length!==1?'es':'');
+
+  renderPanelCards(filtradas, estado);
+}
+
+let _panelFiltradas = [];
+
+function filtrarTabPanel(q) {
+  const tabActivo = document.querySelector('#panel-tabs .filter-tab.active');
+  const estado = tabActivo ? tabActivo.id.replace('ptab-','') : 'pendiente';
+  const term = q.trim().toLowerCase();
+  const resultado = term
+    ? _panelFiltradas.filter(o =>
+        (o.nombre||'').toLowerCase().includes(term) ||
+        (o.id||'').toLowerCase().includes(term) ||
+        (o.servicio||'').toLowerCase().includes(term) ||
+        (o.marca||'').toLowerCase().includes(term))
+    : _panelFiltradas;
+  const countEl = document.getElementById('panel-tab-count');
+  if(countEl) countEl.textContent = resultado.length + ' orden' + (resultado.length!==1?'es':'') + (term?' encontrada'+(resultado.length!==1?'s':''):'');
+  renderPanelCards(resultado, estado);
+}
+
+function buscarEnPanel(q) {
+  const clearBtn = document.getElementById('panel-search-clear');
+  if(clearBtn) clearBtn.style.display = q ? 'block' : 'none';
+  const resultadoEl = document.getElementById('panel-search-resultado');
+  const tabsWrap = document.getElementById('panel-tabs-wrap');
+  if(!resultadoEl || !tabsWrap) return;
+
+  if(!q.trim()) {
+    resultadoEl.style.display = 'none';
+    tabsWrap.style.display = '';
+    return;
+  }
+
+  tabsWrap.style.display = 'none';
+  resultadoEl.style.display = '';
+
+  const term = q.trim().toLowerCase();
+  const encontradas = _panelOrdenes.filter(o =>
+    (o.nombre||'').toLowerCase().includes(term) ||
+    (o.id||'').toLowerCase().includes(term) ||
+    (o.servicio||'').toLowerCase().includes(term) ||
+    (o.marca||'').toLowerCase().includes(term));
+
+  if(!encontradas.length) {
+    resultadoEl.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Sin resultados para "${q}"</div></div>`;
+    return;
+  }
+
+  const estadoLabel = {pendiente:'Pendiente',en_proceso:'En proceso',pendiente_admin:'Por aprobar',listo:'Terminada',entregada:'Entregada'};
+  const estadoColor = {pendiente:'#d97706',en_proceso:'#2563eb',pendiente_admin:'#ea580c',listo:'#16a34a',entregada:'#6366f1'};
+
+  let html = `<div style="font-size:12px;color:var(--text3);margin-bottom:12px;font-weight:600;">${encontradas.length} resultado${encontradas.length!==1?'s':''} para "<span style="color:#4f46e5;">${q}</span>"</div>`;
+  encontradas.forEach(o => {
+    const col = estadoColor[o.estado] || '#6366f1';
+    const lbl = estadoLabel[o.estado] || o.estado;
+    html += `<div onclick="abrirModalTecnico('${o.id}')" style="background:#fff;border:1.5px solid rgba(99,102,241,0.15);border-radius:14px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(99,102,241,0.06);" onmouseover="this.style.borderColor='#6366f1';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='rgba(99,102,241,0.15)';this.style.transform=''">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;color:#4f46e5;">${o.id}</span>
+        <span style="background:${col}20;color:${col};border-radius:999px;font-size:11px;font-weight:700;padding:3px 10px;">${lbl}</span>
+      </div>
+      <div style="font-size:15px;font-weight:600;color:#1e1b4b;margin-bottom:3px;">${o.nombre}</div>
+      <div style="font-size:12px;color:#94a3b8;">${o.servicio||''}${o.marca?' · '+o.marca:''}${o.tecnico?' · '+o.tecnico:''}</div>
+    </div>`;
+  });
+  resultadoEl.innerHTML = html;
+}
+
+function renderPanelCards(filtradas, estado) {
+  const listaEl = document.getElementById('panel-lista');
+  if(!listaEl) return;
+
+  const labels = {pendiente:'pendientes',en_proceso:'en proceso',pendiente_admin:'por aprobar',listo:'terminadas',entregada:'entregadas'};
   if(!filtradas.length) {
-    const labels = {pendiente:'pendientes',en_proceso:'en proceso',listo:'terminadas',entregada:'entregadas'};
     listaEl.innerHTML = `<div class="empty"><div class="empty-icon">🔧</div><div class="empty-text">No hay órdenes ${labels[estado]||estado}</div></div>`;
     return;
   }
 
   const CHECKLISTS_SIZE = {'Mantenimiento Full':5,'Despinche':2,'Lavada':3,'Reparacion de Tapas':3};
-
-  let html = `<div style="font-size:12px;color:var(--text3);margin-bottom:10px;font-weight:500;">${filtradas.length} orden${filtradas.length!==1?'es':''}</div>`;
+  let html = '';
 
   filtradas.forEach(o => {
     const chk = o.checklist || {};
@@ -2157,7 +2960,7 @@ function renderPanelLista(ordenes, estado) {
     const tiempo = mins < 60 ? mins+'m' : mins < 1440 ? Math.floor(mins/60)+'h '+( mins%60)+'m' : Math.floor(mins/1440)+'d';
     const estadoBadgeStr = estado==='pendiente'?'<span class="badge badge-amber" style="font-size:10px;padding:2px 8px;">Pendiente</span>':
       estado==='en_proceso'?'<span class="badge badge-blue" style="font-size:10px;padding:2px 8px;">En proceso</span>':
-      o.estado==='pendiente_admin'?'<span class="badge badge-amber" style="font-size:10px;padding:2px 8px;">⏳ Esp. admin</span>':
+      estado==='pendiente_admin'?'<span class="badge badge-amber" style="font-size:10px;padding:2px 8px;">⏳ Por aprobar</span>':
       o.estado==='listo'?'<span class="badge badge-green" style="font-size:10px;padding:2px 8px;">Lista ✓</span>':
       '<span class="badge" style="font-size:10px;padding:2px 8px;background:var(--bg4);color:var(--text2);">Entregada</span>';
 
@@ -2200,7 +3003,31 @@ function renderPanelLista(ordenes, estado) {
 }
 
 async function marcarEntregada(ordenId) {
-  // Fetch full order data to register the sale
+  // Mostrar confirmación con advertencia de pago
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.5);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.innerHTML = `
+  <div style="background:#fff;border-radius:20px;width:100%;max-width:380px;padding:28px 24px;box-shadow:0 8px 40px rgba(99,102,241,0.18);">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:40px;margin-bottom:10px;">🎉</div>
+      <div style="font-size:17px;font-weight:700;color:#1e1b4b;margin-bottom:8px;">¿Confirmar entrega?</div>
+      <div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid rgba(245,158,11,0.4);border-radius:12px;padding:12px 14px;text-align:left;">
+        <div style="font-size:13px;font-weight:700;color:#b45309;margin-bottom:4px;">⚠️ Antes de entregar:</div>
+        <div style="font-size:12px;color:#92400e;line-height:1.6;">
+          • Verifica que el cliente ya pagó<br>
+          • Selecciona el medio de pago<br>
+          • Genera el recibo de entrega
+        </div>
+      </div>
+    </div>
+    <button onclick="this.closest('div[style*=fixed]').remove();_procederEntrega('${ordenId}')" style="width:100%;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:12px;padding:13px;font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;">✅ Sí, proceder con entrega</button>
+    <button onclick="this.closest('div[style*=fixed]').remove()" style="width:100%;background:none;border:1.5px solid rgba(99,102,241,0.2);border-radius:12px;padding:11px;font-family:var(--sans);font-size:14px;color:#6366f1;cursor:pointer;">Cancelar</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+}
+
+async function _procederEntrega(ordenId) {
   const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId+'&select=*', {
     headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
   });
@@ -2208,121 +3035,155 @@ async function marcarEntregada(ordenId) {
   const o = rows[0];
   if(!o) return;
 
-  // Mark as entregada
-  await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId, {
-    method:'PATCH',
-    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-    body: JSON.stringify({estado:'entregada', aviso_admin_listo:false})
-  });
-
-  // Build sale items: service + repuestos
+  // NO se marca entregada ni se registra en caja todavía
+  // Solo se construyen los items para el modal de pago
   const items = [];
   if(o.presupuesto && Number(o.presupuesto) > 0) {
     items.push({ nombre: o.servicio||'Servicio', cantidad: 1, precio_unitario: Number(o.presupuesto), tipo: 'servicio' });
   }
-  (o.repuestos||[]).forEach(r => {
+  (o.repuestos||[]).filter(r=>!r._tipo).forEach(r => {
     if(r.nombre) items.push({ nombre: r.nombre, cantidad: 1, precio_unitario: Number(r.precio||0), tipo: 'repuesto' });
   });
 
   const total = items.reduce((s,i)=>s+(i.precio_unitario*i.cantidad), 0);
 
-  if(items.length > 0 && total > 0) {
-    // Register in ventas table
-    const ventaResp = await fetch(SUPA_URL+'/rest/v1/ventas', {
-      method:'POST',
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
-      body: JSON.stringify({
-        items,
-        subtotal: total,
-        total,
-        metodo_pago: 'pendiente',
-        cliente_nombre: o.nombre,
-        cliente_tel: o.tel,
-        orden_id: ordenId,
-        tipo: 'servicio_entregado',
-        created_by: usuarioActual?.nombre||'admin'
-      })
-    });
-    const ventaData = await ventaResp.json();
-    const venta = Array.isArray(ventaData) ? ventaData[0] : ventaData;
-
-    // Show delivery modal with payment + receipt option
-    mostrarModalEntrega(o, venta, items, total);
-  } else {
-    showToast('Orden entregada');
-    actualizarBadge();
-    renderPanel();
-  }
+  // Pasar la orden completa al modal — el registro se hace al confirmar pago
+  mostrarModalEntrega(o, null, items, total);
 }
 
 function mostrarModalEntrega(o, venta, items, total) {
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.5);backdrop-filter:blur(4px);z-index:300;display:flex;align-items:flex-end;justify-content:center;';
-  overlay.innerHTML = `
-  <div style="background:var(--bg2);border-top:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 16px 36px;max-height:85vh;overflow-y:auto;">
-    <div style="width:36px;height:3px;background:var(--border2);border-radius:2px;margin:0 auto 16px;"></div>
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.5);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
 
-    <!-- Header -->
+  // Track editable items
+  let itemsEdit = items.map(i => ({...i}));
+  let totalEdit = total;
+
+  function renderItems() {
+    return itemsEdit.map((i,idx) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);">
+      <span style="flex:1;">${i.nombre}</span>
+      <span style="font-family:Arial,sans-serif;color:var(--green);font-weight:600;margin:0 8px;">$${(i.precio_unitario*i.cantidad).toLocaleString('es-CO')}</span>
+      <button onclick="eliminarItemEntrega(${idx})" style="background:#fff5f5;border:1px solid rgba(220,38,38,0.2);border-radius:6px;width:24px;height:24px;color:#dc2626;font-size:14px;cursor:pointer;padding:0;line-height:1;">×</button>
+    </div>`).join('');
+  }
+
+  function recalcTotal() {
+    return itemsEdit.reduce((s,i)=>s+(i.precio_unitario*i.cantidad),0);
+  }
+
+  overlay.innerHTML = `
+  <div style="background:#fff;border-top:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 18px 36px;max-height:90vh;overflow-y:auto;">
+    <div style="width:36px;height:3px;background:#e0e7ff;border-radius:2px;margin:0 auto 16px;"></div>
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-      <div style="width:44px;height:44px;border-radius:50%;background:var(--green-dim);display:flex;align-items:center;justify-content:center;font-size:22px;">🎉</div>
+      <div style="width:44px;height:44px;border-radius:50%;background:rgba(22,163,74,0.12);display:flex;align-items:center;justify-content:center;font-size:22px;">🎉</div>
       <div>
-        <div style="font-size:16px;font-weight:700;">Entrega registrada</div>
-        <div style="font-size:12px;color:var(--text2);">${o.id} · ${o.nombre}</div>
+        <div style="font-size:16px;font-weight:700;color:#1e1b4b;">Entrega: ${o.id}</div>
+        <div style="font-size:12px;color:#94a3b8;">${o.nombre}</div>
       </div>
     </div>
 
-    <!-- Resumen -->
-    <div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:14px;">
-      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Detalle del servicio</div>
-      ${items.map(i=>`
-      <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border);">
-        <span>${i.nombre}</span>
-        <span style="font-family:var(--mono);color:var(--green);">$${(i.precio_unitario*i.cantidad).toLocaleString('es-CO')}</span>
-      </div>`).join('')}
-      <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;padding:10px 0 0;">
+    <!-- Items editables -->
+    <div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:12px;">
+      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:700;">Detalle del cobro</div>
+      <div id="entrega-items-list">${renderItems()}</div>
+      <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;padding:10px 0 0;border-top:1px solid var(--border);margin-top:6px;">
         <span>Total</span>
-        <span style="font-family:var(--mono);color:var(--green);">$${total.toLocaleString('es-CO')}</span>
+        <span id="entrega-total-val" style="font-family:Arial,sans-serif;color:#16a34a;">$${recalcTotal().toLocaleString('es-CO')}</span>
+      </div>
+    </div>
+
+    <!-- Agregar ítem extra -->
+    <div style="background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1.5px solid rgba(249,115,22,0.2);border-radius:10px;padding:12px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:#ea580c;margin-bottom:8px;">➕ Agregar ítem (ej: calcomanía, accesorio)</div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="extra-item-nombre" placeholder="Descripción" style="flex:2;background:#fff;border:1.5px solid rgba(249,115,22,0.25);border-radius:8px;color:#1e1b4b;font-family:var(--sans);font-size:13px;padding:8px 10px;outline:none;">
+        <div style="position:relative;flex:1;"><span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:13px;">$</span>
+        <input type="number" id="extra-item-precio" placeholder="0" style="width:100%;background:#fff;border:1.5px solid rgba(249,115,22,0.25);border-radius:8px;color:#1e1b4b;font-family:Arial,sans-serif;font-size:13px;padding:8px 8px 8px 22px;outline:none;box-sizing:border-box;"></div>
+        <button onclick="agregarItemEntrega()" style="background:#ea580c;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;">+</button>
       </div>
     </div>
 
     <!-- Método de pago -->
-    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">Método de pago</div>
+    <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">Método de pago *obligatorio</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
       <button id="epago-efectivo" onclick="selEntregaPago('efectivo')" style="padding:11px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;">💵 Efectivo</button>
       <button id="epago-nequi" onclick="selEntregaPago('nequi')" style="padding:11px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;">📱 Nequi</button>
       <button id="epago-daviplata" onclick="selEntregaPago('daviplata')" style="padding:11px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;">💜 Daviplata</button>
       <button id="epago-transferencia" onclick="selEntregaPago('transferencia')" style="padding:11px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;">🏦 Transferencia</button>
       <button id="epago-tarjeta" onclick="selEntregaPago('tarjeta')" style="padding:11px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;">💳 Tarjeta</button>
-      <button id="epago-mixto" onclick="selEntregaPago('mixto')" style="grid-column:1/-1;padding:11px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;">🔀 Pago mixto</button>
+      <button id="epago-mixto" onclick="selEntregaPago('mixto')" style="padding:11px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;">🔀 Pago mixto</button>
     </div>
 
-    <!-- Pago mixto -->
     <div id="entrega-mixto-detalle" style="display:none;background:rgba(255,179,0,0.05);border:1px solid rgba(255,179,0,0.2);border-radius:12px;padding:14px;margin-bottom:12px;">
-      <div style="font-size:12px;font-weight:600;color:var(--amber);margin-bottom:10px;">Total: $${total.toLocaleString('es-CO')}</div>
+      <div id="entrega-mixto-total-lbl" style="font-size:12px;font-weight:600;color:var(--amber);margin-bottom:10px;"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
-        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">💵 Efectivo</label>
-          <input type="number" id="emix-efectivo" placeholder="0" min="0" oninput="calcMixtoEntrega(${total})" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13px;padding:8px 10px;outline:none;"></div>
-        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">📱 Nequi/Daviplata</label>
-          <input type="number" id="emix-nequi" placeholder="0" min="0" oninput="calcMixtoEntrega(${total})" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13px;padding:8px 10px;outline:none;"></div>
-        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">🏦 Transferencia</label>
-          <input type="number" id="emix-transferencia" placeholder="0" min="0" oninput="calcMixtoEntrega(${total})" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13px;padding:8px 10px;outline:none;"></div>
-        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">💳 Tarjeta</label>
-          <input type="number" id="emix-tarjeta" placeholder="0" min="0" oninput="calcMixtoEntrega(${total})" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13px;padding:8px 10px;outline:none;"></div>
+        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">💵 Efectivo</label><input type="number" id="emix-efectivo" placeholder="0" min="0" oninput="calcMixtoEntrega(window._entregaTotal||0)" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Arial,sans-serif;font-size:13px;padding:8px 10px;outline:none;box-sizing:border-box;"></div>
+        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">📱 Nequi/Daviplata</label><input type="number" id="emix-nequi" placeholder="0" min="0" oninput="calcMixtoEntrega(window._entregaTotal||0)" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Arial,sans-serif;font-size:13px;padding:8px 10px;outline:none;box-sizing:border-box;"></div>
+        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">🏦 Transferencia</label><input type="number" id="emix-transferencia" placeholder="0" min="0" oninput="calcMixtoEntrega(window._entregaTotal||0)" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Arial,sans-serif;font-size:13px;padding:8px 10px;outline:none;box-sizing:border-box;"></div>
+        <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:3px;">💳 Tarjeta</label><input type="number" id="emix-tarjeta" placeholder="0" min="0" oninput="calcMixtoEntrega(window._entregaTotal||0)" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Arial,sans-serif;font-size:13px;padding:8px 10px;outline:none;box-sizing:border-box;"></div>
       </div>
       <div style="background:var(--bg4);border-radius:6px;height:6px;margin-bottom:6px;overflow:hidden;"><div id="emix-barra" style="height:100%;background:var(--amber);border-radius:6px;width:0%;transition:width .2s;"></div></div>
       <div id="emix-resta" style="font-size:12px;font-weight:600;text-align:center;color:var(--amber);">Ingresa los valores</div>
     </div>
 
-    <!-- Botones -->
-    <button onclick="finalizarEntrega('${o.id}','${venta?.id||''}',${total},this.closest('div[style*=fixed]'))" style="width:100%;background:var(--green);color:#000;border:none;border-radius:12px;padding:14px;font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px;">
+    <button onclick="finalizarEntrega('${o.id}','${venta?.id||''}',window._entregaTotal||${total},this.closest('div[style*=fixed]'))" style="width:100%;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:12px;padding:14px;font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px;box-shadow:0 4px 14px rgba(22,163,74,0.3);">
       🖨️ Guardar pago e imprimir recibo
     </button>
-    <button onclick="this.closest('div[style*=fixed]').remove();actualizarBadge();renderPanel();" style="width:100%;background:none;border:1px solid var(--border);border-radius:12px;padding:10px;font-family:var(--sans);font-size:13px;color:var(--text2);cursor:pointer;">
-      Cerrar sin recibo
+    <button onclick="if(confirm('¿Seguro? El pago NO se registrará y la orden seguirá como \\'Lista para entrega\\'.'))this.closest('div[style*=fixed]').remove();" style="width:100%;background:none;border:1.5px solid rgba(99,102,241,0.15);border-radius:12px;padding:11px;font-family:var(--sans);font-size:13px;color:#6366f1;cursor:pointer;">
+      Cancelar — no registrar pago
     </button>
   </div>`;
   document.body.appendChild(overlay);
+
+  // Store items and order data globally for finalizarEntrega
+  window._entregaItems = itemsEdit;
+  window._entregaTotal = recalcTotal();
+  window._entregaOverlay = overlay;
+  window._entregaOrden = o; // guardar orden para registrar al confirmar pago
+
   selEntregaPago('efectivo');
+
+  // Helper functions accessible globally
+  window.eliminarItemEntrega = function(idx) {
+    window._entregaItems.splice(idx, 1);
+    window._entregaTotal = window._entregaItems.reduce((s,i)=>s+(i.precio_unitario*i.cantidad),0);
+    document.getElementById('entrega-items-list').innerHTML = window._entregaItems.map((it,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);">
+      <span style="flex:1;">${it.nombre}</span>
+      <span style="font-family:Arial,sans-serif;color:#16a34a;font-weight:600;margin:0 8px;">$${(it.precio_unitario*it.cantidad).toLocaleString('es-CO')}</span>
+      <button onclick="eliminarItemEntrega(${i})" style="background:#fff5f5;border:1px solid rgba(220,38,38,0.2);border-radius:6px;width:24px;height:24px;color:#dc2626;font-size:14px;cursor:pointer;padding:0;line-height:1;">×</button>
+    </div>`).join('');
+    const tv = document.getElementById('entrega-total-val');
+    if(tv) tv.textContent='$'+window._entregaTotal.toLocaleString('es-CO');
+    const ml = document.getElementById('entrega-mixto-total-lbl');
+    if(ml) ml.textContent='Total: $'+window._entregaTotal.toLocaleString('es-CO');
+    if(metodoPagoEntrega==='mixto') calcMixtoEntrega(window._entregaTotal);
+  };
+
+  window.agregarItemEntrega = function() {
+    const nombre = document.getElementById('extra-item-nombre').value.trim();
+    const precio = Number(document.getElementById('extra-item-precio').value||0);
+    if(!nombre){ showToast('⚠ Escribe la descripción del ítem'); return; }
+    window._entregaItems.push({nombre, cantidad:1, precio_unitario:precio, tipo:'extra'});
+    window._entregaTotal = window._entregaItems.reduce((s,i)=>s+(i.precio_unitario*i.cantidad),0);
+    document.getElementById('extra-item-nombre').value='';
+    document.getElementById('extra-item-precio').value='';
+    window.eliminarItemEntrega(-99); // trigger re-render by calling update
+    // Re-render properly
+    document.getElementById('entrega-items-list').innerHTML = window._entregaItems.map((it,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);">
+      <span style="flex:1;">${it.nombre}</span>
+      <span style="font-family:Arial,sans-serif;color:#16a34a;font-weight:600;margin:0 8px;">$${(it.precio_unitario*it.cantidad).toLocaleString('es-CO')}</span>
+      <button onclick="eliminarItemEntrega(${i})" style="background:#fff5f5;border:1px solid rgba(220,38,38,0.2);border-radius:6px;width:24px;height:24px;color:#dc2626;font-size:14px;cursor:pointer;padding:0;line-height:1;">×</button>
+    </div>`).join('');
+    const tv = document.getElementById('entrega-total-val');
+    if(tv) tv.textContent='$'+window._entregaTotal.toLocaleString('es-CO');
+    showToast('✅ '+nombre+' agregado');
+  };
+
+  const ml = document.getElementById('entrega-mixto-total-lbl');
+  if(ml) ml.textContent='Total: $'+window._entregaTotal.toLocaleString('es-CO');
 }
 
 let metodoPagoEntrega = 'efectivo';
@@ -2353,37 +3214,65 @@ function calcMixtoEntrega(total) {
 }
 
 async function finalizarEntrega(ordenId, ventaId, total, overlay) {
+  // Validar método de pago
+  if(!metodoPagoEntrega){ showToast('⚠ Selecciona el método de pago'); return; }
+
+  const itemsFinal = window._entregaItems || [];
+  const totalFinal = window._entregaTotal || total;
+  const oData = window._entregaOrden || {};
+
   let pagos = {pago_efectivo:0, pago_nequi:0, pago_daviplata:0, pago_transferencia:0, pago_tarjeta:0};
   if(metodoPagoEntrega === 'mixto') {
     pagos.pago_efectivo = Number(document.getElementById('emix-efectivo')?.value||0);
     pagos.pago_nequi = Number(document.getElementById('emix-nequi')?.value||0);
     pagos.pago_transferencia = Number(document.getElementById('emix-transferencia')?.value||0);
     pagos.pago_tarjeta = Number(document.getElementById('emix-tarjeta')?.value||0);
+    const sumaMixto = Object.values(pagos).reduce((a,b)=>a+b,0);
+    if(sumaMixto <= 0){ showToast('⚠ Ingresa los montos del pago mixto'); return; }
   } else {
-    pagos['pago_'+metodoPagoEntrega] = total;
+    pagos['pago_'+metodoPagoEntrega] = totalFinal;
   }
 
-  // Update venta with payment method
-  if(ventaId) {
-    await fetch(SUPA_URL+'/rest/v1/ventas?id=eq.'+ventaId, {
+  const btn = overlay.querySelector('button[onclick*="finalizarEntrega"]');
+  if(btn){ btn.textContent='Guardando...'; btn.disabled=true; }
+
+  try {
+    // 1. Marcar orden como entregada AHORA (solo si el usuario confirmó el pago)
+    await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId, {
       method:'PATCH',
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body: JSON.stringify({metodo_pago: metodoPagoEntrega, ...pagos})
+      body: JSON.stringify({estado:'entregada', aviso_admin_listo:false})
     });
+
+    // 2. Registrar en caja AHORA
+    const ventaResp = await fetch(SUPA_URL+'/rest/v1/ventas', {
+      method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
+      body: JSON.stringify({
+        items: itemsFinal,
+        subtotal: totalFinal,
+        total: totalFinal,
+        metodo_pago: metodoPagoEntrega,
+        cliente_nombre: oData.nombre || '',
+        cliente_tel: oData.tel || '',
+        orden_id: ordenId,
+        tipo: 'servicio_entregado',
+        created_by: usuarioActual?.nombre||'admin',
+        ...pagos
+      })
+    });
+    const ventaData = await ventaResp.json();
+    const venta = Array.isArray(ventaData) ? ventaData[0] : ventaData;
+
+    overlay.remove();
+    imprimirReciboCaja(venta || {items:itemsFinal, total:totalFinal, metodo_pago:metodoPagoEntrega, ...pagos});
+    actualizarBadge();
+    renderPanel();
+    showToast('✅ Entrega completada y recibo generado');
+  } catch(e) {
+    showToast('❌ Error: '+e.message);
+    if(btn){ btn.textContent='🖨️ Guardar pago e imprimir recibo'; btn.disabled=false; }
   }
-
-  // Get full venta for receipt
-  const resp = await fetch(SUPA_URL+'/rest/v1/ventas?id=eq.'+ventaId+'&select=*', {
-    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
-  });
-  const rows = await resp.json();
-  const venta = rows[0] || {items:[], total, metodo_pago:metodoPagoEntrega, ...pagos};
-
-  overlay.remove();
-  imprimirReciboCaja(venta);
-  actualizarBadge();
-  renderPanel();
-  showToast('Entrega completada y recibo generado');
 }
 
 async function adminEnviarAutzPanel(ordenId, idx, nombreCliente, telCliente) {
@@ -2407,7 +3296,7 @@ async function adminEnviarAutzPanel(ordenId, idx, nombreCliente, telCliente) {
   const taller = cfg2.nombre||'ReparaTuEco';
   const msg = `Hola ${nombreCliente} 👋
 
-Revisamos tu bicicleta (Orden: *${ordenId}*) y necesita:
+Revisamos tu vehículo (Orden: *${ordenId}*) y necesita:
 
 🔧 *${auths[idx].repuesto}*
 💰 Costo: *$${Number(precio).toLocaleString('es-CO')}*
@@ -2452,7 +3341,7 @@ async function adminEnviarAutzModal(ordenId, idx) {
   const nombre = a.nombre_cliente || o.nombre;
   const msg = `Hola ${nombre} 👋
 
-Revisamos tu bicicleta eléctrica (Orden: *${ordenId}*) y encontramos que necesita el siguiente repuesto:
+Revisamos tu vehículo eléctrico (Orden: *${ordenId}*) y encontramos que necesita el siguiente repuesto:
 
 🔧 *${a.repuesto}*
 💰 Costo: *$${Number(precioAdmin).toLocaleString('es-CO')}*
@@ -2472,16 +3361,18 @@ Esperamos tu respuesta. 🚲⚡`;
 async function adminAvisarListoCliente(ordenId, nombreCliente, telCliente) {
   const cfg2 = JSON.parse(localStorage.getItem('vt_config') || '{}');
   const taller = cfg2.nombre || 'ReparaTuEco';
-  const dir = cfg2.dir || '';
-  const telTaller = cfg2.tel || '';
-  const msg = `Hola ${nombreCliente} 🎉
+  const trackUrl = 'https://reparatueco.github.io/reparatueco/estado.html?orden='+ordenId;
+  const msg = `⚡ Hola, ${nombreCliente}.
+Tu vehículo eléctrico ya está listo para recoger.
 
-¡Tu bicicleta eléctrica ya está lista para recoger!
+Orden: *${ordenId}*
+Taller: *${taller}*
 
-*Orden:* ${ordenId}
-*Taller:* ${taller}${dir?'\n📍 '+dir:''}${telTaller?'\n📞 '+telTaller:''}
+Puedes pasar a recogerlo dentro de nuestro horario de atención o coordinando previamente la entrega.
 
-Puedes pasar a recogerla cuando quieras. 🚲⚡`;
+¡Quedamos atentos a tu confirmación!
+
+🔗 ${trackUrl}`;
   let tel = telCliente.replace(/\D/g,'');
   if(!tel.startsWith('57')) tel='57'+tel;
   window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(msg),'_blank');
@@ -2492,8 +3383,7 @@ Puedes pasar a recogerla cuando quieras. 🚲⚡`;
     body: JSON.stringify({aviso_admin_listo: false})
   });
   actualizarBadge();
-  renderPanel();
-  showToast('WhatsApp enviado al cliente');
+  showToast('✅ WhatsApp enviado al cliente');
 }
 
 
@@ -2641,16 +3531,41 @@ function recalcularTotal(id, presupuesto) {
 }
 
 
-async function adminAprobarListo(ordenId, nombreCliente, telCliente) {
-  // Admin aprueba: pasa a 'listo' y activa aviso para enviar WA
+async function adminAprobarListo(ordenId, nombreCliente, telCliente, btn) {
+  if(btn){ btn.textContent='Aprobando...'; btn.disabled=true; }
+
   await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId, {
     method:'PATCH',
     headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
     body: JSON.stringify({estado:'listo', aviso_admin_listo: true})
   });
+
   actualizarBadge();
-  renderPanel();
-  showToast('✓ Aprobada — ahora envía el WhatsApp al cliente');
+
+  // Actualizar la tarjeta en el mismo lugar — sin recargar ni salir
+  const card = document.getElementById('aprobcard-'+ordenId);
+  if(card) {
+    card.style.background = 'linear-gradient(135deg,#f0fdf4,#dcfce7)';
+    card.style.border = '1.5px solid rgba(22,163,74,0.3)';
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <div style="font-size:22px;">✅</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#15803d;">¡Aprobada y lista!</div>
+          <div style="font-size:11px;color:#94a3b8;">${ordenId} · ${nombreCliente}</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#166534;margin-bottom:12px;">Ahora avisa al cliente que puede pasar a recoger su vehículo.</div>
+      <div style="display:flex;gap:6px;">
+        <button onclick="adminAvisarListoCliente('${ordenId}','${nombreCliente}','${telCliente}')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:#25D366;color:#fff;border:none;border-radius:8px;padding:10px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          📱 Enviar WA al cliente
+        </button>
+        <button onclick="abrirModalTecnico('${ordenId}')" style="background:#f8fafc;color:#6366f1;border:1.5px solid rgba(99,102,241,0.2);border-radius:8px;padding:10px 12px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;">Ver orden</button>
+      </div>`;
+  }
+
+  showToast('✅ Aprobada — envía el WhatsApp al cliente');
 }
 
 
@@ -3885,22 +4800,26 @@ async function renderHome() {
     const listas = ordenes.filter(o=>o.estado==='listo').length;
 
     statsEl.innerHTML = `
-      <div style="background:linear-gradient(135deg,rgba(255,179,0,0.2),rgba(255,179,0,0.05));border:1px solid rgba(255,179,0,0.3);border-radius:12px;padding:14px;text-align:center;">
-        <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--amber);">${pend}</div>
-        <div style="font-size:11px;color:var(--amber);margin-top:2px;">Pendientes</div>
+      <div onclick="goScreen('panel',document.getElementById('ttab-panel'));setTimeout(()=>cambiarTabPanel('pendiente',document.getElementById('ptab-pendiente')),300);" style="background:linear-gradient(135deg,rgba(255,179,0,0.18),rgba(255,179,0,0.04));border:1.5px solid rgba(255,179,0,0.35);border-radius:14px;padding:18px 14px;text-align:center;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(255,179,0,0.2)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <div style="font-family:Arial,sans-serif;font-size:36px;font-weight:700;color:var(--amber);letter-spacing:-1px;line-height:1;">${pend}</div>
+        <div style="font-size:11px;font-weight:600;color:var(--amber);margin-top:5px;letter-spacing:.5px;text-transform:uppercase;">Pendientes</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px;">Toca para ver →</div>
       </div>
-      <div style="background:linear-gradient(135deg,rgba(41,121,255,0.2),rgba(41,121,255,0.05));border:1px solid rgba(41,121,255,0.3);border-radius:12px;padding:14px;text-align:center;">
-        <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:#82b1ff;">${proc}</div>
-        <div style="font-size:11px;color:#82b1ff;margin-top:2px;">En proceso</div>
+      <div onclick="goScreen('panel',document.getElementById('ttab-panel'));setTimeout(()=>cambiarTabPanel('en_proceso',document.getElementById('ptab-en_proceso')),300);" style="background:linear-gradient(135deg,rgba(41,121,255,0.18),rgba(41,121,255,0.04));border:1.5px solid rgba(41,121,255,0.35);border-radius:14px;padding:18px 14px;text-align:center;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(41,121,255,0.2)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <div style="font-family:Arial,sans-serif;font-size:36px;font-weight:700;color:#4f8ef7;letter-spacing:-1px;line-height:1;">${proc}</div>
+        <div style="font-size:11px;font-weight:600;color:#4f8ef7;margin-top:5px;letter-spacing:.5px;text-transform:uppercase;">En proceso</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px;">Toca para ver →</div>
       </div>
       ${porAprobar ? `
-      <div style="background:linear-gradient(135deg,rgba(255,23,68,0.2),rgba(255,23,68,0.05));border:1px solid rgba(255,23,68,0.3);border-radius:12px;padding:14px;text-align:center;">
-        <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--red);">${porAprobar}</div>
-        <div style="font-size:11px;color:var(--red);margin-top:2px;">Por aprobar</div>
+      <div onclick="goScreen('panel',document.getElementById('ttab-panel'));setTimeout(()=>cambiarTabPanel('pendiente_admin',document.getElementById('ptab-pendiente_admin')),300);" style="background:linear-gradient(135deg,rgba(220,38,38,0.18),rgba(220,38,38,0.04));border:1.5px solid rgba(220,38,38,0.35);border-radius:14px;padding:18px 14px;text-align:center;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(220,38,38,0.2)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <div style="font-family:Arial,sans-serif;font-size:36px;font-weight:700;color:var(--red);letter-spacing:-1px;line-height:1;">${porAprobar}</div>
+        <div style="font-size:11px;font-weight:600;color:var(--red);margin-top:5px;letter-spacing:.5px;text-transform:uppercase;">Por aprobar</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px;">Toca para ver →</div>
       </div>` : ''}
-      <div style="background:linear-gradient(135deg,rgba(0,230,118,0.2),rgba(0,230,118,0.05));border:1px solid rgba(0,230,118,0.3);border-radius:12px;padding:14px;text-align:center;">
-        <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--green);">${listas}</div>
-        <div style="font-size:11px;color:var(--green);margin-top:2px;">Listas entrega</div>
+      <div onclick="goScreen('panel',document.getElementById('ttab-panel'));setTimeout(()=>cambiarTabPanel('listo',document.getElementById('ptab-listo')),300);" style="background:linear-gradient(135deg,rgba(22,163,74,0.18),rgba(22,163,74,0.04));border:1.5px solid rgba(22,163,74,0.35);border-radius:14px;padding:18px 14px;text-align:center;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(22,163,74,0.2)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <div style="font-family:Arial,sans-serif;font-size:36px;font-weight:700;color:var(--green);letter-spacing:-1px;line-height:1;">${listas}</div>
+        <div style="font-size:11px;font-weight:600;color:var(--green);margin-top:5px;letter-spacing:.5px;text-transform:uppercase;">Listas entrega</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px;">Toca para ver →</div>
       </div>`;
   } catch(e) {
     statsEl.innerHTML = '';
@@ -4934,44 +5853,55 @@ async function renderHistorialTecnico() {
 }
 
 function renderTecHistorialUI(el) {
-  const total = tecOrdenes.length;
   let html = '';
 
-  // Botón volver al dashboard principal del técnico
-  html += '<button onclick="volverTecnicoDashboard()" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid rgba(99,102,241,0.25);border-radius:12px;padding:10px 18px;font-family:var(--sans);font-size:14px;font-weight:600;color:#4f46e5;cursor:pointer;margin-bottom:16px;transition:all .18s;box-shadow:0 2px 8px rgba(99,102,241,0.10);" onmouseover="this.style.background=\'linear-gradient(135deg,#e0e7ff,#c7d2fe)\';this.style.transform=\'translateY(-1px)\'" onmouseout="this.style.background=\'linear-gradient(135deg,#eef2ff,#e0e7ff)\';this.style.transform=\'\'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Volver al inicio</button>';
+  // Botón volver
+  html += '<button onclick="volverTecnicoDashboard()" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid rgba(99,102,241,0.25);border-radius:12px;padding:10px 18px;font-family:var(--sans);font-size:14px;font-weight:600;color:#4f46e5;cursor:pointer;margin-bottom:16px;box-shadow:0 2px 8px rgba(99,102,241,0.10);" onmouseover="this.style.background=\'linear-gradient(135deg,#e0e7ff,#c7d2fe)\'" onmouseout="this.style.background=\'linear-gradient(135deg,#eef2ff,#e0e7ff)\'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Volver al inicio</button>';
 
-  // Header con tabs
-  // Tabs calendario/filtro
-  html += '<div style="display:flex;gap:8px;margin-bottom:16px;">';
-  html += '<button data-vista="calendario" onclick="selVistaTec(this.dataset.vista)" style="flex:1;padding:10px;border-radius:10px;border:none;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:'+(tecVistaActual==='calendario'?'var(--green)':'var(--bg3)')+';color:'+(tecVistaActual==='calendario'?'#000':'var(--text2)')+';">📅 Calendario</button>';
-  html += '<button data-vista="filtro" onclick="selVistaTec(this.dataset.vista)" style="flex:1;padding:10px;border-radius:10px;border:none;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:'+(tecVistaActual==='filtro'?'var(--green)':'var(--bg3)')+';color:'+(tecVistaActual==='filtro'?'#000':'var(--text2)')+';">🔍 Filtrar</button>';
-
-  // Resumen rápido
+  // ── 1. ESTADÍSTICAS ARRIBA ──
   const hoy = new Date().toISOString().split('T')[0];
   const semanaMs = 7*24*60*60*1000;
   const hoyTs = new Date(hoy).getTime();
-  // Solo contar ordenes del mes/año visible en el calendario
   const ordenesDelMes = tecOrdenes.filter(o=>{
     if(!o.fecha) return false;
     const d=new Date(o.fecha);
     return d.getMonth()===tecCalMes && d.getFullYear()===tecCalAnio;
   });
   const esHoyEnMes = new Date().getMonth()===tecCalMes && new Date().getFullYear()===tecCalAnio;
-  const tdHoy = esHoyEnMes ? tecOrdenes.filter(o=>o.fecha&&o.fecha.startsWith(hoy)).length : 0;
+  const tdHoy    = esHoyEnMes ? tecOrdenes.filter(o=>o.fecha&&o.fecha.startsWith(hoy)).length : 0;
   const tdSemana = esHoyEnMes ? tecOrdenes.filter(o=>o.fecha&&new Date(o.fecha).getTime()>=(hoyTs-semanaMs)).length : 0;
-  const tdMes = ordenesDelMes.length;
+  const tdMes    = ordenesDelMes.length;
+  const tdTotal  = tecOrdenes.length;
 
-  var totalMes = ordenesDelMes.length;
-  var tarjetas = [{v:tdHoy,l:'HOY',k:'hoy'},{v:tdSemana,l:'SEMANA',k:'semana'},{v:tdMes,l:'MES',k:'mes'},{v:totalMes,l:'TOTAL',k:'mes'}];
-  html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px;">';
+  const tarjetas = [
+    {v:tdHoy,   l:'HOY',    k:'hoy',    c:'#4f46e5', bg:'#eef2ff'},
+    {v:tdSemana,l:'SEMANA', k:'semana', c:'#2563eb', bg:'#eff6ff'},
+    {v:tdMes,   l:'MES',    k:'mes',    c:'#16a34a', bg:'#f0fdf4'},
+    {v:tdTotal, l:'TOTAL',  k:'total',  c:'#d97706', bg:'#fffbeb'}
+  ];
+
+  html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;">';
   tarjetas.forEach(function(t){
-    var col = t.v > 0 ? 'var(--green)' : 'var(--text3)';
-    var cur = t.v > 0 ? 'pointer' : 'default';
-    var onclick = t.v > 0 ? 'mostrarResumenTec(\''+t.k+'\')' : '';
-    html += '<div onclick="'+onclick+'" style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;cursor:'+cur+';"><div style="font-family:Arial,sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.5px;color:'+col+';">'+t.v+'</div><div style="font-size:10px;color:var(--text3);">'+t.l+'</div></div>';
+    const cur = t.v > 0 ? 'pointer' : 'default';
+    const onclick = t.v > 0 ? 'mostrarResumenTec(\''+t.k+'\')' : '';
+    html += '<div onclick="'+onclick+'" style="background:'+t.bg+';border:1.5px solid '+t.c+'30;border-radius:14px;padding:16px 14px;text-align:center;cursor:'+cur+';box-shadow:0 2px 8px '+t.c+'15;transition:all .2s;" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'\'">';
+    html += '<div style="font-family:Arial,sans-serif;font-size:34px;font-weight:700;color:'+t.c+';letter-spacing:-1px;line-height:1;">'+t.v+'</div>';
+    html += '<div style="font-size:11px;font-weight:700;color:'+t.c+';opacity:.7;margin-top:4px;letter-spacing:.5px;">'+t.l+'</div>';
+    html += '</div>';
   });
   html += '</div>';
-  html += '<div id="tec-resumen-detalle"></div>';
+  html += '<div id="tec-resumen-detalle" style="margin-bottom:14px;"></div>';
+
+  // ── 2. BOTÓN EXCEL ──
+  html += '<button onclick="exportarHistorialExcel()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid rgba(22,163,74,0.3);border-radius:12px;padding:11px;font-family:var(--sans);font-size:14px;font-weight:600;color:#15803d;cursor:pointer;margin-bottom:16px;" onmouseover="this.style.background=\'linear-gradient(135deg,#dcfce7,#bbf7d0)\'" onmouseout="this.style.background=\'linear-gradient(135deg,#f0fdf4,#dcfce7)\'">';
+  html += '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>';
+  html += '📊 Exportar a Excel</button>';
+
+  // ── 3. TABS CALENDARIO / FILTRO ──
+  html += '<div style="display:flex;gap:8px;margin-bottom:14px;">';
+  html += '<button data-vista="calendario" onclick="selVistaTec(this.dataset.vista)" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid '+(tecVistaActual==='calendario'?'#4f46e5':'rgba(99,102,241,0.15)')+';font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:'+(tecVistaActual==='calendario'?'linear-gradient(135deg,#eef2ff,#e0e7ff)':'#fff')+';color:'+(tecVistaActual==='calendario'?'#4f46e5':'#94a3b8')+';">📅 Calendario</button>';
+  html += '<button data-vista="filtro" onclick="selVistaTec(this.dataset.vista)" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid '+(tecVistaActual==='filtro'?'#4f46e5':'rgba(99,102,241,0.15)')+';font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;background:'+(tecVistaActual==='filtro'?'linear-gradient(135deg,#eef2ff,#e0e7ff)':'#fff')+';color:'+(tecVistaActual==='filtro'?'#4f46e5':'#94a3b8')+';">🔍 Filtrar por fecha</button>';
+  html += '</div>';
 
   if(tecVistaActual === 'calendario') {
     html += renderTecCalendario();
@@ -4980,6 +5910,38 @@ function renderTecHistorialUI(el) {
   }
 
   el.innerHTML = html;
+}
+
+function exportarHistorialExcel() {
+  if(!tecOrdenes.length){ showToast('No hay órdenes para exportar'); return; }
+  try {
+    const wb = XLSX.utils.book_new();
+    const datos = tecOrdenes.map(o => ({
+      'Orden':      o.id || '',
+      'Fecha':      o.fecha ? new Date(o.fecha).toLocaleDateString('es-CO') : '',
+      'Hora':       o.fecha ? new Date(o.fecha).toLocaleTimeString('es-CO', {hour:'2-digit',minute:'2-digit'}) : '',
+      'Cliente':    o.nombre || '',
+      'Teléfono':   o.tel || '',
+      'Servicio':   o.servicio || '',
+      'Técnico':    o.tecnico || 'Sin asignar',
+      'Estado':     o.estado || '',
+      'Marca':      o.marca || '',
+      'Referencia': o.referencia || '',
+      'Presupuesto':o.presupuesto ? Number(o.presupuesto) : 0,
+    }));
+    const ws = XLSX.utils.json_to_sheet(datos);
+    // Ancho de columnas
+    ws['!cols'] = [
+      {wch:10},{wch:12},{wch:8},{wch:24},{wch:14},{wch:22},
+      {wch:12},{wch:14},{wch:14},{wch:16},{wch:14}
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, 'Historial');
+    const fecha = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, 'historial_ordenes_'+fecha+'.xlsx');
+    showToast('✅ Excel descargado');
+  } catch(e) {
+    showToast('❌ Error al exportar: '+e.message);
+  }
 }
 
 function renderTecCalendario() {
