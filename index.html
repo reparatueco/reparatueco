@@ -4772,6 +4772,145 @@ function tecNavMes(dir) {
   if(tecCalMes > 11) { tecCalMes = 0; tecCalAnio++; }
   renderTecHistorialUI(document.getElementById('lista-historial'));
 }
+
+
+function mostrarServicioTec(servicio, periodo) {
+  const hoy = new Date();
+  const hoyStr = hoy.toISOString().split('T')[0];
+  const hoyTs = new Date(hoyStr).getTime();
+  const semanaMs = 7*24*60*60*1000;
+
+  let base = [];
+  if(periodo === 'hoy') {
+    base = tecOrdenes.filter(o => o.fecha && o.fecha.startsWith(hoyStr));
+  } else if(periodo === 'semana') {
+    base = tecOrdenes.filter(o => o.fecha && new Date(o.fecha).getTime() >= (hoyTs - semanaMs));
+  } else if(periodo === 'mes') {
+    base = tecOrdenes.filter(o => {
+      if(!o.fecha) return false;
+      const d = new Date(o.fecha);
+      return d.getMonth()===hoy.getMonth() && d.getFullYear()===hoy.getFullYear();
+    });
+  } else {
+    base = tecOrdenes;
+  }
+
+  const filtradas = base.filter(o => (o.servicio||'Sin servicio') === servicio);
+  const el = document.getElementById('tec-resumen-detalle');
+  if(!el) return;
+
+  let html = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">';
+  html += '<button onclick="mostrarResumenTec(\''+periodo+'\')" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);cursor:pointer;font-size:13px;">← Volver</button>';
+  html += '<div style="font-size:14px;font-weight:700;">'+servicio+' — '+filtradas.length+' orden'+(filtradas.length!==1?'es':'')+'</div>';
+  html += '</div>';
+  html += renderOrdenCards(filtradas, 'abrirModalHistorial');
+  el.innerHTML = html;
+  el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function descargarExcelTecnico() {
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const filtradas = tecOrdenes.filter(o => {
+    if(!o.fecha) return false;
+    const d = new Date(o.fecha);
+    return d.getMonth()===tecCalMes && d.getFullYear()===tecCalAnio;
+  });
+
+  // Build CSV content
+  const headers = ['N° Orden','Fecha Entrega','Cliente','Servicio','Marca','Referencia','Color','Técnico','Valor $'];
+  const rows = filtradas.map(o => {
+    const fecha = o.fecha ? new Date(o.fecha).toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
+    const valor = Number(o.presupuesto||0) + (o.repuestos||[]).reduce((s,r)=>s+Number(r.precio||0),0);
+    return [
+      o.id||'',
+      fecha,
+      o.nombre||'',
+      o.servicio||'',
+      o.marca||'',
+      o.referencia||'',
+      o.color_vehiculo||'',
+      o.tecnico||'',
+      valor
+    ];
+  });
+
+  // Add totals
+  const totalValor = rows.reduce((s,r)=>s+Number(r[8]||0),0);
+  rows.push(['','','','','','','','TOTAL',"$"+totalValor.toLocaleString('es-CO')]);
+
+  // Convert to CSV
+  const bom = '﻿'; // UTF-8 BOM for Excel
+  const csvContent = bom + [headers, ...rows].map(r => r.map(v => '"'+(String(v).replace(/"/g,'""'))+'"').join(',')).join('
+');
+
+  // Download
+  const blob = new Blob([csvContent], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'ReparaTuEco_'+usuarioActual.nombre+'_'+meses[tecCalMes]+'_'+tecCalAnio+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function mostrarResumenTec(periodo) {
+  const hoy = new Date();
+  const hoyStr = hoy.toISOString().split('T')[0];
+  const hoyTs = new Date(hoyStr).getTime();
+  const semanaMs = 7*24*60*60*1000;
+
+  let filtradas = [];
+  let titulo = '';
+
+  if(periodo === 'hoy') {
+    filtradas = tecOrdenes.filter(o => o.fecha && o.fecha.startsWith(hoyStr));
+    titulo = 'Hoy — '+filtradas.length+' orden'+(filtradas.length!==1?'es':'');
+  } else if(periodo === 'semana') {
+    filtradas = tecOrdenes.filter(o => o.fecha && new Date(o.fecha).getTime() >= (hoyTs - semanaMs));
+    titulo = 'Esta semana — '+filtradas.length+' orden'+(filtradas.length!==1?'es':'');
+  } else if(periodo === 'mes') {
+    filtradas = tecOrdenes.filter(o => {
+      if(!o.fecha) return false;
+      const d = new Date(o.fecha);
+      return d.getMonth()===tecCalMes && d.getFullYear()===tecCalAnio;
+    });
+    const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    titulo = meses[tecCalMes]+' '+tecCalAnio+' — '+filtradas.length+' orden'+(filtradas.length!==1?'es':'');
+  } else {
+    filtradas = tecOrdenes;
+    titulo = 'Total — '+filtradas.length+' órdenes entregadas';
+  }
+
+  const el = document.getElementById('tec-resumen-detalle');
+  if(!el) return;
+
+  // Desglose por servicio
+  const porServicio = {};
+  filtradas.forEach(function(o){
+    const s = o.servicio || 'Sin servicio';
+    if(!porServicio[s]) porServicio[s] = 0;
+    porServicio[s]++;
+  });
+
+  const esMes = (periodo === 'mes');
+  let html = '<div style="background:var(--green-dim);border:1px solid rgba(0,230,118,0.3);border-radius:12px;padding:14px;margin-bottom:14px;">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">';
+  html += '<div style="font-size:14px;font-weight:700;color:var(--green);">'+titulo+'</div>';
+  if(esMes && filtradas.length > 0) {
+    html += '<button onclick="descargarExcelTecnico()" style="background:var(--green);color:#000;border:none;border-radius:8px;padding:7px 12px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;">📥 Descargar Excel</button>';
+  }
+  html += '</div>';
+  if(Object.keys(porServicio).length > 0) {
+    html += '<div style="font-size:11px;font-weight:600;color:var(--text3);margin-bottom:6px;text-transform:uppercase;">Por tipo de servicio</div>';
+    Object.entries(porServicio).sort(function(a,b){return b[1]-a[1];}).forEach(function(e){
+      html += '<div onclick="mostrarServicioTec(\''+e[0].replace(/'/g,"\'")+'\',\''+periodo+'\')" style="display:flex;justify-content:space-between;font-size:13px;padding:8px 4px;border-bottom:1px solid rgba(0,230,118,0.15);cursor:pointer;border-radius:6px;" onmouseover="this.style.background=\'rgba(0,230,118,0.05)\'" onmouseout="this.style.background=\'\'">';
+      html += '<span>'+e[0]+'</span><span style="font-weight:700;color:var(--green);">'+e[1]+' ›</span></div>';
+    });
+  }
+  html += '</div>';
+  html += renderOrdenCards(filtradas, 'abrirModalHistorial');
+  el.innerHTML = html;
+  el.scrollIntoView({behavior:'smooth', block:'start'});
+}
 function selVistaTec(v) {
   tecVistaActual = v;
   renderTecHistorialUI(document.getElementById('lista-historial'));
@@ -4807,20 +4946,28 @@ function renderTecHistorialUI(el) {
   const hoy = new Date().toISOString().split('T')[0];
   const semanaMs = 7*24*60*60*1000;
   const hoyTs = new Date(hoy).getTime();
-  const tdHoy = tecOrdenes.filter(o=>o.fecha&&o.fecha.startsWith(hoy)).length;
-  const tdSemana = tecOrdenes.filter(o=>o.fecha&&new Date(o.fecha).getTime()>=(hoyTs-semanaMs)).length;
-  const tdMes = tecOrdenes.filter(o=>{
+  // Solo contar ordenes del mes/año visible en el calendario
+  const ordenesDelMes = tecOrdenes.filter(o=>{
     if(!o.fecha) return false;
     const d=new Date(o.fecha);
-    return d.getMonth()===new Date().getMonth()&&d.getFullYear()===new Date().getFullYear();
-  }).length;
+    return d.getMonth()===tecCalMes && d.getFullYear()===tecCalAnio;
+  });
+  const esHoyEnMes = new Date().getMonth()===tecCalMes && new Date().getFullYear()===tecCalAnio;
+  const tdHoy = esHoyEnMes ? tecOrdenes.filter(o=>o.fecha&&o.fecha.startsWith(hoy)).length : 0;
+  const tdSemana = esHoyEnMes ? tecOrdenes.filter(o=>o.fecha&&new Date(o.fecha).getTime()>=(hoyTs-semanaMs)).length : 0;
+  const tdMes = ordenesDelMes.length;
 
-  html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:16px;">';
-  html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--green);">'+tdHoy+'</div><div style="font-size:10px;color:var(--text3);">HOY</div></div>';
-  html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--green);">'+tdSemana+'</div><div style="font-size:10px;color:var(--text3);">SEMANA</div></div>';
-  html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--green);">'+tdMes+'</div><div style="font-size:10px;color:var(--text3);">MES</div></div>';
-  html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--green);">'+total+'</div><div style="font-size:10px;color:var(--text3);">TOTAL</div></div>';
+  var totalMes = ordenesDelMes.length;
+  var tarjetas = [{v:tdHoy,l:'HOY',k:'hoy'},{v:tdSemana,l:'SEMANA',k:'semana'},{v:tdMes,l:'MES',k:'mes'},{v:totalMes,l:'TOTAL',k:'mes'}];
+  html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px;">';
+  tarjetas.forEach(function(t){
+    var col = t.v > 0 ? 'var(--green)' : 'var(--text3)';
+    var cur = t.v > 0 ? 'pointer' : 'default';
+    var onclick = t.v > 0 ? 'mostrarResumenTec(\''+t.k+'\')' : '';
+    html += '<div onclick="'+onclick+'" style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;cursor:'+cur+';"><div style="font-size:18px;font-weight:700;color:'+col+';">'+t.v+'</div><div style="font-size:10px;color:var(--text3);">'+t.l+'</div></div>';
+  });
   html += '</div>';
+  html += '<div id="tec-resumen-detalle"></div>';
 
   if(tecVistaActual === 'calendario') {
     html += renderTecCalendario();
