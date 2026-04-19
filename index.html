@@ -613,9 +613,9 @@ function aplicarRol() {
         }
       });
     }
-    // Ocultar sidebar en mobile
+    // Ocultar sidebar solo en mobile (en desktop lo dejamos para mostrar Mis ordenes)
     const sidebar = document.querySelector('.sidebar');
-    if(sidebar) sidebar.style.display = 'none';
+    if(sidebar && window.innerWidth < 768) sidebar.style.display = 'none';
     // Ocultar bottom nav completamente para tecnicos
     document.body.classList.add('tecnico-mode');
     const bottomNav = document.querySelector('.bottom-nav');
