@@ -1543,7 +1543,13 @@ async function abrirModalTecnico(id) {
   });
   (o.fotos_proceso||[]).forEach(function(u){
     fotosHTML += '<div style="position:relative;">';
-    fotosHTML += '<img class="photo-thumb" src="'+u+'" onclick="window.open(\''+u+'\',\'_blank\')">';
+    const esVideo = u.match(/\.(mp4|mov|webm|avi|mkv)/i) || u.includes('video');
+    if(esVideo) {
+      fotosHTML += '<video src="'+u+'" class="photo-thumb" style="object-fit:cover;" controls playsinline onclick="event.stopPropagation()"></video>';
+      fotosHTML += '<div style="position:absolute;top:3px;left:3px;background:rgba(0,0,0,0.6);border-radius:4px;padding:2px 5px;font-size:10px;color:#fff;">🎥</div>';
+    } else {
+      fotosHTML += '<img class="photo-thumb" src="'+u+'" onclick="window.open(\''+u+'\',\'_blank\')">';
+    }
     fotosHTML += '<button onclick="event.stopPropagation();borrarFotoProceso(\''+o.id+'\',\''+u+'\',this.parentNode)" style="position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;background:crimson;color:#fff;border:none;font-size:14px;font-weight:900;cursor:pointer;z-index:99;">✕</button>';
     fotosHTML += '</div>';
   });
@@ -1716,14 +1722,18 @@ async function abrirModalTecnico(id) {
     html += diagHTML;
   }
 
-  html += '<div style="margin-bottom:14px;"><div class="card-title">Fotos</div>';
+  html += '<div style="margin-bottom:14px;"><div class="card-title">Fotos y Videos</div>';
   if(fotosHTML) html += '<div class="photo-grid" style="margin-bottom:10px;">'+fotosHTML+'</div>';
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">';
   html += '<button onclick="document.getElementById(\'fp-cam-'+o.id+'\').click()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1.5px solid rgba(99,102,241,0.25);border-radius:10px;padding:12px 8px;cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;color:#4f46e5;">📷 Tomar foto</button>';
   html += '<button onclick="document.getElementById(\'fp-arc-'+o.id+'\').click()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid rgba(22,163,74,0.25);border-radius:10px;padding:12px 8px;cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;color:#16a34a;">📎 Adjuntar foto</button>';
+  html += '<button onclick="document.getElementById(\'fv-cam-'+o.id+'\').click()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1.5px solid rgba(249,115,22,0.25);border-radius:10px;padding:12px 8px;cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;color:#ea580c;">🎥 Grabar video</button>';
+  html += '<button onclick="document.getElementById(\'fv-arc-'+o.id+'\').click()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,#fdf4ff,#fae8ff);border:1.5px solid rgba(168,85,247,0.25);border-radius:10px;padding:12px 8px;cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;color:#9333ea;">📹 Adjuntar video</button>';
   html += '</div>';
   html += '<input type="file" id="fp-cam-'+o.id+'" accept="image/*" capture="environment" multiple style="display:none" onchange="uploadProceso(this,\''+o.id+'\')">';
   html += '<input type="file" id="fp-arc-'+o.id+'" accept="image/*" multiple style="display:none" onchange="uploadProceso(this,\''+o.id+'\')">';
+  html += '<input type="file" id="fv-cam-'+o.id+'" accept="video/*" capture="environment" style="display:none" onchange="uploadVideo(this,\''+o.id+'\')">';
+  html += '<input type="file" id="fv-arc-'+o.id+'" accept="video/*" multiple style="display:none" onchange="uploadVideo(this,\''+o.id+'\')">';
   html += '<div class="upload-progress" id="prog-proceso" style="display:none"><div class="upload-progress-bar" id="prog-bar-proceso" style="width:0%"></div></div>';
   html += '</div>';
 
@@ -2109,7 +2119,57 @@ async function uploadProceso(input, id) {
   setTimeout(()=>prog.style.display='none',600);
 }
 
-// ===== HISTORIAL =====
+async function uploadVideo(input, id) {
+  const files = Array.from(input.files);
+  if(!files.length) return;
+  const prog = document.getElementById('prog-proceso');
+  prog.style.display=''; document.getElementById('prog-bar-proceso').style.width='10%';
+  showToast('⏳ Subiendo video(s)... puede tomar unos segundos');
+  const urls = [];
+  for(let i=0; i<files.length; i++) {
+    const file = files[i];
+    try {
+      const ext = file.name.split('.').pop() || 'mp4';
+      const path = `${id}/video_${Date.now()}_${i}.${ext}`;
+      const { data, error } = await db.storage.from('fotos-bicicletas').upload(path, file, { upsert: true, contentType: file.type });
+      if(!error) {
+        const { data: pub } = db.storage.from('fotos-bicicletas').getPublicUrl(path);
+        if(pub?.publicUrl) { urls.push(pub.publicUrl); }
+      } else {
+        showToast('❌ Error subiendo video: '+error.message);
+      }
+    } catch(e) { showToast('❌ '+e.message); }
+    document.getElementById('prog-bar-proceso').style.width = Math.round((i+1)/files.length*80)+'%';
+  }
+  if(urls.length) {
+    const {data:o} = await db.from('ordenes').select('fotos_proceso').eq('id',id).single();
+    await db.from('ordenes').update({fotos_proceso:[...(o?.fotos_proceso||[]),...urls]}).eq('id',id);
+    document.getElementById('prog-bar-proceso').style.width='100%';
+    showToast(`✅ ${urls.length} video(s) guardado(s)`);
+    // Agregar al grid
+    urls.forEach(u => {
+      const grid = document.querySelector('#modal-body .photo-grid');
+      if(grid) {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'position:relative;';
+        const vid = document.createElement('video');
+        vid.src = u; vid.className = 'photo-thumb';
+        vid.style.objectFit = 'cover'; vid.controls = true; vid.playsInline = true;
+        vid.onclick = e => e.stopPropagation();
+        const badge = document.createElement('div');
+        badge.style.cssText = 'position:absolute;top:3px;left:3px;background:rgba(0,0,0,0.6);border-radius:4px;padding:2px 5px;font-size:10px;color:#fff;';
+        badge.textContent = '🎥';
+        const del = document.createElement('button');
+        del.innerHTML = '✕';
+        del.style.cssText = 'position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(255,23,68,0.9);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;';
+        del.onclick = function(ev){ ev.stopPropagation(); borrarFotoProceso(id, u, wrap); };
+        wrap.appendChild(vid); wrap.appendChild(badge); wrap.appendChild(del);
+        grid.appendChild(wrap);
+      }
+    });
+  }
+  setTimeout(()=>prog.style.display='none', 600);
+}
 let allOrdenes = [];
 async function renderHistorial() {
   const q=(document.getElementById('search-input')?.value||'').toLowerCase();
