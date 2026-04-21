@@ -246,7 +246,7 @@ function buscarOrden() {
 
 async function cargarOrden(ordenIdParam) {
   const params = new URLSearchParams(window.location.search);
-  const ordenId = ordenIdParam || params.get('o');
+  const ordenId = ordenIdParam || params.get('o') || params.get('orden');
 
   if(!ordenId) {
     mostrarBuscador();
