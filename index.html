@@ -4505,16 +4505,16 @@ async function renderCajaDelDia(el) {
     } catch(e) {}
 
     const desdeLabel = desde === hoy+'T00:00:00' ? 'inicio del día' :
-      new Date(desde).toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+      new Date(desde).toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/Bogota'});
 
     const desdeMs = new Date(desde).getTime();
     const H = {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY};
 
     // Traer TODO sin filtro de fecha y filtrar en JS
     const [rv, rm, ro] = await Promise.all([
-      fetch(SUPA_URL+'/rest/v1/ventas?select=total,pago_efectivo,pago_nequi,pago_daviplata,pago_transferencia,pago_tarjeta,fecha,tipo', {headers:H}),
+      fetch(SUPA_URL+'/rest/v1/ventas?select=total,pago_efectivo,pago_nequi,pago_daviplata,pago_transferencia,pago_tarjeta,fecha,tipo,orden_id', {headers:H}),
       fetch(SUPA_URL+'/rest/v1/caja?select=*&order=fecha.desc', {headers:H}),
-      fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&select=presupuesto,repuestos,fecha', {headers:H})
+      fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&select=presupuesto,repuestos,fecha,id', {headers:H})
     ]);
 
     const todasVentas = rv.ok ? await rv.json() : [];
@@ -4527,10 +4527,10 @@ async function renderCajaDelDia(el) {
     const ordenes = todasOrdenes.filter(o => o.fecha && new Date(o.fecha).getTime() >= desdeMs);
 
     const totVentas = ventas.reduce((s,v)=>{ const t = Number(v.total||0); if(t>0) return s+t; return s+Number(v.pago_efectivo||0)+Number(v.pago_nequi||0)+Number(v.pago_daviplata||0)+Number(v.pago_transferencia||0)+Number(v.pago_tarjeta||0); },0);
-    const totServicios = ordenes.reduce((s,o)=>s+Number(o.presupuesto||0)+(o.repuestos||[]).reduce((r,rep)=>r+Number(rep.precio||0),0),0);
+    const totServicios = 0; // Servicios excluidos de caja
     const totIngresos = movCaja.filter(m=>m.tipo==='ingreso').reduce((s,m)=>s+Number(m.valor||0),0);
     const totGastos = movCaja.filter(m=>m.tipo==='gasto').reduce((s,m)=>s+Number(m.valor||0),0);
-    const totalCaja = totVentas + totServicios + totIngresos - totGastos;
+    const totalCaja = totVentas + totIngresos - totGastos;
 
     const porMetodo = {efectivo:0,nequi:0,daviplata:0,transferencia:0,tarjeta:0};
     ventas.forEach(v=>{
@@ -4544,7 +4544,7 @@ async function renderCajaDelDia(el) {
     let html = '';
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">';
     html += '<div class="stat-card"><div class="stat-val green">$'+totVentas.toLocaleString('es-CO')+'</div><div class="stat-lbl">VENTAS MOSTRADOR</div></div>';
-    html += '<div class="stat-card"><div class="stat-val green">$'+totServicios.toLocaleString('es-CO')+'</div><div class="stat-lbl">SERVICIOS</div></div>';
+
     html += '<div class="stat-card"><div class="stat-val" style="color:var(--blue);">$'+totIngresos.toLocaleString('es-CO')+'</div><div class="stat-lbl">OTROS INGRESOS</div></div>';
     html += '<div class="stat-card"><div class="stat-val" style="color:var(--red);">$'+totGastos.toLocaleString('es-CO')+'</div><div class="stat-lbl">GASTOS</div></div>';
     html += '</div>';
@@ -4592,10 +4592,13 @@ async function renderCajaDelDia(el) {
       movCaja.forEach(m=>{
         const color = m.tipo==='ingreso' ? 'var(--green)' : 'var(--red)';
         html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">';
-        html += '<div><span style="color:'+color+';">'+(m.tipo==='ingreso'?'+':'-')+'</span><span style="margin-left:6px;">'+m.concepto+'</span>';
+        html += '<div style="flex:1;"><span style="color:'+color+';">'+(m.tipo==='ingreso'?'+':'-')+'</span><span style="margin-left:6px;">'+m.concepto+'</span>';
         if(m.metodo_pago) html += '<div style="font-size:10px;color:var(--text3);">'+m.metodo_pago+'</div>';
         html += '</div>';
-        html += '<span style="font-family:var(--mono);font-weight:600;color:'+color+';">$'+Number(m.valor).toLocaleString('es-CO')+'</span></div>';
+        html += '<div style="display:flex;align-items:center;gap:10px;">';
+        html += '<span style="font-family:var(--mono);font-weight:600;color:'+color+';">$'+Number(m.valor).toLocaleString('es-CO')+'</span>';
+        html += '<button onclick="borrarMovCaja(\''+(m.id||m.uuid||'')+'\')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:6px;" title="Borrar">×</button>';
+        html += '</div></div>';
       });
     }
     html += '</div>';
@@ -4621,6 +4624,21 @@ function selTipoMov(tipo) {
     const b = document.getElementById('tipo-'+t);
     if(b) { b.className = t===tipo ? 'btn btn-primary' : 'btn btn-ghost'; }
   });
+}
+
+async function borrarMovCaja(id) {
+  if(!id) { showToast('No se puede borrar este movimiento'); return; }
+  if(!confirm('¿Seguro que quieres borrar este movimiento?')) return;
+  const resp = await fetch(SUPA_URL+'/rest/v1/caja?id=eq.'+id, {
+    method: 'DELETE',
+    headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=minimal'}
+  });
+  if(resp.ok) {
+    showToast('✓ Movimiento borrado');
+    renderCajaDelDia(document.getElementById('caja-contenido'));
+  } else {
+    showToast('❌ Error al borrar');
+  }
 }
 
 async function registrarMovCaja() {
@@ -5120,13 +5138,34 @@ async function obtenerUltimoCierre() {
   return new Date(rows[0].fecha).toISOString();
 }
 
-function confirmarCierreTurno() {
+async function confirmarCierreTurno() {
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.45);backdrop-filter:blur(4px);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;';
   const box = document.createElement('div');
   box.style.cssText = 'background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:340px;padding:24px;';
+  // Calcular efectivo en caja para mostrar en confirmación
+  let cfEfectivo = 0;
+  try {
+    const hH = {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY};
+    const ulCierre = await obtenerUltimoCierre();
+    const desdeMs2 = ulCierre ? new Date(ulCierre).getTime() : 0;
+    const [rv2, rm2] = await Promise.all([
+      fetch(SUPA_URL+'/rest/v1/ventas?select=pago_efectivo,fecha,tipo', {headers:hH}),
+      fetch(SUPA_URL+'/rest/v1/caja?select=tipo,valor,metodo_pago,fecha', {headers:hH})
+    ]);
+    const vv2 = rv2.ok ? (await rv2.json()).filter(v=>v.tipo!=='anulada'&&new Date(v.fecha).getTime()>=desdeMs2) : [];
+    const mm2 = rm2.ok ? (await rm2.json()).filter(m=>['ingreso','gasto'].includes(m.tipo)&&new Date(m.fecha).getTime()>=desdeMs2) : [];
+    const efVentas = vv2.reduce((s,v)=>s+Number(v.pago_efectivo||0),0);
+    const efIngresos = mm2.filter(m=>m.tipo==='ingreso'&&(!m.metodo_pago||m.metodo_pago==='efectivo')).reduce((s,m)=>s+Number(m.valor||0),0);
+    const efGastos = mm2.filter(m=>m.tipo==='gasto').reduce((s,m)=>s+Number(m.valor||0),0);
+    cfEfectivo = efVentas + efIngresos - efGastos;
+  } catch(e) {}
   box.innerHTML = '<div style="font-size:20px;text-align:center;margin-bottom:10px;">🔒</div>'+
     '<div style="font-size:16px;font-weight:700;text-align:center;margin-bottom:8px;">Cerrar turno</div>'+
+    '<div style="background:#f0faf5;border:1px solid rgba(22,163,74,0.3);border-radius:10px;padding:14px;margin-bottom:14px;text-align:center;">'+
+    '<div style="font-size:11px;color:#16a34a;font-weight:600;margin-bottom:4px;">💵 EFECTIVO EN CAJA</div>'+
+    '<div style="font-family:monospace;font-size:24px;font-weight:700;color:#16a34a;">$'+cfEfectivo.toLocaleString('es-CO')+'</div>'+
+    '<div style="font-size:11px;color:#6b7280;margin-top:4px;">(Ventas efectivo + ingresos - gastos)</div></div>'+
     '<div style="font-size:13px;color:var(--text2);text-align:center;margin-bottom:20px;">Se registrará el cierre y la caja quedará en cero para el siguiente turno.</div>';
   const btnOk = document.createElement('button');
   btnOk.textContent = 'Confirmar cierre';
@@ -5149,6 +5188,10 @@ async function cierreCajaTurno() {
   const hoy = new Date().toISOString().split('T')[0];
   const desde = ultimoCierre || hoy+'T00:00:00.000Z';
   const ahora = new Date().toISOString();
+  // Convertir a hora Colombia para mostrar
+  const opsCO = {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/Bogota'};
+  const desdeStrCO = new Date(desde).toLocaleString('es-CO', opsCO);
+  const hastaStrCO = new Date(ahora).toLocaleString('es-CO', opsCO);
   // desdeTs y ahoraTs para filtrar en JS
   const desdeDate = new Date(desde);
   const ahoraDate = new Date(ahora);
@@ -5158,8 +5201,8 @@ async function cierreCajaTurno() {
   
   // Traer TODAS las ventas del dia y filtrar en JS por timestamp
   const [vResp, oResp, inResp, gaResp] = await Promise.all([
-    fetch(SUPA_URL+'/rest/v1/ventas?select=total,metodo_pago,pago_efectivo,pago_nequi,pago_daviplata,pago_transferencia,pago_tarjeta,items,cliente_nombre,fecha,tipo', {headers:H}),
-    fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&select=presupuesto,repuestos,nombre,servicio,fecha', {headers:H}),
+    fetch(SUPA_URL+'/rest/v1/ventas?select=total,metodo_pago,pago_efectivo,pago_nequi,pago_daviplata,pago_transferencia,pago_tarjeta,items,cliente_nombre,fecha,tipo,orden_id', {headers:H}),
+    fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&select=presupuesto,repuestos,nombre,servicio,fecha,id', {headers:H}),
     fetch(SUPA_URL+'/rest/v1/caja?tipo=eq.ingreso&select=*', {headers:H}),
     fetch(SUPA_URL+'/rest/v1/caja?tipo=eq.gasto&select=*', {headers:H})
   ]);
@@ -5204,7 +5247,11 @@ async function cierreCajaTurno() {
   const totServicios = ordenes.reduce((s,o)=>s+Number(o.presupuesto||0)+(o.repuestos||[]).reduce((r,rep)=>r+Number(rep.precio||0),0),0);
   const totIngresos = movs.filter(m=>m.tipo==='ingreso').reduce((s,m)=>s+Number(m.valor||0),0);
   const totGastos = movs.filter(m=>m.tipo==='gasto').reduce((s,m)=>s+Number(m.valor||0),0);
-  const totalNeto = (isNaN(totVentas)?0:totVentas) + (isNaN(totServicios)?0:totServicios) + (isNaN(totIngresos)?0:totIngresos) - (isNaN(totGastos)?0:totGastos);
+  const totEfectivoVentas = ventas.reduce((s,v)=>s+Number(v.pago_efectivo||0),0);
+  const totEfectivoIngresos = movs.filter(m=>m.tipo==='ingreso'&&(m.metodo_pago==='efectivo'||!m.metodo_pago)).reduce((s,m)=>s+Number(m.valor||0),0);
+  const totEfectivoGastos = movs.filter(m=>m.tipo==='gasto').reduce((s,m)=>s+Number(m.valor||0),0);
+  const efectivoEnCaja = totEfectivoVentas + totEfectivoIngresos - totEfectivoGastos;
+  const totalNeto = (isNaN(totVentas)?0:totVentas) + (isNaN(totIngresos)?0:totIngresos) - (isNaN(totGastos)?0:totGastos);
 
   // Por metodo
   const porMetodo = {efectivo:0,nequi:0,daviplata:0,transferencia:0,tarjeta:0};
@@ -5217,10 +5264,14 @@ async function cierreCajaTurno() {
   });
 
   const resumen = {
-    desde, hasta: ahora,
+    desde: desdeStrCO, hasta: hastaStrCO,
     ventas: ventas.length, tot_ventas: totVentas,
-    servicios: ordenes.length, tot_servicios: totServicios,
+    servicios: ordenes.length, tot_servicios: 0,
     tot_ingresos: totIngresos, tot_gastos: totGastos,
+    efectivo_ventas: totEfectivoVentas,
+    efectivo_ingresos: totEfectivoIngresos,
+    efectivo_gastos: totEfectivoGastos,
+    efectivo_en_caja: efectivoEnCaja,
     total_neto: totalNeto, por_metodo: porMetodo,
     ventas_detalle: ventas.map(function(v){
       return {
@@ -5237,11 +5288,14 @@ async function cierreCajaTurno() {
       };
     }),
     servicios_detalle: ordenes.map(function(o){
+      // Buscar la venta real cobrada para esta orden
+      const ventaReal = ventas.find(function(v){ return v.tipo==='servicio_entregado' && v.orden_id===o.id; });
+      const totalCobrado = ventaReal ? Number(ventaReal.total||0) : (Number(o.presupuesto||0) + (o.repuestos||[]).reduce((s,r)=>s+Number(r.precio||0),0));
       return {
         nombre: o.nombre||'',
         servicio: o.servicio||'',
-        presupuesto: o.presupuesto||0,
-        repuestos: (o.repuestos||[]).map(function(r){ return {nombre: r.nombre||'', precio: r.precio||0}; })
+        presupuesto: totalCobrado,
+        repuestos: ventaReal ? (ventaReal.items||[]).map(function(it){ return {nombre: it.nombre||'', precio: (it.precio_unitario||it.precio||0)*(it.cantidad||1)}; }) : (o.repuestos||[]).map(function(r){ return {nombre: r.nombre||'', precio: r.precio||0}; })
       };
     }),
     ingresos_detalle: ingresos.map(function(m){ return {concepto: m.concepto||'', valor: m.valor||0}; }),
@@ -5273,8 +5327,9 @@ async function cierreCajaTurno() {
 }
 
 function imprimirCierreTurno(r, ventas, ordenes, movs) {
-  const fechaDesde = r.desde ? new Date(r.desde).toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
-  const fechaHasta = r.hasta ? new Date(r.hasta).toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+  // Fechas ya vienen en hora Colombia como string
+  const fechaDesde = r.desde || '—';
+  const fechaHasta = r.hasta || '—';
   const metodos = {efectivo:'Efectivo',nequi:'Nequi',daviplata:'Daviplata',transferencia:'Transferencia',tarjeta:'Tarjeta'};
   // Use detalle from resumen if available, otherwise from raw arrays
   const ventasD = r.ventas_detalle || (ventas||[]).map(function(v){ return {cliente:v.cliente_nombre||'Cliente',metodo:v.metodo_pago,total:v.total,items:(v.items||[])}; });
@@ -5307,11 +5362,17 @@ function imprimirCierreTurno(r, ventas, ordenes, movs) {
   html2 += '<div class="row"><span>Desde:</span><span>'+fechaDesde+'</span></div>';
   html2 += '<div class="row"><span>Hasta:</span><span>'+fechaHasta+'</span></div>';
   html2 += '<div class="dash"></div>';
+  var efectivoEnCaja = Number(r.efectivo_en_caja||0);
+  var efectivoVentas = Number(r.efectivo_ventas || (r.por_metodo&&r.por_metodo.efectivo) || 0);
+  var efectivoGastos = Number(r.efectivo_gastos || totGastos || 0);
   html2 += '<div class="bold">RESUMEN</div>';
   html2 += '<div class="row"><span>Ventas mostrador ('+numVentas+')</span><span>$'+totVentas.toLocaleString('es-CO')+'</span></div>';
-  html2 += '<div class="row"><span>Servicios ('+numServ+')</span><span>$'+totServ.toLocaleString('es-CO')+'</span></div>';
   if(totIng>0) html2 += '<div class="row"><span>Otros ingresos</span><span>$'+totIng.toLocaleString('es-CO')+'</span></div>';
-  if(totGastos>0) html2 += '<div class="row"><span>Gastos</span><span>-$'+totGastos.toLocaleString('es-CO')+'</span></div>';
+  html2 += '<div class="dash"></div>';
+  if(totGastos>0) {
+    html2 += '<div class="row"><span>Total gastos efectivo</span><span style="color:#c00;">-$'+totGastos.toLocaleString('es-CO')+'</span></div>';
+  }
+  html2 += '<div class="row bold"><span>Efectivo en caja</span><span>$'+efectivoEnCaja.toLocaleString('es-CO')+'</span></div>';
 
   // Por metodo
   var metsEntries = Object.entries(porMetodo).filter(function(kv){return kv[1]>0;});
@@ -5384,7 +5445,7 @@ async function renderHistorialCierres(el) {
     turnos.forEach(function(t, idx) {
       var resumen = {};
       try { var raw = t.concepto||''; resumen = JSON.parse(raw.startsWith('CIERRE:') ? raw.slice(7) : raw); } catch(e) {}
-      var hora = new Date(t.fecha).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+      var hora = new Date(t.fecha).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/Bogota'});
       var tid = 'det-'+t.id;
       var metNombres = {efectivo:'Efectivo',nequi:'Nequi',daviplata:'Daviplata',transferencia:'Transferencia',tarjeta:'Tarjeta'};
 
@@ -5402,13 +5463,15 @@ async function renderHistorialCierres(el) {
         html += '<div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center;">';
         html += '<div style="font-family:var(--mono);font-size:13px;font-weight:700;">$'+Number(resumen.tot_ventas||0).toLocaleString('es-CO')+'</div>';
         html += '<div style="font-size:10px;color:var(--text3);">Ventas ('+resumen.ventas+')</div></div>';
-        html += '<div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center;">';
-        html += '<div style="font-family:var(--mono);font-size:13px;font-weight:700;">$'+Number(resumen.tot_servicios||0).toLocaleString('es-CO')+'</div>';
-        html += '<div style="font-size:10px;color:var(--text3);">Servicios ('+resumen.servicios+')</div></div>';
         if(Number(resumen.tot_gastos||0) > 0) {
           html += '<div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center;">';
           html += '<div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red);">$'+Number(resumen.tot_gastos||0).toLocaleString('es-CO')+'</div>';
-          html += '<div style="font-size:10px;color:var(--text3);">Gastos</div></div>';
+          html += '<div style="font-size:10px;color:var(--text3);">Gastos efectivo</div></div>';
+        }
+        if(resumen.efectivo_en_caja !== undefined) {
+          html += '<div style="background:#f0faf5;border:1px solid rgba(22,163,74,0.3);border-radius:8px;padding:8px;text-align:center;grid-column:1/-1;">';
+          html += '<div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green);">$'+Number(resumen.efectivo_en_caja||0).toLocaleString('es-CO')+'</div>';
+          html += '<div style="font-size:10px;color:var(--green);font-weight:600;">💵 EFECTIVO EN CAJA</div></div>';
         }
         html += '</div>';
       }
