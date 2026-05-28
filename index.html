@@ -5185,13 +5185,14 @@ async function cierreCajaTurno() {
   showToast('Procesando cierre...');
   try {
   const ultimoCierre = await obtenerUltimoCierre();
-  const hoy = new Date().toISOString().split('T')[0];
-  const desde = ultimoCierre || hoy+'T00:00:00.000Z';
+  const hoy = new Date().toLocaleDateString('en-CA', {timeZone:'America/Bogota'});
+  const desde = ultimoCierre || hoy+'T00:00:00-05:00';
   const ahora = new Date().toISOString();
   // Convertir a hora Colombia para mostrar
   const opsCO = {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/Bogota'};
   const desdeStrCO = new Date(desde).toLocaleString('es-CO', opsCO);
   const hastaStrCO = new Date(ahora).toLocaleString('es-CO', opsCO);
+  const fechaDiaStr = new Date(hoy+'T12:00:00-05:00').toLocaleDateString('es-CO',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   // desdeTs y ahoraTs para filtrar en JS
   const desdeDate = new Date(desde);
   const ahoraDate = new Date(ahora);
@@ -5264,7 +5265,7 @@ async function cierreCajaTurno() {
   });
 
   const resumen = {
-    desde: desdeStrCO, hasta: hastaStrCO,
+    desde: desdeStrCO, hasta: hastaStrCO, fecha_dia: fechaDiaStr,
     ventas: ventas.length, tot_ventas: totVentas,
     servicios: ordenes.length, tot_servicios: 0,
     tot_ingresos: totIngresos, tot_gastos: totGastos,
@@ -5359,8 +5360,7 @@ function imprimirCierreTurno(r, ventas, ordenes, movs) {
   html2 += '<div class="center">NIT: '+EMPRESA.nit+'</div>';
   html2 += '<div class="line"></div>';
   html2 += '<div class="center bold" style="font-size:13px;">CIERRE DE TURNO</div>';
-  html2 += '<div class="row"><span>Desde:</span><span>'+fechaDesde+'</span></div>';
-  html2 += '<div class="row"><span>Hasta:</span><span>'+fechaHasta+'</span></div>';
+  html2 += '<div class="center" style="margin:4px 0 8px;font-size:12px;text-transform:capitalize;">'+(r.fecha_dia||new Date().toLocaleDateString('es-CO',{weekday:'long',day:'2-digit',month:'long',year:'numeric',timeZone:'America/Bogota'}))+'</div>';
   html2 += '<div class="dash"></div>';
   var efectivoEnCaja = Number(r.efectivo_en_caja||0);
   var efectivoVentas = Number(r.efectivo_ventas || (r.por_metodo&&r.por_metodo.efectivo) || 0);
@@ -5425,7 +5425,7 @@ async function renderHistorialCierres(el) {
   // Group by day
   const porDia = {};
   cierres.forEach(c => {
-    const dia = c.fecha.split('T')[0];
+    const dia = new Date(c.fecha).toLocaleDateString('en-CA', {timeZone:'America/Bogota'});
     if(!porDia[dia]) porDia[dia] = [];
     porDia[dia].push(c);
   });
@@ -5434,7 +5434,7 @@ async function renderHistorialCierres(el) {
   Object.keys(porDia).sort().reverse().forEach(dia => {
     const turnos = porDia[dia];
     const totalDia = turnos.reduce((s,t)=>s+Number(t.valor||0),0);
-    const fechaLabel = new Date(dia+'T12:00:00').toLocaleDateString('es-CO',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+    const fechaLabel = new Date(dia+'T12:00:00-05:00').toLocaleDateString('es-CO',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 
     html += '<div style="margin-bottom:16px;">';
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
