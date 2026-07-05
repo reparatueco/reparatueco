@@ -772,7 +772,7 @@ async function aplicarRol() {
     goScreen('tecnico', null);
 
   } else if(esRecepcion) {
-    // Recepcion: puede recibir ordenes, ventas, abonos, entrega, abrir caja — NO cerrar caja, NO config, NO clientes, NO historial caja
+    // Recepcion: puede recibir ordenes, ventas, abonos, entrega — NO cerrar caja, NO config, NO clientes, NO historial caja
     // Ocultar en sidebar lo que no aplica
     const sidebarNav = document.getElementById('sidebarNav');
     if(sidebarNav) {
@@ -787,24 +787,14 @@ async function aplicarRol() {
       if(el) el.style.display = 'none';
     });
     filtroTecnico = 'todos';
-    // Verificar apertura de caja
-    const abierta = await verificarAperturaCaja();
-    if(!abierta) {
-      mostrarModalAbrirCaja();
-    } else {
-      goScreen('home', document.getElementById('nav-home'));
-    }
+    // La caja se abre automaticamente al registrar la primera venta del dia
+    goScreen('home', document.getElementById('nav-home'));
 
   } else {
     // Admin: acceso total
     filtroTecnico = 'todos';
-    // Verificar apertura de caja
-    const abierta = await verificarAperturaCaja();
-    if(!abierta) {
-      mostrarModalAbrirCaja();
-    } else {
-      goScreen('home', document.getElementById('nav-home'));
-    }
+    // La caja se abre automaticamente al registrar la primera venta del dia
+    goScreen('home', document.getElementById('nav-home'));
   }
 }
 
@@ -888,6 +878,40 @@ async function confirmarAbrirCaja() {
   if(overlay) overlay.remove();
   goScreen('home', document.getElementById('nav-home'));
 }
+
+// ===== AUTO-APERTURA DE CAJA EN PRIMERA VENTA =====
+// Si no hay una apertura registrada en el dia actual (y no hubo cierre posterior),
+// inserta una apertura automatica con valor 0 justo antes de registrar la venta.
+// Devuelve true si la caja ya estaba abierta o se abrio en este momento.
+async function asegurarCajaAbiertaHoy() {
+  try {
+    const abierta = await verificarAperturaCaja();
+    if(abierta) return true;
+    const now = new Date();
+    const r = await fetch(SUPA_URL+'/rest/v1/caja', {
+      method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body: JSON.stringify({
+        tipo: 'apertura',
+        concepto: 'APERTURA AUTOMATICA (primera venta del dia)',
+        valor: 0,
+        metodo_pago: 'efectivo',
+        created_by: usuarioActual?.nombre || 'admin',
+        fecha: now.toISOString()
+      })
+    });
+    if(!r.ok) {
+      console.error('No se pudo auto-abrir la caja', await r.text());
+      return false;
+    }
+    showToast('🏪 Caja abierta automáticamente');
+    return true;
+  } catch(e) {
+    console.error('Error auto-apertura caja', e);
+    return false;
+  }
+}
+
 
 // ===== SUPABASE =====
 const SUPA_URL = 'https://hetnortmjclryromohpq.supabase.co';
@@ -3576,8 +3600,12 @@ async function finalizarEntrega(ordenId, ventaId, total, overlay) {
     await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId, {
       method:'PATCH',
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body: JSON.stringify({estado:'entregada', aviso_admin_listo:false})
+      body: JSON.stringify({estado:'entregada', aviso_admin_listo:false, fecha_entrega:new Date().toISOString(), valor_pagado:totalFinal})
     });
+
+    // 1b. Auto-apertura de caja si es la primera venta del dia
+    const cajaOK = await asegurarCajaAbiertaHoy();
+    if(!cajaOK){ showToast('❌ No se pudo abrir la caja'); if(btn){btn.textContent='🖨️ Guardar pago e imprimir recibo'; btn.disabled=false;} return; }
 
     // 2. Registrar en caja AHORA
     const ventaResp = await fetch(SUPA_URL+'/rest/v1/ventas', {
@@ -4297,6 +4325,10 @@ async function procesarVenta(total) {
     fecha: new Date().toISOString(),
     created_by: usuarioActual?.nombre||'admin'
   };
+
+  // Auto-apertura de caja si es la primera venta del dia
+  const cajaOK = await asegurarCajaAbiertaHoy();
+  if(!cajaOK){ showToast('❌ No se pudo abrir la caja'); return; }
 
   // Save venta
   const resp = await fetch(SUPA_URL+'/rest/v1/ventas', {
@@ -6253,26 +6285,28 @@ function descargarExcelTecnico() {
   });
 
   // Build CSV content
-  const headers = ['No. Orden','Fecha Entrega','Cliente','Servicio','Marca','Referencia','Color','Técnico','Valor $'];
+  const headers = ['No. Orden','Fecha Recepción','Fecha Entrega','Cliente','Servicio','Marca','Referencia','Color','Técnico','Valor Pagado $'];
   const rows = filtradas.map(o => {
-    const fecha = o.fecha ? new Date(o.fecha).toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
-    const valor = Number(o.presupuesto||0) + (o.repuestos||[]).reduce((s,r)=>s+Number(r.precio||0),0);
+    const fechaRecepcion = o.fecha ? new Date(o.fecha).toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
+    const fechaEntrega = o.fecha_entrega ? new Date(o.fecha_entrega).toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
+    const valorPagado = o.valor_pagado != null ? Number(o.valor_pagado) : (Number(o.presupuesto||0) + (o.repuestos||[]).reduce((s,r)=>s+Number(r.precio||0),0));
     return [
       o.id||'',
-      fecha,
+      fechaRecepcion,
+      fechaEntrega,
       o.nombre||'',
       o.servicio||'',
       o.marca||'',
       o.referencia||'',
       o.color_vehiculo||'',
       o.tecnico||'',
-      valor
+      valorPagado
     ];
   });
 
   // Add totals
-  const totalValor = rows.reduce((s,r)=>s+Number(r[8]||0),0);
-  rows.push(['','','','','','','','TOTAL',"$"+totalValor.toLocaleString('es-CO')]);
+  const totalValor = rows.reduce((s,r)=>s+Number(r[9]||0),0);
+  rows.push(['','','','','','','','','TOTAL',"$"+totalValor.toLocaleString('es-CO')]);
 
   // Convert to CSV
   const bom = ''; // UTF-8 BOM for Excel
@@ -6372,7 +6406,7 @@ async function renderHistorialTecnico() {
   if(!el) return;
   el.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando mis órdenes...</div>';
 
-  const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&tecnico=eq.'+encodeURIComponent(usuarioActual.nombre)+'&select=id,nombre,servicio,estado,fecha,presupuesto,marca,referencia,color_vehiculo,tecnico&order=fecha.desc', {
+  const resp = await fetch(SUPA_URL+'/rest/v1/ordenes?estado=eq.entregada&tecnico=eq.'+encodeURIComponent(usuarioActual.nombre)+'&select=id,nombre,servicio,estado,fecha,fecha_entrega,valor_pagado,presupuesto,repuestos,marca,referencia,color_vehiculo,tecnico&order=fecha.desc', {
     headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
   });
   tecOrdenes = resp.ok ? await resp.json() : [];
@@ -6443,10 +6477,13 @@ function exportarHistorialExcel() {
   if(!tecOrdenes.length){ showToast('No hay órdenes para exportar'); return; }
   try {
     const wb = XLSX.utils.book_new();
-    const datos = tecOrdenes.map(o => ({
+    const datos = tecOrdenes.map(o => {
+      const valorPagado = o.valor_pagado != null ? Number(o.valor_pagado) : (Number(o.presupuesto||0) + (o.repuestos||[]).reduce((s,r)=>s+Number(r.precio||0),0));
+      return {
       'Orden':      o.id || '',
-      'Fecha':      o.fecha ? new Date(o.fecha).toLocaleDateString('es-CO') : '',
+      'Fecha Recepción': o.fecha ? new Date(o.fecha).toLocaleDateString('es-CO') : '',
       'Hora':       o.fecha ? new Date(o.fecha).toLocaleTimeString('es-CO', {hour:'2-digit',minute:'2-digit'}) : '',
+      'Fecha Entrega': o.fecha_entrega ? new Date(o.fecha_entrega).toLocaleDateString('es-CO') : '',
       'Cliente':    o.nombre || '',
       'Teléfono':   o.tel || '',
       'Servicio':   o.servicio || '',
@@ -6454,12 +6491,12 @@ function exportarHistorialExcel() {
       'Estado':     o.estado || '',
       'Marca':      o.marca || '',
       'Referencia': o.referencia || '',
-      'Presupuesto':o.presupuesto ? Number(o.presupuesto) : 0,
-    }));
+      'Valor Pagado': valorPagado,
+    };});
     const ws = XLSX.utils.json_to_sheet(datos);
     // Ancho de columnas
     ws['!cols'] = [
-      {wch:10},{wch:12},{wch:8},{wch:24},{wch:14},{wch:22},
+      {wch:10},{wch:14},{wch:8},{wch:14},{wch:24},{wch:14},{wch:22},
       {wch:12},{wch:14},{wch:14},{wch:16},{wch:14}
     ];
     XLSX.utils.book_append_sheet(wb, ws, 'Historial');
