@@ -823,62 +823,6 @@ async function verificarAperturaCaja() {
   } catch(e) { return false; }
 }
 
-function mostrarModalAbrirCaja() {
-  const overlay = document.createElement('div');
-  overlay.id = 'modal-apertura-caja';
-  overlay.style.cssText = 'position:fixed;inset:0;background:linear-gradient(135deg,#eef2ff 0%,#f0f9ff 100%);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
-  overlay.innerHTML = `
-  <div style="background:#fff;border:1.5px solid rgba(99,102,241,0.15);border-radius:20px;width:100%;max-width:360px;padding:32px 24px;box-shadow:0 8px 40px rgba(99,102,241,0.15);">
-    <div style="text-align:center;margin-bottom:24px;">
-      <div style="font-size:40px;margin-bottom:10px;">🏪</div>
-      <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#4f46e5;margin-bottom:4px;">Abrir Caja</div>
-      <div style="font-size:12px;color:#94a3b8;">¿Con cuánto efectivo inicia la caja hoy?</div>
-    </div>
-    <div style="margin-bottom:16px;">
-      <label style="display:block;font-size:12px;color:#1e1b4b;margin-bottom:6px;font-weight:600;opacity:.7;">Monto inicial en efectivo $</label>
-      <input id="apertura-monto" type="number" min="100" placeholder="Ej: 50000" 
-        style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:monospace;font-size:16px;padding:12px 14px;outline:none;box-sizing:border-box;"
-        onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='rgba(99,102,241,0.18)'"
-        onkeydown="if(event.key==='Enter')confirmarAbrirCaja()">
-    </div>
-    <div id="apertura-error" style="color:#dc2626;font-size:12px;margin-bottom:10px;min-height:16px;text-align:center;"></div>
-    <button onclick="confirmarAbrirCaja()" 
-      style="width:100%;background:linear-gradient(135deg,#4f46e5,#818cf8);color:#fff;border:none;border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;padding:13px;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,0.3);">
-      🏪 Abrir Caja
-    </button>
-  </div>`;
-  document.body.appendChild(overlay);
-  setTimeout(() => { const m = document.getElementById('apertura-monto'); if(m) m.focus(); }, 100);
-}
-
-async function confirmarAbrirCaja() {
-  const montoEl = document.getElementById('apertura-monto');
-  const errEl = document.getElementById('apertura-error');
-  const monto = Number(montoEl?.value || 0);
-  if(monto < 100) { if(errEl) errEl.textContent = 'El monto mínimo es $100'; return; }
-
-  const now = new Date();
-  const horaStr = now.toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/Bogota'});
-
-  await fetch(SUPA_URL+'/rest/v1/caja', {
-    method:'POST',
-    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-    body: JSON.stringify({
-      tipo: 'apertura',
-      concepto: 'APERTURA DE CAJA',
-      valor: monto,
-      metodo_pago: 'efectivo',
-      created_by: usuarioActual?.nombre||'admin',
-      fecha: now.toISOString()
-    })
-  });
-
-  showToast('✅ Caja abierta a las ' + horaStr);
-  const overlay = document.getElementById('modal-apertura-caja');
-  if(overlay) overlay.remove();
-  goScreen('home', document.getElementById('nav-home'));
-}
-
 // ===== AUTO-APERTURA DE CAJA EN PRIMERA VENTA =====
 // Si no hay una apertura registrada en el dia actual (y no hubo cierre posterior),
 // inserta una apertura automatica con valor 0 justo antes de registrar la venta.
