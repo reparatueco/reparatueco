@@ -193,9 +193,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <button class="sidebar-nav-item" onclick="goScreen('config',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Configuración
       </button>
-      <button class="sidebar-nav-item" id="nav-clientes" onclick="goScreen('clientes',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes
-      </button>
     </nav>
   </div>
 
@@ -302,9 +299,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
             <div class="field"><label>Apellido</label><input type="text" id="r-apellido" placeholder="Ej: García"></div>
           </div>
           <div class="row2">
-            <div class="field"><label>Teléfono / WhatsApp</label><input type="tel" id="r-tel" placeholder="3001234567"></div>
+            <div class="field"><label>Teléfono / WhatsApp</label><input type="tel" id="r-tel" placeholder="3001234567" oninput="buscarClientePorTel(this.value)"></div>
             <div class="field"><label>Nº Documento</label><input type="text" id="r-documento" placeholder="Cédula o ID"></div>
           </div>
+          <div id="r-cliente-encontrado" style="display:none;font-size:12px;color:var(--green,#16a34a);font-weight:600;margin-top:-6px;margin-bottom:10px;"></div>
         </div>
         <div class="card">
           <div class="card-title">Datos del vehículo</div>
@@ -637,6 +635,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <div class="card" id="card-usuarios-admin" style="display:none;">
         <div id="config-usuarios-contenido"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
       </div>
+      <div class="card" id="card-limpieza-fotos" style="display:none;">
+        <div class="card-title" style="margin-bottom:8px;">Limpieza de fotos</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.5;">Elimina del almacenamiento las fotos de órdenes ya entregadas hace más de cierto tiempo, para reducir el espacio usado en Supabase. Esta acción no se puede deshacer.</div>
+        <div class="field"><label>Eliminar fotos de órdenes entregadas hace más de (días)</label><input type="number" id="limpieza-dias" min="7" value="90" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:14px;padding:10px 12px;outline:none;"></div>
+        <button onclick="limpiarFotosAntiguas()" class="btn btn-primary" style="width:100%;background:var(--red,#dc2626);">🗑 Eliminar fotos antiguas</button>
+        <div id="limpieza-resultado" style="font-size:12px;margin-top:10px;text-align:center;color:var(--text2);"></div>
+      </div>
     </div>
   </div>
 
@@ -879,20 +884,6 @@ function aplicarConfig() {
   const n = cfg.nombre || 'Tu taller de bicicletas';
   const tl = document.getElementById('topbar-local'); if(tl) tl.textContent = n;
   const sb = document.getElementById('sb-local-name'); if(sb) sb.textContent = n;
-}
-
-function cargarConfig() {
-  // Show/hide usuarios section for admin only
-  const cardU = document.getElementById('card-usuarios-admin');
-  if(cardU) {
-    if(usuarioActual && usuarioActual.rol === 'admin') {
-      cardU.style.display = '';
-      const el = document.getElementById('config-usuarios-contenido');
-      if(el) renderGestionUsuarios(el);
-    } else {
-      cardU.style.display = 'none';
-    }
-  }
 }
 
 // ===== NAV =====
@@ -1206,9 +1197,57 @@ async function guardarOrden() {
 
 
 // ===== CLIENTES =====
+let _telBusquedaTimeout = null;
+function buscarClientePorTel(valor) {
+  clearTimeout(_telBusquedaTimeout);
+  const tel = (valor||'').trim();
+  const badge = document.getElementById('r-cliente-encontrado');
+  if(tel.length < 7) { if(badge) badge.style.display='none'; return; }
+  _telBusquedaTimeout = setTimeout(async () => {
+    try {
+      const {data,error} = await db.from('clientes').select('*').eq('tel', tel).limit(1);
+      if(error || !data || !data.length) { if(badge) badge.style.display='none'; return; }
+      const c = data[0];
+      // Autocompletar solo si el usuario no ha escrito ya un nombre distinto
+      const nombreEl = document.getElementById('r-nombre');
+      const apellidoEl = document.getElementById('r-apellido');
+      const documentoEl = document.getElementById('r-documento');
+      if(nombreEl && !nombreEl.value.trim()) nombreEl.value = c.nombre||'';
+      if(apellidoEl && !apellidoEl.value.trim()) apellidoEl.value = c.apellido||'';
+      if(documentoEl && !documentoEl.value.trim()) documentoEl.value = c.documento||'';
+      if(badge) {
+        badge.style.display = 'block';
+        badge.textContent = '✅ Cliente encontrado: ' + (c.nombre||'') + (c.apellido?' '+c.apellido:'') + ' — datos autocompletados';
+      }
+    } catch(e) { if(badge) badge.style.display='none'; }
+  }, 400);
+}
+
 async function registrarCliente(datos) {
-  // Desactivado — la tabla clientes tiene restricciones que impiden el registro libre
-  return;
+  // Guarda o actualiza el cliente usando el teléfono como identificador único
+  if(!datos || !datos.tel) return;
+  try {
+    const {data: existentes, error: errBusqueda} = await db.from('clientes').select('id').eq('tel', datos.tel).limit(1);
+    if(errBusqueda) throw errBusqueda;
+    if(existentes && existentes.length) {
+      // Ya existe: actualizar datos (por si cambió nombre/documento)
+      await db.from('clientes').update({
+        nombre: datos.nombre || undefined,
+        apellido: datos.apellido || undefined,
+        documento: datos.documento || undefined
+      }).eq('id', existentes[0].id);
+    } else {
+      // No existe: crear
+      await db.from('clientes').insert({
+        nombre: datos.nombre || '',
+        apellido: datos.apellido || '',
+        tel: datos.tel || '',
+        documento: datos.documento || ''
+      });
+    }
+  } catch(e) {
+    console.warn('No se pudo registrar/actualizar cliente:', e.message);
+  }
 }
 let _clientesCache=[];
 async function renderClientes(){
@@ -1434,6 +1473,7 @@ function mostrarBadgeServicio(val) {
 
 function resetRecepcion() {
   ['r-nombre','r-apellido','r-tel','r-documento','r-marca','r-referencia','r-color','r-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const badgeCli = document.getElementById('r-cliente-encontrado'); if(badgeCli) badgeCli.style.display='none';
   document.getElementById('r-tecnico').value='';
   document.getElementById('r-servicio').value='';
   const otro = document.getElementById('r-servicio-otro'); if(otro) otro.value='';
@@ -2441,6 +2481,22 @@ async function cargarConfig() {
   const st=document.getElementById('cfg-status');
   if(error){st.className='badge badge-red';st.textContent='Sin conexión';}
   else{st.className='badge badge-green';st.textContent='Conectado ✓';}
+
+  // Show/hide usuarios section for admin only
+  const cardU = document.getElementById('card-usuarios-admin');
+  if(cardU) {
+    if(usuarioActual && usuarioActual.rol === 'admin') {
+      cardU.style.display = '';
+      const el = document.getElementById('config-usuarios-contenido');
+      if(el) renderGestionUsuarios(el);
+    } else {
+      cardU.style.display = 'none';
+    }
+  }
+  const cardLimpieza = document.getElementById('card-limpieza-fotos');
+  if(cardLimpieza) {
+    cardLimpieza.style.display = (usuarioActual && usuarioActual.rol === 'admin') ? '' : 'none';
+  }
 }
 
 // ===== AUTORIZACIONES =====
@@ -6134,6 +6190,56 @@ function selEstadoTec(estado) {
 }
 
 
+// Extrae la ruta interna del archivo dentro del bucket 'fotos-bicicletas' a partir de su URL pública.
+// Si la foto está guardada como base64 (fallback antiguo), no hay archivo en storage que borrar.
+function extraerPathStorage(url) {
+  if(!url || typeof url !== 'string') return null;
+  if(url.startsWith('data:')) return null; // base64, no está en storage
+  const marcador = '/fotos-bicicletas/';
+  const idx = url.indexOf(marcador);
+  if(idx === -1) return null;
+  return decodeURIComponent(url.substring(idx + marcador.length));
+}
+
+async function limpiarFotosAntiguas() {
+  const dias = Number(document.getElementById('limpieza-dias')?.value || 90);
+  const resultEl = document.getElementById('limpieza-resultado');
+  if(dias < 7) { showToast('Mínimo 7 días por seguridad'); return; }
+  const conf = confirm('¿Eliminar todas las fotos de órdenes entregadas hace más de '+dias+' días? Esta acción no se puede deshacer.');
+  if(!conf) return;
+
+  if(resultEl) resultEl.textContent = 'Buscando órdenes...';
+  try {
+    const limiteMs = Date.now() - dias*24*60*60*1000;
+    const limiteISO = new Date(limiteMs).toISOString();
+
+    // Traer órdenes entregadas con fecha_entrega anterior al límite, que aún tengan fotos
+    const {data: ordenes, error} = await db.from('ordenes')
+      .select('id,fotos_ingreso,fotos_proceso,fecha_entrega,fecha,estado')
+      .eq('estado','entregada')
+      .lt('fecha_entrega', limiteISO);
+    if(error) throw error;
+
+    const candidatas = (ordenes||[]).filter(o => (o.fotos_ingreso&&o.fotos_ingreso.length) || (o.fotos_proceso&&o.fotos_proceso.length));
+    if(!candidatas.length) { if(resultEl) resultEl.textContent = 'No hay fotos antiguas para eliminar.'; return; }
+
+    let totalFotos = 0;
+    for(const o of candidatas) {
+      const urls = [...(o.fotos_ingreso||[]), ...(o.fotos_proceso||[])];
+      const paths = urls.map(extraerPathStorage).filter(Boolean);
+      if(paths.length) {
+        await db.storage.from('fotos-bicicletas').remove(paths);
+      }
+      totalFotos += urls.length;
+      await db.from('ordenes').update({fotos_ingreso:[], fotos_proceso:[]}).eq('id', o.id);
+    }
+    if(resultEl) resultEl.textContent = '✅ Se eliminaron '+totalFotos+' fotos de '+candidatas.length+' órdenes.';
+    showToast('✅ Limpieza completada');
+  } catch(e) {
+    if(resultEl) resultEl.textContent = '❌ Error: '+e.message;
+  }
+}
+
 async function borrarFotoProceso(ordenId, url, wrap) {
   const conf = confirm('¿Eliminar esta foto?');
   if(!conf) return;
@@ -6141,6 +6247,8 @@ async function borrarFotoProceso(ordenId, url, wrap) {
     const {data:o} = await db.from('ordenes').select('fotos_proceso').eq('id',ordenId).single();
     const nuevas = (o?.fotos_proceso||[]).filter(u => u !== url);
     await db.from('ordenes').update({fotos_proceso: nuevas}).eq('id',ordenId);
+    const path = extraerPathStorage(url);
+    if(path) { await db.storage.from('fotos-bicicletas').remove([path]); }
     if(wrap) wrap.remove();
     showToast('Foto eliminada');
   } catch(e) { showToast('Error al eliminar foto'); }
@@ -6153,6 +6261,8 @@ async function borrarFotoIngreso(ordenId, url, wrap) {
     const {data:o} = await db.from('ordenes').select('fotos_ingreso').eq('id',ordenId).single();
     const nuevas = (o?.fotos_ingreso||[]).filter(u => u !== url);
     await db.from('ordenes').update({fotos_ingreso: nuevas}).eq('id',ordenId);
+    const path = extraerPathStorage(url);
+    if(path) { await db.storage.from('fotos-bicicletas').remove([path]); }
     if(wrap) wrap.remove();
     showToast('Foto eliminada');
   } catch(e) { showToast('Error al eliminar foto'); }
@@ -6617,13 +6727,27 @@ async function renderGestionUsuarios(el) {
     headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
   });
   const usuarios = r.ok ? await r.json() : [];
+
+  // Detectar nombres duplicados (mismo nombre, distinto id)
+  const conteoNombres = {};
+  usuarios.forEach(u => {
+    const key = (u.nombre||'').trim().toLowerCase();
+    conteoNombres[key] = (conteoNombres[key]||0) + 1;
+  });
+  const hayDuplicados = Object.values(conteoNombres).some(c => c > 1);
+
   let html = '<div class="card-title" style="margin-bottom:12px;">Gestión de usuarios</div>';
+  if(hayDuplicados) {
+    html += '<div style="background:var(--red-dim);border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--red);font-weight:600;">⚠️ Hay nombres de usuario duplicados. Revisa las tarjetas marcadas en rojo y elimina el registro incorrecto (usa "Desactivar" o bórralo desde Supabase).</div>';
+  }
   html += '<button onclick="abrirFormUsuario(null)" class="btn btn-primary" style="margin-bottom:14px;width:100%;">+ Nuevo usuario</button>';
   usuarios.forEach(u => {
     const rolColor = u.rol==='admin'?'var(--blue)':u.rol==='recepcion'?'var(--amber)':'var(--green)';
-    html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">
+    const esDuplicado = conteoNombres[(u.nombre||'').trim().toLowerCase()] > 1;
+    const borde = esDuplicado ? '1.5px solid var(--red)' : '1px solid var(--border)';
+    html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg3);border:${borde};border-radius:10px;margin-bottom:8px;">
       <div>
-        <div style="font-weight:600;font-size:14px;">${u.nombre}</div>
+        <div style="font-weight:600;font-size:14px;">${u.nombre} ${esDuplicado?'<span style="color:var(--red);font-size:11px;">· Duplicado</span>':''}</div>
         <div style="font-size:11px;color:${rolColor};font-weight:600;text-transform:uppercase;">${u.rol} ${u.activo?'':'· Inactivo'}</div>
       </div>
       <div style="display:flex;gap:6px;">
@@ -6670,6 +6794,15 @@ async function guardarUsuario(id) {
   const pin = document.getElementById('fu-pin')?.value.trim();
   const rol = document.getElementById('fu-rol')?.value;
   if(!nombre||!pin) { showToast('Completa nombre y PIN'); return; }
+
+  // Evitar nombres de usuario duplicados (comparación sin importar mayúsculas/minúsculas)
+  const rChk = await fetch(SUPA_URL+'/rest/v1/usuarios?select=id,nombre', {
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  });
+  const existentes = rChk.ok ? await rChk.json() : [];
+  const choque = existentes.find(u => u.nombre.trim().toLowerCase() === nombre.toLowerCase() && u.id !== id);
+  if(choque) { showToast('⚠️ Ya existe un usuario con el nombre "'+nombre+'"'); return; }
+
   const datos = {nombre, pin, rol, activo:true};
   if(id) {
     await fetch(SUPA_URL+'/rest/v1/usuarios?id=eq.'+id, {
