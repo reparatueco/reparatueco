@@ -317,9 +317,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
           <div class="field"><label>Técnico asignado</label>
             <select id="r-tecnico">
               <option value="">Sin asignar</option>
-              <option>Alonso</option>
-              <option>Andres</option>
-              <option>Dario</option>
             </select>
           </div>
           <div class="field"><label>Tipo de servicio</label>
@@ -453,9 +450,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <!-- Filtro por tecnico (solo admin) -->
       <div class="filter-tabs" id="tabs-tecnico" style="margin-bottom:14px;">
         <div class="filter-tab active" onclick="filtrarPorTecnico('todos',this)">Todos</div>
-        <div class="filter-tab" onclick="filtrarPorTecnico('Alonso',this)">Alonso</div>
-        <div class="filter-tab" onclick="filtrarPorTecnico('Andres',this)">Andres</div>
-        <div class="filter-tab" onclick="filtrarPorTecnico('Dario',this)">Dario</div>
         <div class="filter-tab" onclick="filtrarPorTecnico('sin_asignar',this)">Sin asignar</div>
       </div>
 
@@ -683,6 +677,34 @@ async function cargarUsuariosDB() {
     });
     if(r.ok) { USUARIOS_DB = await r.json(); }
   } catch(e) { USUARIOS_DB = []; }
+  refrescarSelectoresTecnico();
+}
+
+// ===== LISTA DE TÉCNICOS (dinámica, desde USUARIOS_DB) =====
+function getTecnicos() {
+  return USUARIOS_DB.filter(u => u.rol === 'tecnico').map(u => u.nombre);
+}
+function opcionesTecnico(seleccionado) {
+  let html = `<option value="">Sin asignar</option>`;
+  getTecnicos().forEach(t => {
+    html += `<option value="${t}" ${seleccionado===t?'selected':''}>${t}</option>`;
+  });
+  return html;
+}
+function renderTabsTecnico() {
+  const cont = document.getElementById('tabs-tecnico');
+  if(!cont) return;
+  let html = '<div class="filter-tab active" onclick="filtrarPorTecnico(\'todos\',this)">Todos</div>';
+  getTecnicos().forEach(t => {
+    html += `<div class="filter-tab" onclick="filtrarPorTecnico('${t}',this)">${t}</div>`;
+  });
+  html += '<div class="filter-tab" onclick="filtrarPorTecnico(\'sin_asignar\',this)">Sin asignar</div>';
+  cont.innerHTML = html;
+}
+function refrescarSelectoresTecnico() {
+  const selRTec = document.getElementById('r-tecnico');
+  if(selRTec) { const val = selRTec.value; selRTec.innerHTML = opcionesTecnico(val); selRTec.value = val; }
+  renderTabsTecnico();
 }
 
 function mostrarLogin() {
@@ -807,7 +829,7 @@ async function aplicarRol() {
 async function verificarAperturaCaja() {
   // Retorna true solo si hay apertura de hoy Y no hay cierre posterior
   try {
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = new Date(Date.now() - 5*60*60*1000).toISOString().split('T')[0]; // Fecha Colombia
     const inicioHoy = new Date(hoy + 'T05:00:00Z').getTime(); // Medianoche Colombia
     const H = {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY};
 
@@ -1293,7 +1315,7 @@ function abrirEditarOrden() {
   if(!ordenNum) return;
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.4);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
-  const tecnicoOpts = ['','Alonso','Andres','Dario'].map(t=>`<option value="${t}" ${(document.getElementById('r-tecnico').value||'')=== t?'selected':''}>${t||'Sin asignar'}</option>`).join('');
+  const tecnicoOpts = opcionesTecnico(document.getElementById('r-tecnico').value||'');
   const servicioOpts = ['Mantenimiento Full','Mantenimiento Básico','Despinche','Revisión eléctrica','Lavada','Revisión de frenos','Reparación de tapas','Revisión general','Cambio de batería','Cambio de motor','Frenos y mecánica','Pantalla / controlador','Diagnóstico completo','Otro'].map(s=>`<option value="${s}" ${document.getElementById('r-servicio').value===s?'selected':''}>${s}</option>`).join('');
   overlay.innerHTML = `
   <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;padding:24px 20px 36px;box-shadow:0 -8px 40px rgba(99,102,241,0.15);">
@@ -1370,10 +1392,7 @@ function abrirServicioAdicional(ordenId, clienteNombre, tecnicoActual) {
     <div class="field">
       <label>Técnico asignado para este servicio</label>
       <select id="sa-tecnico" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;">
-        <option value="">Sin asignar</option>
-        <option value="Alonso" ${tecnicoActual==='Alonso'?'selected':''}>Alonso</option>
-        <option value="Andres" ${tecnicoActual==='Andres'?'selected':''}>Andres</option>
-        <option value="Dario" ${tecnicoActual==='Dario'?'selected':''}>Dario</option>
+        ${opcionesTecnico(tecnicoActual)}
       </select>
     </div>
     <div class="field">
@@ -1841,10 +1860,7 @@ async function abrirModalTecnico(id) {
   if(esAdmin) {
     html += '<div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><span>👨‍🔧</span>';
     html += '<select id="sel-tec-'+o.id+'" onchange="cambiarTecnico(\''+o.id+'\',this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:5px 10px;outline:none;flex:1;">';
-    html += '<option value="" '+((!o.tecnico)?'selected':'')+'>Sin asignar</option>';
-    html += '<option value="Alonso" '+(o.tecnico==='Alonso'?'selected':'')+'>Alonso</option>';
-    html += '<option value="Andres" '+(o.tecnico==='Andres'?'selected':'')+'>Andres</option>';
-    html += '<option value="Dario" '+(o.tecnico==='Dario'?'selected':'')+'>Dario</option>';
+    html += opcionesTecnico(o.tecnico||'');
     html += '</select></div>';
   } else {
     // Técnico: solo muestra quién está asignado, sin selector
@@ -2045,10 +2061,7 @@ async function editarServicioExtra(ordenId, idx) {
     <div class="field" style="margin-bottom:12px;">
       <label style="display:block;font-size:12px;color:#1e1b4b;font-weight:600;opacity:.7;margin-bottom:6px;">Técnico</label>
       <select id="esa-tecnico" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;">
-        <option value="" ${!ex.tecnico?'selected':''}>Sin asignar</option>
-        <option value="Alonso" ${ex.tecnico==='Alonso'?'selected':''}>Alonso</option>
-        <option value="Andres" ${ex.tecnico==='Andres'?'selected':''}>Andres</option>
-        <option value="Dario" ${ex.tecnico==='Dario'?'selected':''}>Dario</option>
+        ${opcionesTecnico(ex.tecnico||'')}
       </select>
     </div>
     <div class="field" style="margin-bottom:20px;">
@@ -3772,7 +3785,7 @@ function renderNomina(ordenes) {
     return fecha >= nominaDesde && fecha <= nominaHasta;
   });
 
-  const tecnicos = ['Alonso','Andres','Dario'];
+  const tecnicos = getTecnicos();
 
   let html = `
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:16px;">
@@ -4427,9 +4440,9 @@ async function cargarVentasHoy() {
   if(!el) return;
   // Obtener ultimo cierre
   const ultimoCierre = await obtenerUltimoCierre();
-  const hoy = new Date().toISOString().split('T')[0];
-  // desdeMs: timestamp del ultimo cierre o inicio del dia
-  const desdeMs = ultimoCierre ? new Date(ultimoCierre).getTime() : new Date(hoy+'T00:00:00.000Z').getTime();
+  const hoy = new Date(Date.now() - 5*60*60*1000).toISOString().split('T')[0]; // Fecha Colombia
+  // desdeMs: timestamp del ultimo cierre o inicio del dia (medianoche Colombia)
+  const desdeMs = ultimoCierre ? new Date(ultimoCierre).getTime() : new Date(hoy+'T05:00:00Z').getTime();
   
   const resp = await fetch(SUPA_URL+'/rest/v1/ventas?select=*&order=fecha.desc', {
     headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
@@ -4788,18 +4801,19 @@ async function renderCajaDelDia(el) {
         if(Number(v.pago_transferencia||0)>0) metodos.push('Transferencia $'+Number(v.pago_transferencia).toLocaleString('es-CO'));
         if(Number(v.pago_tarjeta||0)>0) metodos.push('Tarjeta $'+Number(v.pago_tarjeta).toLocaleString('es-CO'));
         const hora = v.fecha ? new Date(v.fecha).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/Bogota'}) : '';
-        const tipo = v.orden_id ? '🔧 Servicio' : '🛒 Mostrador';
+        const tipo = v.orden_id ? '🔧 '+v.orden_id : '🛒 Mostrador';
         const items = v.items || [];
         const itemsTxt = items.map(function(it){
           const nombre = it.nombre || it.name || 'Producto';
           const cant = it.cantidad || 1;
           return nombre + (cant>1?' x'+cant:'');
         }).join(', ');
-        html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;">';
+        const clickAttr = v.orden_id ? " onclick=\"abrirModalHistorial('"+v.orden_id+"')\" onmouseover=\"this.style.background='var(--bg3)'\" onmouseout=\"this.style.background=''\"" : '';
+        html += '<div'+clickAttr+' style=\"display:flex;justify-content:space-between;align-items:flex-start;padding:9px 6px;border-bottom:1px solid var(--border);font-size:13px;border-radius:8px;'+(v.orden_id?'cursor:pointer;':'')+'\">';
         html += '<div style="flex:1;">';
         if(itemsTxt) html += '<div style="font-weight:600;color:var(--text);margin-bottom:1px;">'+itemsTxt+'</div>';
         else if(v.cliente_nombre) html += '<div style="font-weight:600;color:var(--text);margin-bottom:1px;">'+v.cliente_nombre+'</div>';
-        html += '<span style="font-size:11px;color:var(--text3);">'+tipo+(hora?' · '+hora:'')+'</span>';
+        html += '<span style="font-size:11px;color:'+(v.orden_id?'var(--blue)':'var(--text3)')+';font-weight:'+(v.orden_id?'600':'400')+';">'+tipo+(hora?' · '+hora:'')+'</span>';
         if(metodos.length) html += '<div style="font-size:11px;color:var(--text3);margin-top:1px;">'+metodos.join(' · ')+'</div>';
         html += '</div>';
         html += '<span style="font-family:var(--mono);font-weight:700;color:var(--green);white-space:nowrap;margin-left:10px;">$'+total.toLocaleString('es-CO')+'</span>';
@@ -6860,7 +6874,7 @@ aplicarConfig();
     </div>
     <div style="margin-bottom:14px;">
       <label style="display:block;font-size:12px;color:#1e1b4b;margin-bottom:6px;font-weight:600;opacity:.7;">Usuario</label>
-      <input id="login-user" type="text" placeholder="admin / Alonso / Andres / Dario" onkeydown="if(event.key==='Enter')document.getElementById('login-pin').focus()" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;padding:11px 14px;outline:none;box-sizing:border-box;transition:border-color .18s;" onfocus="this.style.borderColor='#6366f1';this.style.background='#fff'" onblur="this.style.borderColor='rgba(99,102,241,0.18)';this.style.background='#f8fafc'">
+      <input id="login-user" type="text" placeholder="Tu usuario" onkeydown="if(event.key==='Enter')document.getElementById('login-pin').focus()" style="width:100%;background:#f8fafc;border:1.5px solid rgba(99,102,241,0.18);border-radius:10px;color:#1e1b4b;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;padding:11px 14px;outline:none;box-sizing:border-box;transition:border-color .18s;" onfocus="this.style.borderColor='#6366f1';this.style.background='#fff'" onblur="this.style.borderColor='rgba(99,102,241,0.18)';this.style.background='#f8fafc'">
     </div>
     <div style="margin-bottom:20px;">
       <label style="display:block;font-size:12px;color:#1e1b4b;margin-bottom:6px;font-weight:600;opacity:.7;">PIN</label>
