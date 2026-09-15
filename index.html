@@ -1691,6 +1691,12 @@ async function abrirModalTecnico(id) {
   const { data: o } = await db.from('ordenes').select('*').eq('id',id).single();
   if(!o){ document.getElementById('modal-body').innerHTML='<p>Error al cargar</p>'; return; }
   const esAdmin = usuarioActual && usuarioActual.rol === 'admin';
+  const puedeAbonar = usuarioActual && (usuarioActual.rol === 'admin' || usuarioActual.rol === 'recepcion') && o.estado !== 'entregada';
+
+  // Abonos registrados a esta orden
+  const { data: abonosOrdenData } = await db.from('caja').select('*').eq('tipo','abono_orden').ilike('concepto', '%"orden_id":"'+id+'"%').order('fecha',{ascending:true});
+  const abonosOrden = abonosOrdenData || [];
+  const totalAbonadoOrden = abonosOrden.reduce((s,a)=>s+Number(a.valor||0),0);
 
   // Repuestos HTML (solo los que no son servicios extra)
   const repsArr = (o.repuestos || []).filter(r => !r._tipo);
@@ -1784,7 +1790,7 @@ async function abrirModalTecnico(id) {
   const totalPresup = Number(o.presupuesto||0);
 
   // Diagnostico
-  const diagHTML = o.estado !== 'pendiente' ? (
+  const diagHTML = (
     '<div style="margin-bottom:12px;">' +
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">' +
     '<div class="card-title" style="margin:0;">Diagnóstico</div>' +
@@ -1794,7 +1800,7 @@ async function abrirModalTecnico(id) {
     '<div id="mic-status-'+id+'" style="display:none;background:rgba(255,23,68,0.1);border:1px solid rgba(255,23,68,0.3);border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:12px;color:var(--red);align-items:center;gap:8px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1s infinite;"></div><span>Escuchando...</span></div>' +
     '<textarea id="diag-'+id+'" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:10px;min-height:80px;outline:none;resize:vertical;" placeholder="Diagnóstico y trabajo realizado...">'+(o.diagnostico||'')+'</textarea>' +
     '</div>'
-  ) : '';
+  );
 
   // Build full HTML
   let html = '';
@@ -1869,7 +1875,50 @@ async function abrirModalTecnico(id) {
   html += '</div>';
   html += '<div class="divider"></div>';
 
-  if(o.estado !== 'pendiente') {
+  // ===== Abonos de la orden =====
+  {
+    const totalOrdenCalc = totalReps + totalPresup;
+    const saldoPendienteOrden = Math.max(0, totalOrdenCalc - totalAbonadoOrden);
+    html += '<div style="margin-bottom:12px;">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">';
+    html += '<div class="card-title" style="margin:0;">Abonos</div>';
+    if(puedeAbonar) html += '<button class="btn btn-ghost btn-sm" onclick="mostrarFormAbonoOrden(\''+id+'\')">+ Abono</button>';
+    html += '</div>';
+    if(abonosOrden.length) {
+      abonosOrden.forEach(a => {
+        const fAb = a.fecha ? new Date(a.fecha) : null;
+        const fechaTxt = fAb ? fAb.toLocaleDateString('es-CO',{day:'2-digit',month:'short',timeZone:'America/Bogota'})+' · '+fAb.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/Bogota'}) : '';
+        let detalleAb = '';
+        try { detalleAb = JSON.parse(a.concepto||'{}').detalle || ''; } catch(e) {}
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;">';
+        html += '<div>'+(detalleAb?'<div style="color:var(--text);margin-bottom:1px;">'+detalleAb+'</div>':'')+'<span style="color:var(--text2);">'+fechaTxt+'</span>'+(a.metodo_pago?' · <span style="color:var(--text3);text-transform:capitalize;">'+a.metodo_pago+'</span>':'')+'</div>';
+        html += '<div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-weight:600;color:var(--green);">$'+Number(a.valor||0).toLocaleString('es-CO')+'</span>';
+        if(puedeAbonar) html += '<button onclick="borrarAbonoOrden(\''+a.id+'\',\''+id+'\')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:0 4px;" title="Borrar abono">×</button>';
+        html += '</div></div>';
+      });
+    }
+    if(puedeAbonar) {
+      const ahoraLocalInp = new Date(Date.now()-5*60*60*1000).toISOString().slice(0,16);
+      html += '<div id="abono-form-'+id+'" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;margin-top:8px;">';
+      html += '<div class="row2" style="margin-bottom:8px;">';
+      html += '<div class="field"><label>Valor $</label><input type="number" id="abono-valor-'+id+'" placeholder="0" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:14px;padding:8px 10px;outline:none;"></div>';
+      html += '<div class="field"><label>Método</label><select id="abono-metodo-'+id+'" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:8px 10px;outline:none;"><option value="efectivo">Efectivo</option><option value="nequi">Nequi</option><option value="daviplata">Daviplata</option><option value="transferencia">Transferencia</option><option value="tarjeta">Tarjeta</option></select></div>';
+      html += '</div>';
+      html += '<div class="field" style="margin-bottom:8px;"><label>Concepto (¿de qué es el abono?)</label><input type="text" id="abono-concepto-'+id+'" placeholder="Ej: Adelanto repuesto, seña del servicio..." style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:8px 10px;outline:none;"></div>';
+      html += '<div class="field" style="margin-bottom:8px;"><label>Fecha</label><input type="datetime-local" id="abono-fecha-'+id+'" value="'+ahoraLocalInp+'" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--sans);font-size:13px;padding:8px 10px;outline:none;"></div>';
+      html += '<button class="btn btn-primary btn-sm" style="width:100%;" onclick="guardarAbonoOrden(\''+id+'\')">Guardar abono</button>';
+      html += '</div>';
+    }
+    html += '<div style="margin-top:8px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);">';
+    html += '<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0;"><span>Total del servicio</span><span style="font-family:var(--mono);">$'+totalOrdenCalc.toLocaleString('es-CO')+'</span></div>';
+    if(totalAbonadoOrden > 0) html += '<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0;color:var(--green);"><span>Abonado</span><span style="font-family:var(--mono);">-$'+totalAbonadoOrden.toLocaleString('es-CO')+'</span></div>';
+    html += '<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding:4px 0;border-top:1px solid var(--border2);margin-top:2px;"><span>Saldo pendiente</span><span style="font-family:var(--mono);color:'+(saldoPendienteOrden<=0&&totalOrdenCalc>0?'var(--green)':'var(--amber)')+';">$'+saldoPendienteOrden.toLocaleString('es-CO')+'</span></div>';
+    html += '</div>';
+    html += '</div>';
+    html += '<div class="divider"></div>';
+  }
+
+  {
     html += '<div style="margin-bottom:12px;"><div class="card-title">Repuestos</div>';
     html += '<div id="reps-'+id+'">'+repHTML+'</div>';
     html += '<button class="btn btn-ghost btn-sm" style="margin-top:6px;" onclick="addRep(\''+id+'\')">+ Agregar repuesto</button>';
@@ -2239,6 +2288,35 @@ async function guardarYCerrar(id, sinGuardar) {
   }
   closeModal();
 }
+function mostrarFormAbonoOrden(id) {
+  const f = document.getElementById('abono-form-'+id);
+  if(f) f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+async function guardarAbonoOrden(id) {
+  const valor = Number(document.getElementById('abono-valor-'+id)?.value||0);
+  const metodo = document.getElementById('abono-metodo-'+id)?.value || 'efectivo';
+  const detalle = document.getElementById('abono-concepto-'+id)?.value.trim() || '';
+  const fechaInput = document.getElementById('abono-fecha-'+id)?.value;
+  if(!valor || valor<=0) { showToast('⚠ Ingresa un valor válido'); return; }
+  const fechaISO = fechaInput ? new Date(fechaInput+':00-05:00').toISOString() : new Date().toISOString();
+  const { error } = await db.from('caja').insert({
+    tipo: 'abono_orden',
+    valor: valor,
+    metodo_pago: metodo,
+    fecha: fechaISO,
+    concepto: JSON.stringify({orden_id: id, detalle: detalle})
+  });
+  if(error) { showToast('❌ Error al registrar abono'); return; }
+  showToast('✓ Abono registrado');
+  abrirModalTecnico(id);
+}
+async function borrarAbonoOrden(abonoId, ordenId) {
+  if(!confirm('¿Seguro que quieres borrar este abono?')) return;
+  const { error } = await db.from('caja').delete().eq('id', abonoId);
+  if(error) { showToast('❌ Error al borrar'); return; }
+  showToast('✓ Abono borrado');
+  abrirModalTecnico(ordenId);
+}
 async function addRep(id) {
   const {data:o}=await db.from('ordenes').select('repuestos').eq('id',id).single();
   const extras = (o?.repuestos||[]).filter(r=>r._tipo==='servicio_extra');
@@ -2481,7 +2559,14 @@ async function abrirModalHistorial(id) {
     ${o.repuestos&&o.repuestos.length?`<div style="margin-bottom:12px;"><div class="card-title">Repuestos</div>${o.repuestos.map(r=>`<div style="font-size:13px;display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);"><span>${r.nombre}</span><span style="color:var(--green);font-family:var(--mono);">${r.precio?'$'+Number(r.precio).toLocaleString('es-CO'):''}</span></div>`).join('')}</div>`:''}
     ${fotos.length?`<div style="margin-bottom:14px;"><div class="card-title">Fotos</div><div class="photo-grid">${fotos.map(u=>`<img class="photo-thumb" src="${u}" onclick="window.open('${u}','_blank')">`).join('')}</div></div>`:''}
     ${o.estado==='listo'?`<button class="btn btn-wa" style="width:100%;margin-bottom:8px;" onclick="enviarWA('lista',${JSON.stringify(o).replace(/"/g,'&quot;')})">WhatsApp — listo para recoger</button>`:''}
+    ${o.estado==='entregada'?`<button class="btn btn-ghost" style="width:100%;margin-bottom:8px;" onclick="reimprimirReciboOrden('${o.id}')">🖨️ Reimprimir recibo</button>`:''}
     <button class="btn btn-ghost" style="width:100%;" onclick="closeModal()">Cerrar</button>`;
+}
+async function reimprimirReciboOrden(ordenId) {
+  const { data: ventasOrden } = await db.from('ventas').select('*').eq('orden_id', ordenId).eq('tipo','servicio_entregado').order('fecha',{ascending:false}).limit(1);
+  const venta = ventasOrden && ventasOrden[0];
+  if(!venta) { showToast('❌ No se encontró el recibo de esta orden'); return; }
+  imprimirReciboCaja(venta);
 }
 
 // ===== CONFIG SCREEN =====
@@ -3419,11 +3504,16 @@ async function _procederEntrega(ordenId) {
 
   const total = items.reduce((s,i)=>s+(i.precio_unitario*i.cantidad), 0);
 
+  // Abonos ya pagados a esta orden (se descuentan del cobro final)
+  const { data: abonosPrevios } = await db.from('caja').select('valor').eq('tipo','abono_orden').ilike('concepto', '%"orden_id":"'+ordenId+'"%');
+  const totalAbonadoPrevio = (abonosPrevios||[]).reduce((s,a)=>s+Number(a.valor||0),0);
+
   // Pasar la orden completa al modal — el registro se hace al confirmar pago
-  mostrarModalEntrega(o, null, items, total);
+  mostrarModalEntrega(o, null, items, total, totalAbonadoPrevio);
 }
 
-function mostrarModalEntrega(o, venta, items, total) {
+function mostrarModalEntrega(o, venta, items, total, totalAbonado) {
+  totalAbonado = Number(totalAbonado||0);
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(30,27,75,0.5);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
 
@@ -3459,10 +3549,23 @@ function mostrarModalEntrega(o, venta, items, total) {
     <div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:12px;">
       <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:700;">Detalle del cobro</div>
       <div id="entrega-items-list">${renderItems()}</div>
+      ${totalAbonado>0?`
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0 0;border-top:1px solid var(--border);margin-top:6px;">
+        <span>Subtotal</span>
+        <span id="entrega-subtotal-val" style="font-family:Arial,sans-serif;color:#475569;">$${recalcTotal().toLocaleString('es-CO')}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:#16a34a;padding:4px 0;">
+        <span>Abonado previamente</span>
+        <span style="font-family:Arial,sans-serif;">-$${totalAbonado.toLocaleString('es-CO')}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;padding:6px 0 0;border-top:1px solid var(--border);margin-top:4px;">
+        <span>Saldo a cobrar hoy</span>
+        <span id="entrega-total-val" style="font-family:Arial,sans-serif;color:#16a34a;">$${Math.max(0,recalcTotal()-totalAbonado).toLocaleString('es-CO')}</span>
+      </div>`:`
       <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;padding:10px 0 0;border-top:1px solid var(--border);margin-top:6px;">
         <span>Total</span>
         <span id="entrega-total-val" style="font-family:Arial,sans-serif;color:#16a34a;">$${recalcTotal().toLocaleString('es-CO')}</span>
-      </div>
+      </div>`}
     </div>
 
     <!-- Agregar ítem extra -->
@@ -3510,7 +3613,9 @@ function mostrarModalEntrega(o, venta, items, total) {
 
   // Store items and order data globally for finalizarEntrega
   window._entregaItems = itemsEdit;
-  window._entregaTotal = recalcTotal();
+  window._entregaAbonado = totalAbonado;
+  window._entregaSubtotal = recalcTotal();
+  window._entregaTotal = Math.max(0, window._entregaSubtotal - totalAbonado);
   window._entregaOverlay = overlay;
   window._entregaOrden = o; // guardar orden para registrar al confirmar pago
 
@@ -3519,13 +3624,16 @@ function mostrarModalEntrega(o, venta, items, total) {
   // Helper functions accessible globally
   window.eliminarItemEntrega = function(idx) {
     window._entregaItems.splice(idx, 1);
-    window._entregaTotal = window._entregaItems.reduce((s,i)=>s+(i.precio_unitario*i.cantidad),0);
+    window._entregaSubtotal = window._entregaItems.reduce((s,i)=>s+(i.precio_unitario*i.cantidad),0);
+    window._entregaTotal = Math.max(0, window._entregaSubtotal - (window._entregaAbonado||0));
     document.getElementById('entrega-items-list').innerHTML = window._entregaItems.map((it,i)=>`
     <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);">
       <span style="flex:1;">${it.nombre}</span>
       <span style="font-family:Arial,sans-serif;color:#16a34a;font-weight:600;margin:0 8px;">$${(it.precio_unitario*it.cantidad).toLocaleString('es-CO')}</span>
       <button onclick="eliminarItemEntrega(${i})" style="background:#fff5f5;border:1px solid rgba(220,38,38,0.2);border-radius:6px;width:24px;height:24px;color:#dc2626;font-size:14px;cursor:pointer;padding:0;line-height:1;">×</button>
     </div>`).join('');
+    const sv = document.getElementById('entrega-subtotal-val');
+    if(sv) sv.textContent='$'+window._entregaSubtotal.toLocaleString('es-CO');
     const tv = document.getElementById('entrega-total-val');
     if(tv) tv.textContent='$'+window._entregaTotal.toLocaleString('es-CO');
     const ml = document.getElementById('entrega-mixto-total-lbl');
@@ -3538,7 +3646,8 @@ function mostrarModalEntrega(o, venta, items, total) {
     const precio = Number(document.getElementById('extra-item-precio').value||0);
     if(!nombre){ showToast('⚠ Escribe la descripción del ítem'); return; }
     window._entregaItems.push({nombre, cantidad:1, precio_unitario:precio, tipo:'extra'});
-    window._entregaTotal = window._entregaItems.reduce((s,i)=>s+(i.precio_unitario*i.cantidad),0);
+    window._entregaSubtotal = window._entregaItems.reduce((s,i)=>s+(i.precio_unitario*i.cantidad),0);
+    window._entregaTotal = Math.max(0, window._entregaSubtotal - (window._entregaAbonado||0));
     document.getElementById('extra-item-nombre').value='';
     document.getElementById('extra-item-precio').value='';
     window.eliminarItemEntrega(-99); // trigger re-render by calling update
@@ -3549,6 +3658,8 @@ function mostrarModalEntrega(o, venta, items, total) {
       <span style="font-family:Arial,sans-serif;color:#16a34a;font-weight:600;margin:0 8px;">$${(it.precio_unitario*it.cantidad).toLocaleString('es-CO')}</span>
       <button onclick="eliminarItemEntrega(${i})" style="background:#fff5f5;border:1px solid rgba(220,38,38,0.2);border-radius:6px;width:24px;height:24px;color:#dc2626;font-size:14px;cursor:pointer;padding:0;line-height:1;">×</button>
     </div>`).join('');
+    const sv = document.getElementById('entrega-subtotal-val');
+    if(sv) sv.textContent='$'+window._entregaSubtotal.toLocaleString('es-CO');
     const tv = document.getElementById('entrega-total-val');
     if(tv) tv.textContent='$'+window._entregaTotal.toLocaleString('es-CO');
     showToast('✅ '+nombre+' agregado');
@@ -3591,6 +3702,7 @@ async function finalizarEntrega(ordenId, ventaId, total, overlay) {
 
   const itemsFinal = window._entregaItems || [];
   const totalFinal = window._entregaTotal || total;
+  const valorTotalOrden = (window._entregaSubtotal!=null ? window._entregaSubtotal : totalFinal);
   const oData = window._entregaOrden || {};
 
   let pagos = {pago_efectivo:0, pago_nequi:0, pago_daviplata:0, pago_transferencia:0, pago_tarjeta:0};
@@ -3613,7 +3725,7 @@ async function finalizarEntrega(ordenId, ventaId, total, overlay) {
     await fetch(SUPA_URL+'/rest/v1/ordenes?id=eq.'+ordenId, {
       method:'PATCH',
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body: JSON.stringify({estado:'entregada', aviso_admin_listo:false, fecha_entrega:new Date().toISOString(), valor_pagado:totalFinal})
+      body: JSON.stringify({estado:'entregada', aviso_admin_listo:false, fecha_entrega:new Date().toISOString(), valor_pagado:valorTotalOrden})
     });
 
     // 1b. Auto-apertura de caja si es la primera venta del dia
@@ -4747,6 +4859,14 @@ async function renderCajaDelDia(el) {
     const totGastos = movCaja.filter(m=>m.tipo==='gasto').reduce((s,m)=>s+Number(m.valor||0),0);
     const totalCaja = totVentas + totIngresos - totGastos;
 
+    // Gastos agrupados por método de pago real (no todos van a efectivo)
+    const gastosPorMetodo = {efectivo:0,nequi:0,daviplata:0,transferencia:0,tarjeta:0};
+    movCaja.filter(m=>m.tipo==='gasto').forEach(m=>{
+      const met = (m.metodo_pago||'efectivo').toLowerCase();
+      if(gastosPorMetodo.hasOwnProperty(met)) gastosPorMetodo[met] += Number(m.valor||0);
+      else gastosPorMetodo.efectivo += Number(m.valor||0);
+    });
+
     const porMetodo = {efectivo:0,nequi:0,daviplata:0,transferencia:0,tarjeta:0};
     ventas.forEach(v=>{
       porMetodo.efectivo += Number(v.pago_efectivo||0);
@@ -4772,16 +4892,17 @@ async function renderCajaDelDia(el) {
 
     // Por metodo
     const metNombres = {efectivo:'Efectivo',nequi:'Nequi',daviplata:'Daviplata',transferencia:'Transferencia',tarjeta:'Tarjeta'};
-    const metFiltrados = Object.entries(porMetodo).filter(([,v])=>v>0);
+    const metFiltrados = Object.entries(porMetodo).filter(([k,v])=>v>0 || gastosPorMetodo[k]>0);
     if(metFiltrados.length || totGastos > 0) {
       html += '<div class="card" style="margin-bottom:16px;"><div class="card-title" style="margin-bottom:10px;">Por método de pago</div>';
       metFiltrados.forEach(([k,v])=>{
         html += '<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border);"><span>'+metNombres[k]+'</span><span style="font-family:var(--mono);">$'+v.toLocaleString('es-CO')+'</span></div>';
-        // Si es efectivo, mostrar gastos y neto debajo
-        if(k === 'efectivo' && totGastos > 0) {
-          const efectivoNeto = v - totGastos;
-          html += '<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border);padding-left:12px;color:var(--red);"><span>- Gastos en efectivo</span><span style="font-family:var(--mono);">-$'+totGastos.toLocaleString('es-CO')+'</span></div>';
-          html += '<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border);padding-left:12px;"><span style="font-weight:600;">Efectivo neto</span><span style="font-family:var(--mono);font-weight:700;color:'+(efectivoNeto>=0?'var(--green)':'var(--red)')+';">$'+efectivoNeto.toLocaleString('es-CO')+'</span></div>';
+        // Restar solo los gastos que realmente se pagaron con este método
+        const gastoMet = gastosPorMetodo[k] || 0;
+        if(gastoMet > 0) {
+          const netoMet = v - gastoMet;
+          html += '<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border);padding-left:12px;color:var(--red);"><span>- Gastos en '+metNombres[k]+'</span><span style="font-family:var(--mono);">-$'+gastoMet.toLocaleString('es-CO')+'</span></div>';
+          html += '<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border);padding-left:12px;"><span style="font-weight:600;">'+metNombres[k]+' neto</span><span style="font-family:var(--mono);font-weight:700;color:'+(netoMet>=0?'var(--green)':'var(--red)')+';">$'+netoMet.toLocaleString('es-CO')+'</span></div>';
         }
       });
       html += '<div style="display:flex;justify-content:space-between;font-size:14px;padding:8px 0;font-weight:700;border-top:1px solid var(--border2);margin-top:4px;"><span>Total neto</span><span style="font-family:var(--mono);color:var(--green);">$'+totalCaja.toLocaleString('es-CO')+'</span></div>';
@@ -5430,7 +5551,7 @@ async function confirmarCierreTurno() {
     const mm2 = rm2.ok ? (await rm2.json()).filter(m=>['ingreso','gasto'].includes(m.tipo)) : [];
     const efVentas = vv2.reduce((s,v)=>s+Number(v.pago_efectivo||0),0);
     const efIngresos = mm2.filter(m=>m.tipo==='ingreso'&&(!m.metodo_pago||m.metodo_pago==='efectivo')).reduce((s,m)=>s+Number(m.valor||0),0);
-    const efGastos = mm2.filter(m=>m.tipo==='gasto').reduce((s,m)=>s+Number(m.valor||0),0);
+    const efGastos = mm2.filter(m=>m.tipo==='gasto'&&(!m.metodo_pago||m.metodo_pago==='efectivo')).reduce((s,m)=>s+Number(m.valor||0),0);
     cfEfectivo = efVentas + efIngresos - efGastos;
   } catch(e) {}
   box.innerHTML = '<div style="font-size:20px;text-align:center;margin-bottom:10px;">🔒</div>'+
@@ -5495,7 +5616,7 @@ async function cierreCajaTurno() {
   const totGastos = movs.filter(m=>m.tipo==='gasto').reduce((s,m)=>s+Number(m.valor||0),0);
   const totEfectivoVentas = ventas.reduce((s,v)=>s+Number(v.pago_efectivo||0),0);
   const totEfectivoIngresos = movs.filter(m=>m.tipo==='ingreso'&&(m.metodo_pago==='efectivo'||!m.metodo_pago)).reduce((s,m)=>s+Number(m.valor||0),0);
-  const totEfectivoGastos = movs.filter(m=>m.tipo==='gasto').reduce((s,m)=>s+Number(m.valor||0),0);
+  const totEfectivoGastos = movs.filter(m=>m.tipo==='gasto'&&(m.metodo_pago==='efectivo'||!m.metodo_pago)).reduce((s,m)=>s+Number(m.valor||0),0);
   const efectivoEnCaja = totEfectivoVentas + totEfectivoIngresos - totEfectivoGastos;
   const totalNeto = (isNaN(totVentas)?0:totVentas) + (isNaN(totIngresos)?0:totIngresos) - (isNaN(totGastos)?0:totGastos);
 
@@ -5550,7 +5671,7 @@ async function cierreCajaTurno() {
       };
     }),
     ingresos_detalle: ingresos.map(function(m){ return {concepto: m.concepto||'', valor: m.valor||0}; }),
-    gastos_detalle: gastos.map(function(g){ return {concepto: g.concepto||'', valor: g.valor||0}; }),
+    gastos_detalle: gastos.map(function(g){ return {concepto: g.concepto||'', valor: g.valor||0, metodo: g.metodo_pago||'efectivo'}; }),
     abonos_detalle: abonos.map(function(a){ let d={}; try{d=JSON.parse(a.concepto);}catch(e){d={nombre:a.concepto};} return {cliente:d.nombre||'', orden:'', valor:a.valor||0}; })
   };
 
@@ -5704,7 +5825,7 @@ function imprimirCierreTurno(r, ventas, ordenes, movs) {
   if(totGastos>0) {
     html2 += '<div class="row"><span>💸 Total gastos</span><span style="color:#c00;">-$'+totGastos.toLocaleString('es-CO')+'</span></div>';
     var gastosD2 = r.gastos_detalle || [];
-    gastosD2.forEach(function(g){ html2 += '<div class="sub row"><span>• '+(g.concepto||'')+'</span><span>-$'+Number(g.valor||0).toLocaleString('es-CO')+'</span></div>'; });
+    gastosD2.forEach(function(g){ const metLbl = g.metodo && g.metodo!=='efectivo' ? ' ('+g.metodo+')' : ''; html2 += '<div class="sub row"><span>• '+(g.concepto||'')+metLbl+'</span><span>-$'+Number(g.valor||0).toLocaleString('es-CO')+'</span></div>'; });
   }
   html2 += '<div class="row bold"><span>💵 Efectivo en caja</span><span>$'+efectivoEnCaja.toLocaleString('es-CO')+'</span></div>';
   if(totAbonos>0) html2 += '<div class="row" style="font-size:11px;"><span>📋 Abonos en custodia</span><span>$'+totAbonos.toLocaleString('es-CO')+'</span></div>';
@@ -5861,8 +5982,9 @@ async function renderHistorialCierres(el) {
       if(resumen.gastos_detalle && resumen.gastos_detalle.length) {
         html += '<div style="font-size:11px;font-weight:600;color:var(--text3);margin:10px 0 6px;">💸 GASTOS DEL TURNO</div>';
         resumen.gastos_detalle.forEach(function(g){
+          const metLbl2 = g.metodo && g.metodo!=='efectivo' ? ' ('+g.metodo+')' : '';
           html += '<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border);">';
-          html += '<span>'+(g.concepto||'')+'</span>';
+          html += '<span>'+(g.concepto||'')+metLbl2+'</span>';
           html += '<span style="font-family:var(--mono);color:var(--red);">-$'+Number(g.valor||0).toLocaleString('es-CO')+'</span></div>';
         });
       }
